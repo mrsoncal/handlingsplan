@@ -41,6 +41,24 @@
     .Legge\ til\ et\ punkt { background-color: #e6ffe6; }  /* green */
     .Endre\ et\ punkt      { background-color: #e6f0ff; }  /* blue */
     .Fjerne\ et\ punkt     { background-color: #ffe6e6; }  /* red */
+
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .vedtatt {
+      background-color: #d4edda !important;
+    }
+
+    .vedtatt button {
+      background-color: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -51,25 +69,19 @@
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 
     async function loadCSV() {
-      console.log("🔄 Fetching CSV...");
       const response = await fetch(csvUrl);
       const text = await response.text();
-      console.log("✅ CSV fetched.");
 
       const rows = text.trim().split("\n").map(row => row.split(","));
       const headers = rows[0];
       const data = rows.slice(1);
-      console.log("📦 Headers:", headers);
-      console.log("📊 Rows loaded:", data.length);
 
       const grouped = {};
       data.forEach(row => {
-        const tema = row[2].trim();  // ✅ Column 2 = Tema
+        const tema = row[2].trim();
         if (!grouped[tema]) grouped[tema] = [];
         grouped[tema].push(row);
       });
-
-      console.log("📚 Grouped by Tema:", grouped);
 
       const container = document.getElementById("tables-container");
       container.innerHTML = "";
@@ -85,12 +97,7 @@
 
       temaOrder.forEach(tema => {
         const groupRows = grouped[tema];
-        if (!groupRows || groupRows.length === 0) {
-          console.warn(`⚠️ No rows found for tema: ${tema}`);
-          return;
-        }
-
-        console.log(`📄 Rendering table for "${tema}" (${groupRows.length} rows)`);
+        if (!groupRows || groupRows.length === 0) return;
 
         const section = document.createElement("section");
         const title = document.createElement("h2");
@@ -102,67 +109,66 @@
         const tr = document.createElement("tr");
 
         headers.slice(1).forEach((h, index) => {
-          if (index === 1) return; // skip Tema
+          if (index === 1) return;
           const th = document.createElement("th");
-
-          // Rename column for display
           th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-
-          // Set width and alignment
           const widths = [150, 60, 200, 200, 200];
           const visibleIndex = index < 1 ? index : index - 1;
           th.style.width = widths[visibleIndex] + "px";
-
-          if (index === 2) th.style.textAlign = "center"; // index 2 after skipping Tema = "Punkt"
-
+          if (index === 2) th.style.textAlign = "center";
           tr.appendChild(th);
         });
+
+        const thBtn = document.createElement("th");
+        thBtn.textContent = ""; // "Vedta" column
+        thBtn.style.width = "80px";
+        tr.appendChild(thBtn);
+
         thead.appendChild(tr);
         table.appendChild(thead);
 
         const tbody = document.createElement("tbody");
 
         const order = ["Legge til et punkt", "Endre et punkt", "Fjerne et punkt"];
-
         groupRows
           .sort((a, b) => {
-            // First: sort by Punkt (column 3), numerically
             const aPunkt = parseInt(a[3], 10) || 0;
             const bPunkt = parseInt(b[3], 10) || 0;
             if (aPunkt !== bPunkt) return aPunkt - bPunkt;
-
-            // Then: sort by Handlingstype (column 1)
-            const aType = order.indexOf(a[1]);
-            const bType = order.indexOf(b[1]);
-            return aType - bType;
+            return order.indexOf(a[1]) - order.indexOf(b[1]);
           })
           .forEach(row => {
             const tr = document.createElement("tr");
             const handling = row[1].trim();
             tr.className = handling.replace(/\s/g, "\\ ");
-            row.slice(1).forEach((cell, index) => {
-              if (index === 1) return; // skip Tema
-              const td = document.createElement("td");
 
+            row.slice(1).forEach((cell, index) => {
+              if (index === 1) return;
+              const td = document.createElement("td");
               const widths = [150, 60, 200, 200, 200];
               const visibleIndex = index < 1 ? index : index - 1;
               td.style.width = widths[visibleIndex] + "px";
-
-              if (index === 2) td.style.textAlign = "center"; // "Punkt" column
-
+              if (index === 2) td.style.textAlign = "center";
               td.textContent = cell;
               tr.appendChild(td);
             });
-            tbody.appendChild(tr);
-        });
 
+            const tdAction = document.createElement("td");
+            const btn = document.createElement("button");
+            btn.textContent = "Vedta";
+            btn.onclick = () => {
+              tr.classList.toggle("vedtatt");
+            };
+            tdAction.appendChild(btn);
+            tr.appendChild(tdAction);
+
+            tbody.appendChild(tr);
+          });
 
         table.appendChild(tbody);
         section.appendChild(table);
         container.appendChild(section);
       });
-
-      console.log("✅ All tables rendered.");
     }
 
     window.addEventListener("DOMContentLoaded", loadCSV);
