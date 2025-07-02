@@ -9,18 +9,45 @@
       max-width: 1000px;
       margin: 2rem auto;
       padding: 1rem;
+      overflow-x: hidden;
     }
 
     h1 {
       font-size: 2rem;
       margin-bottom: 1.5rem;
+      text-align: center;
     }
 
-    h2 {
-      margin-top: 5rem;
-      border-bottom: 2px solid #ccc;
-      padding-bottom: 0.5rem;
+    .carousel {
+      position: relative;
+      overflow: hidden;
     }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      width: 100%;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      box-sizing: border-box;
+      padding: 0 1rem;
+    }
+
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    .carousel-nav.left { left: 0; }
+    .carousel-nav.right { right: 0; }
 
     table {
       border-collapse: collapse;
@@ -34,36 +61,7 @@
       text-align: left;
     }
 
-    th {
-      background-color: #f9f9f9;
-    }
-
-    .Legge\ til\ et\ punkt { background-color: #e6ffe6; }
-    .Endre\ et\ punkt      { background-color: #e6f0ff; }
-    .Fjerne\ et\ punkt     { background-color: #ffe6e6; }
-
-    button {
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .vedtatt td:not(.button-cell) {
-      background-color: #d4edda !important;
-    }
-
-    .vedtatt td.button-cell {
-      background-color: white !important; /* or #f9f9f9 to match other headers */
-    }
-
-    .vedtatt button {
-      background-color: #4CAF50;
-      color: white;
-    }
-
+    th { background-color: #f9f9f9; }
     td.button-cell {
       border: none;
       background: none;
@@ -71,22 +69,31 @@
       text-align: right;
     }
 
-    th.button-header {
-      display: none;
-    }
+    th.button-header { display: none; }
+    .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
+    .vedtatt td.button-cell { background-color: white !important; }
+
+    .Legge\ til\ et\ punkt { background-color: #e6ffe6; }
+    .Endre\ et\ punkt { background-color: #e6f0ff; }
+    .Fjerne\ et\ punkt { background-color: #ffe6e6; }
   </style>
 </head>
 <body>
   <h1>Handlingsplan</h1>
-  <div id="tables-container">Laster data...</div>
+
+  <div class="carousel">
+    <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
+    <div class="carousel-track" id="carousel-track"></div>
+    <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
+  </div>
 
   <script>
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
+    let currentIndex = 0;
 
     async function loadCSV() {
       const response = await fetch(csvUrl);
       const text = await response.text();
-
       const rows = text.trim().split("\n").map(row => row.split(","));
       const headers = rows[0];
       const data = rows.slice(1);
@@ -98,9 +105,6 @@
         grouped[tema].push(row);
       });
 
-      const container = document.getElementById("tables-container");
-      container.innerHTML = "";
-
       const temaOrder = [
         "Ungdomsdemokrati og Medvirkning",
         "Samferdsel",
@@ -110,21 +114,25 @@
         "Kultur"
       ];
 
+      const track = document.getElementById("carousel-track");
+
       temaOrder.forEach(tema => {
         const groupRows = grouped[tema];
         if (!groupRows || groupRows.length === 0) return;
 
-        const section = document.createElement("section");
-        const title = document.createElement("h2");
-        title.textContent = tema;
-        section.appendChild(title);
+        const slide = document.createElement("div");
+        slide.className = "carousel-slide";
+
+        const h2 = document.createElement("h2");
+        h2.textContent = tema;
+        slide.appendChild(h2);
 
         const table = document.createElement("table");
         const thead = document.createElement("thead");
         const tr = document.createElement("tr");
 
         headers.slice(1).forEach((h, index) => {
-          if (index === 1) return; // skip "Tema"
+          if (index === 1) return; // skip Tema
           const th = document.createElement("th");
           th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
           const widths = [150, 60, 200, 200, 200];
@@ -134,60 +142,70 @@
           tr.appendChild(th);
         });
 
-        // Hidden header cell for the button column
         const thBtn = document.createElement("th");
         thBtn.className = "button-header";
         tr.appendChild(thBtn);
-
         thead.appendChild(tr);
         table.appendChild(thead);
 
         const tbody = document.createElement("tbody");
-
         const order = ["Legge til et punkt", "Endre et punkt", "Fjerne et punkt"];
-        groupRows
-          .sort((a, b) => {
-            const aPunkt = parseInt(a[3], 10) || 0;
-            const bPunkt = parseInt(b[3], 10) || 0;
-            if (aPunkt !== bPunkt) return aPunkt - bPunkt;
-            return order.indexOf(a[1]) - order.indexOf(b[1]);
-          })
-          .forEach(row => {
-            const tr = document.createElement("tr");
-            const handling = row[1].trim();
-            tr.className = handling.replace(/\s/g, "\\ ");
+        groupRows.sort((a, b) => {
+          const aPunkt = parseInt(a[3], 10) || 0;
+          const bPunkt = parseInt(b[3], 10) || 0;
+          if (aPunkt !== bPunkt) return aPunkt - bPunkt;
+          return order.indexOf(a[1]) - order.indexOf(b[1]);
+        }).forEach(row => {
+          const tr = document.createElement("tr");
+          tr.className = row[1].trim().replace(/\s/g, "\\ ");
 
-            row.slice(1).forEach((cell, index) => {
-              if (index === 1) return; // skip "Tema"
-              const td = document.createElement("td");
-              const widths = [150, 60, 200, 200, 200];
-              const visibleIndex = index < 1 ? index : index - 1;
-              td.style.width = widths[visibleIndex] + "px";
-              if (index === 2) td.style.textAlign = "center";
-              td.textContent = cell;
-              tr.appendChild(td);
-            });
-
-            // Button column with hidden cell appearance
-            const tdAction = document.createElement("td");
-            tdAction.className = "button-cell";
-
-            const btn = document.createElement("button");
-            btn.textContent = "Vedta";
-            btn.onclick = () => {
-              tr.classList.toggle("vedtatt");
-            };
-
-            tdAction.appendChild(btn);
-            tr.appendChild(tdAction);
-
-            tbody.appendChild(tr);
+          row.slice(1).forEach((cell, index) => {
+            if (index === 1) return;
+            const td = document.createElement("td");
+            const widths = [150, 60, 200, 200, 200];
+            const visibleIndex = index < 1 ? index : index - 1;
+            td.style.width = widths[visibleIndex] + "px";
+            if (index === 2) td.style.textAlign = "center";
+            td.textContent = cell;
+            tr.appendChild(td);
           });
 
+          const tdAction = document.createElement("td");
+          tdAction.className = "button-cell";
+          const btn = document.createElement("button");
+          btn.textContent = "Vedta";
+          btn.onclick = () => {
+            tr.classList.toggle("vedtatt");
+          };
+          tdAction.appendChild(btn);
+          tr.appendChild(tdAction);
+
+          tbody.appendChild(tr);
+        });
+
         table.appendChild(tbody);
-        section.appendChild(table);
-        container.appendChild(section);
+        slide.appendChild(table);
+        track.appendChild(slide);
       });
+
+      updateCarousel();
+    }
+
+    function updateCarousel() {
+      const track = document.getElementById("carousel-track");
+      const totalSlides = track.children.length;
+      currentIndex = (currentIndex + totalSlides) % totalSlides;
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+
+    function nextSlide() {
+      currentIndex++;
+      updateCarousel();
+    }
+
+    function prevSlide() {
+      currentIndex--;
+      updateCarousel();
     }
 
     window.addEventListener("DOMContentLoaded", loadCSV);
