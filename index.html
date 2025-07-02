@@ -54,12 +54,12 @@
       padding: 0 1rem;
     }
 
-    .carousel-slide:nth-child(1) table th { background-color: #ffdddd; } /* Tema 1 */
-    .carousel-slide:nth-child(2) table th { background-color: #ddffdd; } /* Tema 2 */
-    .carousel-slide:nth-child(3) table th { background-color: #ddddff; } /* Tema 3 */
-    .carousel-slide:nth-child(4) table th { background-color: #fff5cc; } /* Tema 4 */
-    .carousel-slide:nth-child(5) table th { background-color: #ffe6ff; } /* Tema 5 */
-    .carousel-slide:nth-child(6) table th { background-color: #e0f7fa; } /* Tema 6 */
+    .carousel-slide:nth-child(1) table th { background-color: #ffdddd; }
+    .carousel-slide:nth-child(2) table th { background-color: #ddffdd; }
+    .carousel-slide:nth-child(3) table th { background-color: #ddddff; }
+    .carousel-slide:nth-child(4) table th { background-color: #fff5cc; }
+    .carousel-slide:nth-child(5) table th { background-color: #ffe6ff; }
+    .carousel-slide:nth-child(6) table th { background-color: #e0f7fa; }
 
     .carousel-nav {
       position: fixed;
@@ -82,27 +82,25 @@
     }
 
     table {
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       width: 100%;
       margin-top: 1rem;
       animation: fadeIn 0.4s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      border-left: 3px solid black;
+      border-top: 3px solid black;
+      border-bottom: 3px solid black;
     }
 
     th, td {
-      border: 1px solid #ccc;
+      border: none;
       padding: 8px;
       text-align: left;
       transition: background-color 0.3s ease;
     }
 
-    th { background-color: #f9f9f9; }
     td.button-cell {
-      border: none;
+      border-left: 3px solid black;
       background: none;
       padding: 0;
       text-align: right;
@@ -134,7 +132,6 @@
       color: white;
     }
 
-    /* Rounded corners on outer cells */
     th.rounded-left {
       border-top-left-radius: 10px;
     }
@@ -204,15 +201,10 @@
       background-color: #dfdfdf !important;
     }
 
-    tr {
+    tr, td {
       transition: background-color 0.3s ease;
     }
 
-    td {
-      transition: background-color 0.3s ease;
-    }
-
-    /* Specific styling for row types */
     .Legge\ til\ et\ punkt td:not(.button-cell) {
       background-color: #e6ffe6;
       border-left: 5px solid #5cb85c;
@@ -226,6 +218,11 @@
     .Fjerne\ et\ punkt td:not(.button-cell) {
       background-color: #ffe6e6;
       border-left: 5px solid #d9534f;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes popIn {
