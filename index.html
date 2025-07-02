@@ -22,42 +22,48 @@
   <h1>Live Google Sheets Data</h1>
   <div id="sheet-data"></div>
 
-  <script>
+    <script>
     // Replace this with your actual Google Sheet ID
     const publicSpreadsheetId = '1eckqq3gzImtO2lcvXIdEUlCBt_HaU6CZBDxygRdj4HY';
 
     function showInfo(data, tabletop) {
-      const container = document.getElementById('sheet-data');
-      if (data.length === 0) {
+        console.log("✅ Data loaded successfully:", data); // Log full dataset
+
+        const container = document.getElementById('sheet-data');
+
+        if (!data || data.length === 0) {
         container.innerHTML = "<p>No data found.</p>";
+        console.warn("⚠️ Data is empty or invalid");
         return;
-      }
+        }
 
-      let html = '<table><thead><tr>';
-      Object.keys(data[0]).forEach(key => {
+        let html = '<table><thead><tr>';
+        Object.keys(data[0]).forEach(key => {
         html += `<th>${key}</th>`;
-      });
-      html += '</tr></thead><tbody>';
+        });
+        html += '</tr></thead><tbody>';
 
-      data.forEach(row => {
+        data.forEach(row => {
         html += '<tr>';
         Object.values(row).forEach(value => {
-          html += `<td>${value}</td>`;
+            html += `<td>${value}</td>`;
         });
         html += '</tr>';
-      });
+        });
 
-      html += '</tbody></table>';
-      container.innerHTML = html;
-    }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+        }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      Tabletop.init({
-        key: publicSpreadsheetId,
-        callback: showInfo,
-        simpleSheet: true
-      });
-    });
-  </script>
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("🔄 Initializing Tabletop...");
+            Tabletop.init({
+            key: publicSpreadsheetId,
+            callback: showInfo,
+            simpleSheet: true,
+            wanted: ["Sheet1"], // optional: specify sheet name
+            });
+        });
+    </script>
 </body>
 </html>
