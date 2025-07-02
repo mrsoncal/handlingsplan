@@ -64,12 +64,12 @@
       container.innerHTML = "";
 
       const temaOrder = [
-        "1. Ungdomsdemokrati og Medvirkning",
-        "2. Samferdsel",
-        "3. Utdanning og Kompetanse",
-        "4. Folkehelse",
-        "5. Klima og Miljø",
-        "6. Kultur"
+        "Ungdomsdemokrati og Medvirkning",
+        "Samferdsel",
+        "Utdanning og Kompetanse",
+        "Folkehelse",
+        "Klima og Miljø",
+        "Kultur"
       ];
 
       temaOrder.forEach(tema => {
@@ -97,18 +97,21 @@
         thead.appendChild(tr);
         table.appendChild(thead);
 
-        const tbody = document.createElement("tbody");
-        groupRows.forEach(row => {
-          const tr = document.createElement("tr");
-          const handling = row[1].trim();
-          tr.className = handling.replace(/\s/g, "\\ ");
-          row.slice(1).forEach(cell => {
-            const td = document.createElement("td");
-            td.textContent = cell;
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
+        const order = ["Legge til et punkt", "Endre et punkt", "Fjerne et punkt"];
+        groupRows
+          .sort((a, b) => order.indexOf(a[1]) - order.indexOf(b[1]))
+          .forEach(row => {
+            const tr = document.createElement("tr");
+            const handling = row[1].trim();
+            tr.className = handling.replace(/\s/g, "\\ ");
+            row.slice(1).forEach(cell => {
+              const td = document.createElement("td");
+              td.textContent = cell;
+              tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
         });
+
 
         table.appendChild(tbody);
         section.appendChild(table);
