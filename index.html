@@ -46,7 +46,7 @@
       console.log("✅ Raw CSV data loaded.");
 
       const rows = text.trim().split("\n").map(row => row.split(","));
-      const headers = rows[2];
+      const headers = rows[0];
       const data = rows.slice(1);
       console.log("🧩 Parsed headers:", headers);
       console.log("📦 Total rows loaded:", data.length);
@@ -54,7 +54,7 @@
       // Group by Tema
       const grouped = {};
       data.forEach(row => {
-        const tema = row[0].trim();
+        const tema = row[2].trim();
         if (!grouped[tema]) grouped[tema] = [];
         grouped[tema].push(row);
       });
