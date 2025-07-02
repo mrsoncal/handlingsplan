@@ -157,15 +157,7 @@
             const btn = document.createElement("button");
             btn.textContent = "Vedta";
             btn.onclick = () => {
-              const cells = tr.querySelectorAll("td");
-              cells.forEach((cell, index) => {
-                // Hide all cells except the button cell (last cell)
-                if (index !== cells.length - 1) {
-                  cell.style.display = "none";
-                }
-              });
-
-              tr.classList.add("vedtatt"); // Add green styling
+              tr.classList.toggle("vedtatt");
             };
             tdAction.appendChild(btn);
             tr.appendChild(tdAction);
