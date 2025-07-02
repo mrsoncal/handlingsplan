@@ -10,26 +10,37 @@
       margin: 2rem auto;
       padding: 1rem;
     }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
     h2 {
       margin-top: 2rem;
       border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
     }
+
     table {
       border-collapse: collapse;
       width: 100%;
       margin-top: 1rem;
     }
+
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
     }
+
     th {
       background-color: #f9f9f9;
     }
-    .Legge\ til { background-color: #e6ffe6; }
-    .Endre { background-color: #e6f0ff; }
-    .Fjerne { background-color: #ffe6e6; }
+
+    .Legge\ til\ et\ punkt { background-color: #e6ffe6; }  /* green */
+    .Endre\ et\ punkt      { background-color: #e6f0ff; }  /* blue */
+    .Fjerne\ et\ punkt     { background-color: #ffe6e6; }  /* red */
   </style>
 </head>
 <body>
@@ -40,25 +51,25 @@
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 
     async function loadCSV() {
-      console.log("🔄 Fetching CSV from Google Sheets...");
+      console.log("🔄 Fetching CSV...");
       const response = await fetch(csvUrl);
       const text = await response.text();
-      console.log("✅ Raw CSV data loaded.");
+      console.log("✅ CSV fetched.");
 
       const rows = text.trim().split("\n").map(row => row.split(","));
       const headers = rows[0];
       const data = rows.slice(1);
-      console.log("🧩 Parsed headers:", headers);
-      console.log("📦 Total rows loaded:", data.length);
+      console.log("📦 Headers:", headers);
+      console.log("📊 Rows loaded:", data.length);
 
-      // Group by Tema
       const grouped = {};
       data.forEach(row => {
-        const tema = row[2].trim();
+        const tema = row[2].trim();  // ✅ Column 2 = Tema
         if (!grouped[tema]) grouped[tema] = [];
         grouped[tema].push(row);
       });
-      console.log("📚 Grouped data by Tema:", grouped);
+
+      console.log("📚 Grouped by Tema:", grouped);
 
       const container = document.getElementById("tables-container");
       container.innerHTML = "";
@@ -79,7 +90,7 @@
           return;
         }
 
-        console.log(`📄 Rendering table for tema: ${tema} (${groupRows.length} rows)`);
+        console.log(`📄 Rendering table for "${tema}" (${groupRows.length} rows)`);
 
         const section = document.createElement("section");
         const title = document.createElement("h2");
@@ -89,6 +100,7 @@
         const table = document.createElement("table");
         const thead = document.createElement("thead");
         const tr = document.createElement("tr");
+
         headers.slice(1).forEach(h => {
           const th = document.createElement("th");
           th.textContent = h;
@@ -96,6 +108,8 @@
         });
         thead.appendChild(tr);
         table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
 
         const order = ["Legge til et punkt", "Endre et punkt", "Fjerne et punkt"];
         groupRows
@@ -110,8 +124,7 @@
               tr.appendChild(td);
             });
             tbody.appendChild(tr);
-        });
-
+          });
 
         table.appendChild(tbody);
         section.appendChild(table);
