@@ -27,9 +27,9 @@
     th {
       background-color: #f9f9f9;
     }
-    .Legge\ til { background-color: #e6ffe6; }   /* green */
-    .Endre { background-color: #e6f0ff; }        /* blue */
-    .Fjerne { background-color: #ffe6e6; }       /* red */
+    .Legge\ til { background-color: #e6ffe6; }
+    .Endre { background-color: #e6f0ff; }
+    .Fjerne { background-color: #ffe6e6; }
   </style>
 </head>
 <body>
@@ -40,36 +40,46 @@
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 
     async function loadCSV() {
+      console.log("🔄 Fetching CSV from Google Sheets...");
       const response = await fetch(csvUrl);
       const text = await response.text();
-      const rows = text.trim().split("\n").map(row => row.split(","));
+      console.log("✅ Raw CSV data loaded.");
 
+      const rows = text.trim().split("\n").map(row => row.split(","));
       const headers = rows[0];
       const data = rows.slice(1);
+      console.log("🧩 Parsed headers:", headers);
+      console.log("📦 Total rows loaded:", data.length);
 
-      // Group by Tema (column 0)
+      // Group by Tema
       const grouped = {};
       data.forEach(row => {
         const tema = row[0].trim();
         if (!grouped[tema]) grouped[tema] = [];
         grouped[tema].push(row);
       });
+      console.log("📚 Grouped data by Tema:", grouped);
 
       const container = document.getElementById("tables-container");
       container.innerHTML = "";
 
       const temaOrder = [
-        "1. Ungdomsdemokrati og Medvirkning",
-        "2. Samferdsel",
-        "3. Utdanning og Kompetanse",
-        "4. Folkehelse",
-        "5. Klima og Miljø",
-        "6. Kultur"
+        "Ungdomsdemokrati og Medvirkning",
+        "Samferdsel",
+        "Utdanning og Kompetanse",
+        "Folkehelse",
+        "Klima og Miljø",
+        "Kultur"
       ];
 
       temaOrder.forEach(tema => {
         const groupRows = grouped[tema];
-        if (!groupRows || groupRows.length === 0) return;
+        if (!groupRows || groupRows.length === 0) {
+          console.warn(`⚠️ No rows found for tema: ${tema}`);
+          return;
+        }
+
+        console.log(`📄 Rendering table for tema: ${tema} (${groupRows.length} rows)`);
 
         const section = document.createElement("section");
         const title = document.createElement("h2");
@@ -104,6 +114,8 @@
         section.appendChild(table);
         container.appendChild(section);
       });
+
+      console.log("✅ All tables rendered.");
     }
 
     window.addEventListener("DOMContentLoaded", loadCSV);
