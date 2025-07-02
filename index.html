@@ -1,7 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Sheets Data Viewer</title>
+  <script src="https://unpkg.com/tabletop@1.6.0/tabletop.js"></script>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+  <h1>Live Google Sheets Data</h1>
+  <div id="sheet-data"></div>
+
+  <script>
+    // Replace this with your actual Google Sheet ID
+    const publicSpreadsheetId = 'e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pubhtml?gid=1238065984&single=true';
+
+    function showInfo(data, tabletop) {
+      const container = document.getElementById('sheet-data');
+      if (data.length === 0) {
+        container.innerHTML = "<p>No data found.</p>";
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      Object.keys(data[0]).forEach(key => {
+        html += `<th>${key}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      data.forEach(row => {
+        html += '<tr>';
+        Object.values(row).forEach(value => {
+          html += `<td>${value}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      Tabletop.init({
+        key: publicSpreadsheetId,
+        callback: showInfo,
+        simpleSheet: true
+      });
+    });
+  </script>
 </body>
 </html>
