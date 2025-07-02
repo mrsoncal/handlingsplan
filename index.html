@@ -19,6 +19,18 @@
       text-align: center;
     }
 
+    #adminLoginBtn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      background: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 2001;
+    }
+
     .carousel {
       position: relative;
       overflow: hidden;
@@ -93,7 +105,7 @@
       right: 0;
       bottom: 0;
       background: rgba(0,0,0,0.5);
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 2000;
@@ -109,6 +121,8 @@
 </head>
 <body>
   <h1>Handlingsplan</h1>
+
+  <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
 
   <div id="loginModal">
     <form onsubmit="return checkLogin(event)">
@@ -129,6 +143,21 @@
   <script>
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
     let currentIndex = 0;
+
+    function showLogin() {
+      document.getElementById("loginModal").style.display = "flex";
+    }
+
+    function checkLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById("adminPass").value;
+      if (password === "admin123") {
+        document.getElementById("loginModal").style.display = "none";
+        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+      } else {
+        alert("Feil passord. Prøv igjen.");
+      }
+    }
 
     async function loadCSV() {
       const response = await fetch(csvUrl);
@@ -246,17 +275,6 @@
     function prevSlide() {
       currentIndex--;
       updateCarousel();
-    }
-
-    function checkLogin(event) {
-      event.preventDefault();
-      const password = document.getElementById("adminPass").value;
-      if (password === "admin123") {
-        document.getElementById("loginModal").style.display = "none";
-        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
-      } else {
-        alert("Feil passord. Prøv igjen.");
-      }
     }
 
     window.addEventListener("DOMContentLoaded", loadCSV);
