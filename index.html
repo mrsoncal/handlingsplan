@@ -19,7 +19,7 @@
       text-align: center;
     }
 
-    #adminLoginBtn {
+    #adminLoginBtn, #logoutBtn {
       position: absolute;
       top: 1rem;
       right: 1rem;
@@ -29,6 +29,10 @@
       border: none;
       cursor: pointer;
       z-index: 2001;
+    }
+
+    #logoutBtn {
+      display: none;
     }
 
     .carousel {
@@ -123,6 +127,7 @@
   <h1>Handlingsplan</h1>
 
   <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
+  <button id="logoutBtn" onclick="logout()">Logg ut</button>
 
   <div id="loginModal">
     <form onsubmit="return checkLogin(event)">
@@ -154,8 +159,26 @@
       if (password === "admin123") {
         document.getElementById("loginModal").style.display = "none";
         document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+        document.getElementById("adminLoginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        localStorage.setItem("adminLoggedIn", "true");
       } else {
         alert("Feil passord. Prøv igjen.");
+      }
+    }
+
+    function logout() {
+      document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "none");
+      document.getElementById("adminLoginBtn").style.display = "inline-block";
+      document.getElementById("logoutBtn").style.display = "none";
+      localStorage.removeItem("adminLoggedIn");
+    }
+
+    function checkStoredLogin() {
+      if (localStorage.getItem("adminLoggedIn") === "true") {
+        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+        document.getElementById("adminLoginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
       }
     }
 
@@ -258,6 +281,7 @@
       });
 
       updateCarousel();
+      checkStoredLogin();
     }
 
     function updateCarousel() {
