@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="no">
+<!DOCTYPE html>
+<html lang="no">
 <head>
   <meta charset="UTF-8">
   <title>Forslag til Handlingsplan 2026</title>
@@ -78,8 +80,12 @@
       border-collapse: collapse;
       width: 100%;
       margin-top: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       animation: fadeIn 0.4s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     th, td {
@@ -101,46 +107,29 @@
     .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
     .vedtatt td.button-cell { background-color: white !important; }
 
-    tr:hover:not(.vedtatt) td:not(.button-cell) {
-      background-color: #dfdfdf !important;
-    }
-
-    /* Styled row types */
-    .Legge\ til\ et\ punkt td:not(.button-cell) {
-      background-color: #e6ffe6;
-      border-left: 5px solid #5cb85c;
-    }
-
-    .Endre\ et\ punkt td:not(.button-cell) {
-      background-color: #e6f0ff;
-      border-left: 5px solid #0275d8;
-    }
-
-    .Fjerne\ et\ punkt td:not(.button-cell) {
-      background-color: #ffe6e6;
-      border-left: 5px solid #d9534f;
-    }
-
     .vedta-button {
       display: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      background: #444;
-      color: white;
+      padding: 0.5rem 1rem;
+      margin-left: 0.75rem;
+      background: #e2e2e2;
+      color: rgb(27, 27, 27);
       border: none;
       border-radius: 6px;
       cursor: pointer;
       transition: background 0.3s ease;
+      font-size: 12px;
     }
 
     .vedta-button:hover {
-      background: #333;
+      background: #b9b9b9;
     }
 
     .vedtatt .vedta-button {
       background: #28a745 !important;
+      color: white;
     }
 
+    /* Rounded corners on outer cells */
     th.rounded-left {
       border-top-left-radius: 10px;
     }
@@ -202,17 +191,45 @@
       background: #218838;
     }
 
+    tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
+      background-color: #fafafa;
+    }
+
+    tr:hover:not(.vedtatt) td:not(.button-cell) {
+      background-color: #dfdfdf !important;
+    }
+
+    tr {
+      transition: background-color 0.3s ease;
+    }
+
+    td {
+      transition: background-color 0.3s ease;
+    }
+
+    /* Specific styling for row types */
+    .Legge\ til\ et\ punkt td:not(.button-cell) {
+      background-color: #e6ffe6;
+      border-left: 5px solid #5cb85c;
+    }
+
+    .Endre\ et\ punkt td:not(.button-cell) {
+      background-color: #e6f0ff;
+      border-left: 5px solid #0275d8;
+    }
+
+    .Fjerne\ et\ punkt td:not(.button-cell) {
+      background-color: #ffe6e6;
+      border-left: 5px solid #d9534f;
+    }
+
     @keyframes popIn {
       0% { transform: scale(0.9); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
   </style>
 </head>
+<body>
 <body>
   <h1>Handlingsplan</h1>
 
