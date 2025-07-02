@@ -51,8 +51,12 @@
       opacity: 0.9;
     }
 
-    .vedtatt {
+    .vedtatt td:not(.button-cell) {
       background-color: #d4edda !important;
+    }
+
+    .vedtatt td.button-cell {
+      background-color: white !important; /* or #f9f9f9 to match other headers */
     }
 
     .vedtatt button {
