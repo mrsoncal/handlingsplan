@@ -104,12 +104,16 @@
         headers.slice(1).forEach((h, index) => {
           if (index === 1) return; // skip Tema
           const th = document.createElement("th");
-          th.textContent = h;
 
-          // Set column widths (index mapping adjusted for slice)
-          const widths = [150, 60, 200, 200, 200]; // for visible columns
-          const visibleIndex = index < 1 ? index : index - 1; // adjust for skipped Tema
+          // Rename column for display
+          th.textContent = h === "Velg et punkt (nr)" ? "nr" : h;
+
+          // Set width and alignment
+          const widths = [150, 225, 75, 150, 200];
+          const visibleIndex = index < 1 ? index : index - 1;
           th.style.width = widths[visibleIndex] + "px";
+
+          if (index === 2) th.style.textAlign = "center"; // index 2 after skipping Tema = "Punkt"
 
           tr.appendChild(th);
         });
@@ -140,9 +144,11 @@
               if (index === 1) return; // skip Tema
               const td = document.createElement("td");
 
-              const widths = [150, 60, 200, 200, 200];
+              const widths = [150, 225, 75, 150, 200];
               const visibleIndex = index < 1 ? index : index - 1;
               td.style.width = widths[visibleIndex] + "px";
+
+              if (index === 2) td.style.textAlign = "center"; // "Punkt" column
 
               td.textContent = cell;
               tr.appendChild(td);
