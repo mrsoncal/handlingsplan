@@ -101,7 +101,8 @@
         const thead = document.createElement("thead");
         const tr = document.createElement("tr");
 
-        headers.slice(1).forEach(h => {
+        headers.slice(1).forEach((h, index) => {
+          if (index === 1) return; // skip Tema column (index 1 in headers.slice(1))
           const th = document.createElement("th");
           th.textContent = h;
           tr.appendChild(th);
@@ -129,7 +130,8 @@
             const tr = document.createElement("tr");
             const handling = row[1].trim();
             tr.className = handling.replace(/\s/g, "\\ ");
-            row.slice(1).forEach(cell => {
+            row.slice(1).forEach((cell, index) => {
+              if (index === 1) return; // skip Tema column
               const td = document.createElement("td");
               td.textContent = cell;
               tr.appendChild(td);
