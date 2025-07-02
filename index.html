@@ -78,13 +78,18 @@
       border-collapse: collapse;
       width: 100%;
       margin-top: 1rem;
+      animation: fadeIn 0.4s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
-    }
+    }    
 
     th { background-color: #f9f9f9; }
     td.button-cell {
@@ -98,9 +103,18 @@
     .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
     .vedtatt td.button-cell { background-color: white !important; }
 
-    .Legge\ til\ et\ punkt { background-color: #e6ffe6; }
-    .Endre\ et\ punkt { background-color: #e6f0ff; }
-    .Fjerne\ et\ punkt { background-color: #ffe6e6; }
+    .Legge\ til\ et\ punkt {
+      border-left: 6px solid #5cb85c;
+      background-color: #e6ffe6;
+    }
+    .Endre\ et\ punkt {
+      border-left: 6px solid #0275d8;
+      background-color: #e6f0ff;
+    }
+    .Fjerne\ et\ punkt {
+      border-left: 6px solid #d9534f;
+      background-color: #ffe6e6;
+    }
 
     .vedta-button {
       display: none;
@@ -184,6 +198,18 @@
 
     #loginModal button[type="submit"]:hover {
       background: #218838;
+    }
+
+    tr:hover:not(.vedtatt) {
+      background-color: #f0f8ff;
+    }
+
+    tbody tr:nth-child(even):not(.vedtatt) {
+      background-color: #fafafa;
+    }
+
+    tr {
+      transition: background-color 0.3s ease;
     }
 
     @keyframes popIn {
