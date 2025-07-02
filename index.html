@@ -112,8 +112,19 @@
         const tbody = document.createElement("tbody");
 
         const order = ["Legge til et punkt", "Endre et punkt", "Fjerne et punkt"];
+
         groupRows
-          .sort((a, b) => order.indexOf(a[1]) - order.indexOf(b[1]))
+          .sort((a, b) => {
+            // First: sort by Punkt (column 3), numerically
+            const aPunkt = parseInt(a[3], 10) || 0;
+            const bPunkt = parseInt(b[3], 10) || 0;
+            if (aPunkt !== bPunkt) return aPunkt - bPunkt;
+
+            // Then: sort by Handlingstype (column 1)
+            const aType = order.indexOf(a[1]);
+            const bType = order.indexOf(b[1]);
+            return aType - bType;
+          })
           .forEach(row => {
             const tr = document.createElement("tr");
             const handling = row[1].trim();
@@ -124,7 +135,8 @@
               tr.appendChild(td);
             });
             tbody.appendChild(tr);
-          });
+        });
+
 
         table.appendChild(tbody);
         section.appendChild(table);
