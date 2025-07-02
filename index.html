@@ -106,8 +106,7 @@
       display: none;
       padding: 0.5rem 1rem;
       margin-left: 0.75rem;
-      font-size: 1rem;
-      background: #e9e9e9;
+      background: #e2e2e2;
       color: rgb(27, 27, 27);
       border: none;
       border-radius: 6px;
@@ -117,12 +116,29 @@
     }
 
     .vedta-button:hover {
-      background: #cfcfcf;
+      background: #b9b9b9;
     }
 
     .vedtatt .vedta-button {
       background: #28a745 !important;
       color: white;
+    }
+
+    /* Rounded corners on outer cells */
+    th.rounded-left {
+      border-top-left-radius: 10px;
+    }
+
+    td.rounded-left {
+      border-bottom-left-radius: 10px;
+    }
+
+    th.rounded-right {
+      border-top-right-radius: 10px;
+    }
+
+    td.rounded-right {
+      border-bottom-right-radius: 10px;
     }
 
     #loginModal {
