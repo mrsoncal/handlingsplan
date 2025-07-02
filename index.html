@@ -46,7 +46,7 @@
       console.log("✅ Raw CSV data loaded.");
 
       const rows = text.trim().split("\n").map(row => row.split(","));
-      const headers = rows[0];
+      const headers = rows[2];
       const data = rows.slice(1);
       console.log("🧩 Parsed headers:", headers);
       console.log("📦 Total rows loaded:", data.length);
