@@ -102,9 +102,15 @@
         const tr = document.createElement("tr");
 
         headers.slice(1).forEach((h, index) => {
-          if (index === 1) return; // skip Tema column (index 1 in headers.slice(1))
+          if (index === 1) return; // skip Tema
           const th = document.createElement("th");
           th.textContent = h;
+
+          // Set column widths (index mapping adjusted for slice)
+          const widths = [150, 225, 75, 150, 200]; // for visible columns
+          const visibleIndex = index < 1 ? index : index - 1; // adjust for skipped Tema
+          th.style.width = widths[visibleIndex] + "px";
+
           tr.appendChild(th);
         });
         thead.appendChild(tr);
@@ -131,8 +137,13 @@
             const handling = row[1].trim();
             tr.className = handling.replace(/\s/g, "\\ ");
             row.slice(1).forEach((cell, index) => {
-              if (index === 1) return; // skip Tema column
+              if (index === 1) return; // skip Tema
               const td = document.createElement("td");
+
+              const widths = [150, 225, 75, 150, 200];
+              const visibleIndex = index < 1 ? index : index - 1;
+              td.style.width = widths[visibleIndex] + "px";
+
               td.textContent = cell;
               tr.appendChild(td);
             });
