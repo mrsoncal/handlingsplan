@@ -2,67 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Google Sheets Data Viewer</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js"></script>
+  <title>Google Sheets CSV Viewer</title>
   <style>
+    body {
+      font-family: sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+
     table {
       border-collapse: collapse;
       width: 100%;
+      margin-top: 1rem;
     }
+
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
       padding: 8px;
+      text-align: left;
     }
+
     th {
       background-color: #f4f4f4;
     }
   </style>
 </head>
 <body>
-  <h1>Live Google Sheets Data</h1>
-  <div id="sheet-data"></div>
-    <script>
-    // Replace this with your actual Google Sheet ID
-    const publicSpreadsheetId = '1eckqq3gzImtO2lcvXIdEUlCBt_HaU6CZBDxygRdj4HY';
+  <h1>Live Data from Google Sheets</h1>
+  <div id="sheet-data">Loading data...</div>
 
-    function showInfo(data, tabletop) {
-        console.log("✅ Data loaded successfully:", data); // Log full dataset
+  <script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv';
 
+    async function loadCSV() {
+      try {
+        const response = await fetch(csvUrl);
+        const data = await response.text();
+        console.log("✅ Raw CSV data:", data);
+
+        const rows = data.trim().split("\n").map(row => row.split(","));
         const container = document.getElementById('sheet-data');
 
-        if (!data || data.length === 0) {
-        container.innerHTML = "<p>No data found.</p>";
-        console.warn("⚠️ Data is empty or invalid");
-        return;
+        if (rows.length === 0) {
+          container.innerHTML = "<p>No data found.</p>";
+          return;
         }
 
         let html = '<table><thead><tr>';
-        Object.keys(data[0]).forEach(key => {
-        html += `<th>${key}</th>`;
-        });
+        rows[0].forEach(header => html += `<th>${header}</th>`);
         html += '</tr></thead><tbody>';
 
-        data.forEach(row => {
-        html += '<tr>';
-        Object.values(row).forEach(value => {
-            html += `<td>${value}</td>`;
-        });
-        html += '</tr>';
+        rows.slice(1).forEach(row => {
+          html += '<tr>';
+          row.forEach(cell => html += `<td>${cell}</td>`);
+          html += '</tr>';
         });
 
         html += '</tbody></table>';
         container.innerHTML = html;
-        }
+      } catch (error) {
+        console.error("❌ Failed to load or parse CSV:", error);
+        document.getElementById('sheet-data').innerHTML = `<p>Error loading data.</p>`;
+      }
+    }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log("🔄 Initializing Tabletop...");
-            Tabletop.init({
-            key: publicSpreadsheetId,
-            callback: showInfo,
-            simpleSheet: true,
-            wanted: ["Sheet1"], // optional: specify sheet name
-            });
-        });
-    </script>
+    window.addEventListener('DOMContentLoaded', loadCSV);
+  </script>
 </body>
 </html>
