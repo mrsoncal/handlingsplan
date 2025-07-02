@@ -23,12 +23,14 @@
       position: absolute;
       top: 1rem;
       right: 1rem;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
       background: #444;
       color: white;
       border: none;
       cursor: pointer;
       z-index: 2001;
+      border-radius: 5px;
     }
 
     #logoutBtn {
@@ -117,9 +119,39 @@
 
     #loginModal form {
       background: white;
-      padding: 2rem;
-      border-radius: 8px;
+      padding: 3rem;
+      border-radius: 12px;
       text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    #loginModal input[type="password"] {
+      width: 80%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #loginModal button[type="submit"] {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #loginModal button[type="submit"]:hover {
+      background: #218838;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
