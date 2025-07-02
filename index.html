@@ -10,6 +10,7 @@
       margin: 2rem auto;
       padding: 1rem;
       overflow-x: hidden;
+      position: relative;
     }
 
     h1 {
@@ -36,18 +37,24 @@
     }
 
     .carousel-nav {
-      position: absolute;
+      position: fixed;
       top: 50%;
       transform: translateY(-50%);
       font-size: 2rem;
       background: none;
       border: none;
       cursor: pointer;
-      padding: 0.5rem;
+      padding: 1rem;
+      z-index: 1000;
     }
 
-    .carousel-nav.left { left: 0; }
-    .carousel-nav.right { right: 0; }
+    .carousel-nav.left {
+      left: 0;
+    }
+
+    .carousel-nav.right {
+      right: 0;
+    }
 
     table {
       border-collapse: collapse;
@@ -81,10 +88,11 @@
 <body>
   <h1>Handlingsplan</h1>
 
+  <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
+  <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
+
   <div class="carousel">
-    <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
     <div class="carousel-track" id="carousel-track"></div>
-    <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
   </div>
 
   <script>
