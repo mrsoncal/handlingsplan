@@ -38,9 +38,9 @@
       background-color: #f9f9f9;
     }
 
-    .Legge\ til\ et\ punkt { background-color: #e6ffe6; }
-    .Endre\ et\ punkt      { background-color: #e6f0ff; }
-    .Fjerne\ et\ punkt     { background-color: #ffe6e6; }
+    .Legge\ til\ et\ punkt { background-color: #e6ffe6; }  /* green */
+    .Endre\ et\ punkt      { background-color: #e6f0ff; }  /* blue */
+    .Fjerne\ et\ punkt     { background-color: #ffe6e6; }  /* red */
 
     button {
       padding: 6px 12px;
@@ -58,13 +58,6 @@
     .vedtatt button {
       background-color: #4CAF50;
       color: white;
-    }
-
-    td.button-cell {
-      border: none;
-      background: none;
-      padding: 0;
-      text-align: right;
     }
   </style>
 </head>
@@ -116,7 +109,7 @@
         const tr = document.createElement("tr");
 
         headers.slice(1).forEach((h, index) => {
-          if (index === 1) return; // skip "Tema"
+          if (index === 1) return;
           const th = document.createElement("th");
           th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
           const widths = [150, 60, 200, 200, 200];
@@ -127,7 +120,7 @@
         });
 
         const thBtn = document.createElement("th");
-        thBtn.textContent = "";
+        thBtn.textContent = ""; // "Vedta" column
         thBtn.style.width = "80px";
         tr.appendChild(thBtn);
 
@@ -150,7 +143,7 @@
             tr.className = handling.replace(/\s/g, "\\ ");
 
             row.slice(1).forEach((cell, index) => {
-              if (index === 1) return; // skip "Tema"
+              if (index === 1) return;
               const td = document.createElement("td");
               const widths = [150, 60, 200, 200, 200];
               const visibleIndex = index < 1 ? index : index - 1;
@@ -161,20 +154,11 @@
             });
 
             const tdAction = document.createElement("td");
-            tdAction.className = "button-cell"; // hide border, bg, etc.
-
             const btn = document.createElement("button");
             btn.textContent = "Vedta";
             btn.onclick = () => {
-              const cells = tr.querySelectorAll("td");
-              cells.forEach((cell, index) => {
-                if (index !== cells.length - 1) {
-                  cell.style.display = "none";
-                }
-              });
-              tr.classList.add("vedtatt");
+              tr.classList.toggle("vedtatt");
             };
-
             tdAction.appendChild(btn);
             tr.appendChild(tdAction);
 
