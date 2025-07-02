@@ -44,7 +44,7 @@
       background: none;
       border: none;
       cursor: pointer;
-      padding: 10rem; /* Increased padding */
+      padding: 10rem;
       z-index: 1000;
     }
 
@@ -83,10 +83,41 @@
     .Legge\ til\ et\ punkt { background-color: #e6ffe6; }
     .Endre\ et\ punkt { background-color: #e6f0ff; }
     .Fjerne\ et\ punkt { background-color: #ffe6e6; }
+
+    .vedta-button { display: none; }
+
+    #loginModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    #loginModal form {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <h1>Handlingsplan</h1>
+
+  <div id="loginModal">
+    <form onsubmit="return checkLogin(event)">
+      <h2>Admin Login</h2>
+      <input type="password" id="adminPass" placeholder="Passord" required>
+      <br><br>
+      <button type="submit">Logg inn</button>
+    </form>
+  </div>
 
   <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
   <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
@@ -182,6 +213,7 @@
           tdAction.className = "button-cell";
           const btn = document.createElement("button");
           btn.textContent = "Vedta";
+          btn.className = "vedta-button";
           btn.onclick = () => {
             tr.classList.toggle("vedtatt");
           };
@@ -214,6 +246,17 @@
     function prevSlide() {
       currentIndex--;
       updateCarousel();
+    }
+
+    function checkLogin(event) {
+      event.preventDefault();
+      const password = document.getElementById("adminPass").value;
+      if (password === "admin123") {
+        document.getElementById("loginModal").style.display = "none";
+        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+      } else {
+        alert("Feil passord. Prøv igjen.");
+      }
     }
 
     window.addEventListener("DOMContentLoaded", loadCSV);
