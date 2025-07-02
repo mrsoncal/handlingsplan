@@ -1,73 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
   <meta charset="UTF-8">
-  <title>Google Sheets CSV Viewer</title>
+  <title>Handlingsplan</title>
   <style>
     body {
       font-family: sans-serif;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 2rem auto;
       padding: 1rem;
     }
-
+    h2 {
+      margin-top: 2rem;
+      border-bottom: 2px solid #ccc;
+    }
     table {
       border-collapse: collapse;
       width: 100%;
       margin-top: 1rem;
     }
-
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
     }
-
     th {
-      background-color: #f4f4f4;
+      background-color: #f9f9f9;
     }
+    .Legge\ til { background-color: #e6ffe6; }   /* green */
+    .Endre { background-color: #e6f0ff; }        /* blue */
+    .Fjerne { background-color: #ffe6e6; }       /* red */
   </style>
 </head>
 <body>
-  <h1>Live Data from Google Sheets</h1>
-  <div id="sheet-data">Loading data...</div>
+  <h1>Handlingsplan</h1>
+  <div id="tables-container">Laster data...</div>
 
   <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv';
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 
     async function loadCSV() {
-      try {
-        const response = await fetch(csvUrl);
-        const data = await response.text();
-        console.log("✅ Raw CSV data:", data);
+      const response = await fetch(csvUrl);
+      const text = await response.text();
+      const rows = text.trim().split("\n").map(row => row.split(","));
 
-        const rows = data.trim().split("\n").map(row => row.split(","));
-        const container = document.getElementById('sheet-data');
+      const headers = rows[0];
+      const data = rows.slice(1);
 
-        if (rows.length === 0) {
-          container.innerHTML = "<p>No data found.</p>";
-          return;
-        }
+      // Group by Tema (column 0)
+      const grouped = {};
+      data.forEach(row => {
+        const tema = row[0].trim();
+        if (!grouped[tema]) grouped[tema] = [];
+        grouped[tema].push(row);
+      });
 
-        let html = '<table><thead><tr>';
-        rows[0].forEach(header => html += `<th>${header}</th>`);
-        html += '</tr></thead><tbody>';
+      const container = document.getElementById("tables-container");
+      container.innerHTML = "";
 
-        rows.slice(1).forEach(row => {
-          html += '<tr>';
-          row.forEach(cell => html += `<td>${cell}</td>`);
-          html += '</tr>';
+      const temaOrder = [
+        "1. Ungdomsdemokrati og Medvirkning",
+        "2. Samferdsel",
+        "3. Utdanning og Kompetanse",
+        "4.Folkehelse",
+        "5. Klima og Miljø",
+        "6. Kultur"
+      ];
+
+      temaOrder.forEach(tema => {
+        const groupRows = grouped[tema];
+        if (!groupRows || groupRows.length === 0) return;
+
+        const section = document.createElement("section");
+        const title = document.createElement("h2");
+        title.textContent = tema;
+        section.appendChild(title);
+
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const tr = document.createElement("tr");
+        headers.slice(1).forEach(h => {
+          const th = document.createElement("th");
+          th.textContent = h;
+          tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        groupRows.forEach(row => {
+          const tr = document.createElement("tr");
+          const handling = row[1].trim();
+          tr.className = handling.replace(/\s/g, "\\ ");
+          row.slice(1).forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
         });
 
-        html += '</tbody></table>';
-        container.innerHTML = html;
-      } catch (error) {
-        console.error("❌ Failed to load or parse CSV:", error);
-        document.getElementById('sheet-data').innerHTML = `<p>Error loading data.</p>`;
-      }
+        table.appendChild(tbody);
+        section.appendChild(table);
+        container.appendChild(section);
+      });
     }
 
-    window.addEventListener('DOMContentLoaded', loadCSV);
+    window.addEventListener("DOMContentLoaded", loadCSV);
   </script>
 </body>
 </html>
