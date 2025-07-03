@@ -244,22 +244,29 @@
       transition: background-color 0.3s ease;
     }
 
-    .Legge\ til\ et\ punkt td:first-child {
-      background-color: #c9f7c9;
-      font-weight: bold;
-      border-left: 5px solid #5cb85c;
+    td:first-child .tag-label {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
     }
 
-    .Endre\ et\ punkt td:first-child {
-      background-color: #d9e9ff;
-      font-weight: bold;
-      border-left: 5px solid #0275d8;
+    .Legge\ til\ et\ punkt td:first-child .tag-label {
+      background-color: #d4edda;
+      color: #155724;
     }
 
-    .Fjerne\ et\ punkt td:first-child {
-      background-color: #ffd6d6;
-      font-weight: bold;
-      border-left: 5px solid #d9534f;
+    .Endre\ et\ punkt td:first-child .tag-label {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .Fjerne\ et\ punkt td:first-child .tag-label {
+      background-color: #f8d7da;
+      color: #721c24;
     }
 
 
@@ -437,7 +444,14 @@
             const visibleIndex = index < 1 ? index : index - 1;
             td.style.width = widths[visibleIndex] + "px";
             if (index === 2) td.style.textAlign = "center";
-            td.textContent = cell;
+            if (visibleIndex === 0) {
+              const div = document.createElement("div");
+              div.className = "tag-label";
+              div.textContent = cell;
+              td.appendChild(div);
+            } else {
+              td.textContent = cell;
+            }
             tr.appendChild(td);
           });
 
