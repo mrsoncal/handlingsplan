@@ -20,12 +20,23 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    h1 {
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+
+    .header-bar h1 {
+      margin: 0;
       font-size: 2rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      color: rgb(100, 100, 100);
-      animation: popIn 0.4s ease-in-out;
+      font-weight: 800;
+      color: #3a3a3a;
+    }
+
+    .admin-buttons {
+      display: flex;
+      gap: 1rem;
     }
 
     .carousel-slide h2 {
@@ -283,22 +294,25 @@
 </style>
 </head>
 <body>
-<body>
-<h1>Forslag til Handlingsplan 2026</h1>
-<button id="adminLoginBtn" onclick="showLogin()">Admin</button>
-<button id="logoutBtn" onclick="logout()">Logg ut</button>
+<div class="header-bar">
+  <h1>Forslag til Handlingsplan 2026</h1>
+  <div class="admin-buttons">
+    <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
+    <button id="logoutBtn" onclick="logout()">Logg ut</button>
+  </div>
+</div>
 <div id="loginModal">
-<form onsubmit="return checkLogin(event)">
-<h2>Admin Login</h2>
-<input id="adminPass" placeholder="Passord" required="" type="password"/>
-<br/><br/>
-<button type="submit">Logg inn</button>
-</form>
+  <form onsubmit="return checkLogin(event)">
+    <h2>Admin Login</h2>
+    <input id="adminPass" placeholder="Passord" required="" type="password"/>
+    <br/><br/>
+    <button type="submit">Logg inn</button>
+  </form>
 </div>
 <button class="carousel-nav left" onclick="prevSlide()">❮</button>
 <button class="carousel-nav right" onclick="nextSlide()">❯</button>
 <div class="carousel">
-<div class="carousel-track" id="carousel-track"></div>
+  <div class="carousel-track" id="carousel-track"></div>
 </div>
 <script>
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
