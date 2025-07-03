@@ -361,32 +361,32 @@
     function checkLogin(event) {
       event.preventDefault();
       const password = document.getElementById("adminPass").value;
-
+    
       console.log("🔐 Attempting login...");
-
-      fetch("https://handlingsplan.onrender.com/login", {
+    
+      fetch("https://handlingsplan-backend.onrender.com/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username: "admin", password })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: "admin",
+          password: password
+        })
       })
       .then(res => {
         if (res.ok) {
           console.log("✅ Login success, showing admin controls");
-          document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
           document.getElementById("loginModal").style.display = "none";
-          document.getElementById("logoutBtn").style.display = "inline-block";
+          document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
           document.getElementById("adminLoginBtn").style.display = "none";
-          localStorage.setItem("isAdmin", "true");
+          document.getElementById("logoutBtn").style.display = "inline-block";
+          localStorage.setItem("adminLoggedIn", "true");
         } else {
-          console.warn("❌ Login failed");
           alert("Feil brukernavn eller passord.");
         }
       })
       .catch(err => {
-        console.error("❌ Login error:", err);
-        alert("Kunne ikke kontakte serveren.");
+        console.error("Login error:", err);
+        alert("Kunne ikke logge inn. Sjekk nettverket.");
       });
     }
 
