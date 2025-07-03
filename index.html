@@ -37,15 +37,6 @@
       position: absolute;
       left: 1rem;
       top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    .left-buttons {
-      position: absolute;
-      left: 1rem;
-      top: 50%;
       text-align: center;
       transform: translateY(-50%);
       display: flex;
@@ -208,12 +199,14 @@
       color: black;
     }
 
-    .carousel-nav.left {
-      left: -2rem;
-    }
+    @media (max-width: 600px) {
+      .carousel-nav.left {
+        left: -1rem;
+      }
 
-    .carousel-nav.right {
-      right: -2rem;
+      .carousel-nav.right {
+        right: -1rem;
+      }
     }
 
     td:first-child {
