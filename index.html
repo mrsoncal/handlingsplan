@@ -34,6 +34,28 @@
       text-align: center;
     }
 
+    .left-button {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .form-link-btn {
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      background: #5A2E61;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .form-link-btn:hover {
+      background: #4d2753;
+    }
+
     .admin-buttons {
       position: absolute;
       right: 1rem;
@@ -97,12 +119,17 @@
     #logoutBtn {
       padding: 0.75rem 1.25rem;
       font-size: 1rem;
-      background: #444;
+      background: #5A2E61;
       color: white;
       border: none;
       cursor: pointer;
       z-index: 2001;
       border-radius: 5px;
+    }
+
+    #adminLoginBtn:hover,
+    #logoutBtn:hover {
+      background: #4d2753;
     }
 
     #logoutBtn {
@@ -271,16 +298,19 @@
     .Legge-til-et-punkt td:first-child .tag-label {
       background-color: #d4edda;
       color: #155724;
+      padding: 0.5rem;
     }
 
     .Endre-et-punkt td:first-child .tag-label {
       background-color: #d1ecf1;
       color: #0c5460;
+      padding: 0.5rem;
     }
 
     .Fjerne-et-punkt td:first-child .tag-label {
       background-color: #f8d7da;
       color: #721c24;
+      padding: 0.5rem;
     }
 
 
@@ -297,12 +327,19 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>Forslag til Handlingsplan 2026</h1>
-    <div class="admin-buttons">
-      <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
-      <button id="logoutBtn" onclick="logout()">Logg ut</button>
-    </div>
-  </header>
+      <div class="left-button">
+        <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="form-link-btn">
+          Åpne forms
+        </a>
+      </div>
+
+      <h1>Forslag til Handlingsplan 2026</h1>
+
+      <div class="admin-buttons">
+        <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
+        <button id="logoutBtn" onclick="logout()">Logg ut</button>
+      </div>
+    </header>
 <div id="loginModal">
   <form onsubmit="return checkLogin(event)">
     <h2>Admin Login</h2>
