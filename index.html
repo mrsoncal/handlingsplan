@@ -368,16 +368,6 @@
       }
     }
 
-    function loadVedtatt() {
-      const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
-      stored.forEach(id => {
-        const row = document.querySelector(`[data-row-id="${id}"]`);
-        if (row) {
-          row.classList.add('vedtatt');
-        }
-      });
-    }
-
     function handleVedtaClick(button) {
       const row = button.closest('tr');
       if (row && !row.classList.contains('vedtatt')) {
