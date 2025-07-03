@@ -308,21 +308,52 @@
     let currentIndex = 0;
 
     async function saveVedtatt(rowId, tema) {
-      await fetch('http://localhost:3000/vedtak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ row_id: rowId, tema, timestamp: new Date().toISOString() })
-      });
+      const payload = {
+        row_id: rowId,
+        tema,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log("🔼 Saving vedtatt to server:", payload);
+
+      try {
+        const response = await fetch('http://localhost:3000/vedtak', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          console.log("✅ Saved vedtatt:", rowId);
+        } else {
+          console.warn("❌ Server rejected vedtatt save:", await response.text());
+        }
+      } catch (err) {
+        console.error("❌ Network error while saving vedtatt:", err);
+      }
     }
 
     async function loadVedtatt() {
-      const response = await fetch('http://localhost:3000/vedtak');
-      const rowIds = await response.json();
-      rowIds.forEach(id => {
-        const row = document.querySelector(`[data-row-id="${id}"]`);
-        if (row) row.classList.add('vedtatt');
-      });
+      try {
+        const response = await fetch('http://localhost:3000/vedtak');
+        const rowIds = await response.json();
+
+        console.log("⬇️ Loaded vedtatt rows from server:", rowIds);
+
+        rowIds.forEach(id => {
+          const row = document.querySelector(`[data-row-id="${id}"]`);
+          if (row) {
+            console.log(`✅ Marking row ${id} as vedtatt`);
+            row.classList.add('vedtatt');
+          } else {
+            console.warn(`⚠️ No row found in DOM with data-row-id="${id}"`);
+          }
+        });
+      } catch (err) {
+        console.error("❌ Error loading vedtatt rows:", err);
+      }
     }
+    
     function showLogin() {
       document.getElementById("loginModal").style.display = "flex";
     }
@@ -383,6 +414,8 @@
     document.addEventListener('DOMContentLoaded', loadVedtatt);
 
     async function loadCSV() {
+      tr.setAttribute("data-row-id", row[3]); // assuming row[3] is the unique ID
+      console.log("📌 Created row with data-row-id:", row[3]);
       const response = await fetch(csvUrl);
       const text = await response.text();
       const rows = text.trim().split("\n").map(row => row.split(","));
