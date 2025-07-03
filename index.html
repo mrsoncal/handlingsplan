@@ -307,6 +307,23 @@
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
     let currentIndex = 0;
 
+    async function saveVedtatt(rowId, tema) {
+      await fetch('https://your-backend.com/vedtak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row_id: rowId, tema, timestamp: new Date().toISOString() })
+      });
+    }
+
+    async function loadVedtatt() {
+      const response = await fetch('https://your-backend.com/vedtak');
+      const rowIds = await response.json();
+      rowIds.forEach(id => {
+        const row = document.querySelector(`[data-row-id="${id}"]`);
+        if (row) row.classList.add('vedtatt');
+      });
+    }
+
     function showLogin() {
       document.getElementById("loginModal").style.display = "flex";
     }
