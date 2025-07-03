@@ -43,20 +43,43 @@
       gap: 0.75rem;
     }
 
-    .form-link-btn {
-      padding: 0.75rem 1.25rem;
+    .left-buttons {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .forms-button,
+    .plan-button {
+      padding: 0.6rem 1.25rem;
       font-size: 1rem;
-      font-weight: bold;
-      background: #5A2E61;
       color: white;
       border: none;
       border-radius: 5px;
       text-decoration: none;
       cursor: pointer;
+      display: inline-block;
     }
 
-    .form-link-btn:hover {
-      background: #4d2753;
+    /* individual styles */
+    .forms-button {
+      background-color: #5A2E61;
+    }
+
+    .forms-button:hover {
+      background-color: #4d2753;
+    }
+
+    .plan-button {
+      background-color: #009BC2;
+    }
+
+    .plan-button:hover {
+      background-color: #006c86;
     }
 
     .admin-buttons {
@@ -332,13 +355,13 @@
 <body>
   <header class="page-header">
       <div class="left-buttons">
-        <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="form-link-btn">
+        <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="forms-button">
           åpne forms
         </a>
-        <a href="#handlingsplan" class="form-link-btn">
+        <a href="#handlingsplan" class="plan-button">
           handlingsplan
         </a>
-      </div>>
+      </div>
 
       <h1>Forslag til Handlingsplan 2026</h1>
 
