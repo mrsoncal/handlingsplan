@@ -189,15 +189,14 @@
     .carousel-slide:nth-child(6) table th { background-color: #DD1367; color: white; padding: 1rem;}
 
     .carousel-nav {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
       font-size: 2rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      margin: 6rem;
-      z-index: 1000;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      color: black;
     }
 
     .carousel-nav.left {
@@ -350,6 +349,19 @@
     @keyframes popIn {
       0% { transform: scale(0.9); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .left-buttons,
+      .admin-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .page-header h1 {
+        font-size: 1.25rem;
+        padding: 0.5rem 0;
+      }
     }
 
     .container {
