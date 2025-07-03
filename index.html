@@ -22,18 +22,22 @@
 
     .header-bar {
       position: relative;
-      height: 60px; /* adjust based on your preferred spacing */
+      height: auto;
+      padding: 1rem 0;
       margin-bottom: 3rem;
     }
 
     .header-bar h1 {
       position: absolute;
       left: 50%;
-      transform: translateX(-50%);
+      top: 50%;
+      transform: translate(-50%, -50%);
       margin: 0;
       font-size: 1.5rem;
       font-weight: bold;
       color: #adadad;
+      line-height: 1.2;
+      white-space: nowrap;
     }
 
     .admin-buttons {
