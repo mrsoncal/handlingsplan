@@ -7,7 +7,8 @@
 <style>
     body {
       font-family: sans-serif;
-      padding: 1rem;
+      margin: 0;
+      padding: 0;
       overflow-x: hidden;
       position: relative;
       animation: fadeInPage 0.6s ease-out;
@@ -19,6 +20,7 @@
     }
 
     .page-header {
+      position: relative;
       padding: 2rem 1rem;
       margin-bottom: 3rem;
     }
@@ -166,13 +168,6 @@
       position: relative;
     }
 
-    .carousel-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 10;
-    }
-
     .carousel-track {
       display: flex;
       transition: transform 0.5s ease-in-out;
@@ -185,6 +180,12 @@
       padding: 0 1rem;
     }
 
+    .carousel-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+
     .carousel-slide:nth-child(1) table th { background-color: #DD1367; color: white; padding: 1rem;}
     .carousel-slide:nth-child(2) table th { background-color: #FF6A18; color: white; padding: 1rem;}
     .carousel-slide:nth-child(3) table th { background-color: #C5182C; color: white; padding: 1rem;}
@@ -193,6 +194,10 @@
     .carousel-slide:nth-child(6) table th { background-color: #DD1367; color: white; padding: 1rem;}
 
     .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
       font-size: 2rem;
       background: rgba(0, 0, 0, 0.1);
       border-radius: 50%;
@@ -204,11 +209,11 @@
     }
 
     .carousel-nav.left {
-      left: 0;
+      left: -2rem;
     }
 
     .carousel-nav.right {
-      right: 0;
+      right: -2rem;
     }
 
     td:first-child {
@@ -428,8 +433,9 @@
     </div>
     <button class="carousel-nav left" onclick="prevSlide()">❮</button>
     <button class="carousel-nav right" onclick="nextSlide()">❯</button>
+    <div class="carousel-wrapper">
     <div class="carousel">
-      <div class="carousel-track" id="carousel-track"></div>
+        <div class="carousel-track" id="carousel-track"></div>
     </div>
     <script>
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
