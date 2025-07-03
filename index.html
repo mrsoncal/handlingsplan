@@ -366,9 +366,6 @@
 
     function checkStoredLogin() {
       if (localStorage.getItem("adminLoggedIn") === "true") {
-        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
-        document.getElementById("adminLoginBtn").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "inline-block";
       }
     }
 
