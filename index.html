@@ -62,6 +62,10 @@
       transition: background-color 0.3s ease;
     }
 
+    tbody tr:not(:last-child) td {
+      border-bottom: 1px solid #d3d3d3;
+    }
+
     td:nth-child(6), th:nth-child(6) {
       border-right: 1px solid rgb(63, 63, 63);
     }
@@ -178,22 +182,6 @@
       color: white;
     }
 
-    th.rounded-left {
-      border-top-left-radius: 10px;
-    }
-
-    td.rounded-left {
-      border-bottom-left-radius: 10px;
-    }
-
-    th.rounded-right {
-      border-top-right-radius: 10px;
-    }
-
-    td.rounded-right {
-      border-bottom-right-radius: 10px;
-    }
-
     #loginModal {
       position: fixed;
       top: 0;
@@ -237,10 +225,6 @@
 
     #loginModal button[type="submit"]:hover {
       background: #218838;
-    }
-
-    tbody tr:not(:last-child) td {
-      border-bottom: 1px solid #d3d3d3;
     }
 
     tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
