@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="no">
 <head>
-  <meta charset="UTF-8">
-  <title>Forslag til Handlingsplan 2026</title>
-  <style>
+<meta charset="utf-8"/>
+<title>Forslag til Handlingsplan 2026</title>
+<style>
     body {
       font-family: sans-serif;
       max-width: 1000px;
@@ -102,12 +103,12 @@
       padding: 0 1rem;
     }
 
-    .carousel-slide:nth-child(1) table th { background-color: #DD1367; }
-    .carousel-slide:nth-child(2) table th { background-color: #FF6A18; }
-    .carousel-slide:nth-child(3) table th { background-color: #C5182C; }
-    .carousel-slide:nth-child(4) table th { background-color: #52A23E; }
-    .carousel-slide:nth-child(5) table th { background-color: #1C7A23; }
-    .carousel-slide:nth-child(6) table th { background-color: #DD1367; }
+    .carousel-slide:nth-child(1) table th { background-color: #ffdddd; }
+    .carousel-slide:nth-child(2) table th { background-color: #ddffdd; }
+    .carousel-slide:nth-child(3) table th { background-color: #ddddff; }
+    .carousel-slide:nth-child(4) table th { background-color: #fff5cc; }
+    .carousel-slide:nth-child(5) table th { background-color: #ffe6ff; }
+    .carousel-slide:nth-child(6) table th { background-color: #e0f7fa; }
 
     .carousel-nav {
       position: fixed;
@@ -181,34 +182,6 @@
       color: white;
     }
 
-    #loginBox {
-      position: relative;
-      background: #fff;
-      border: 2px solid #ccc;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      max-width: 300px;
-      margin: 1rem auto;
-      display: none;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      z-index: 999;
-    }
-
-    #loginBox.show {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    #loginBox.hide {
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-
     th.rounded-left {
       border-top-left-radius: 10px;
     }
@@ -223,6 +196,51 @@
 
     td.rounded-right {
       border-bottom-right-radius: 10px;
+    }
+
+    #loginModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    #loginModal form {
+      background: white;
+      padding: 3rem;
+      border-radius: 12px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    #loginModal input[type="password"] {
+      width: 80%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #loginModal button[type="submit"] {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #loginModal button[type="submit"]:hover {
+      background: #218838;
     }
 
     tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
@@ -261,64 +279,46 @@
       0% { transform: scale(0.9); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
-  </style>
+</style>
 </head>
 <body>
 <body>
-  <h1>Forslag til Handlingsplan 2026</h1>
-
-  <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
-  <button id="logoutBtn" onclick="logout()">Logg ut</button>
-
-  <div id="loginBox" style="margin-top: 1rem;">
-    <form onsubmit="checkLogin(event)">
-      <input type="password" id="adminPass" placeholder="Admin passord" required style="padding: 0.5rem; font-size: 1rem;">
-      <button type="submit" style="padding: 0.5rem 1rem; font-size: 1rem;">Logg inn</button>
-    </form>
-  </div>
-
-  <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
-  <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
-
-  <div class="carousel">
-    <div class="carousel-track" id="carousel-track"></div>
-  </div>
-
-  <script>
+<h1>Forslag til Handlingsplan 2026</h1>
+<button id="adminLoginBtn" onclick="showLogin()">Admin</button>
+<button id="logoutBtn" onclick="logout()">Logg ut</button>
+<div id="loginModal">
+<form onsubmit="return checkLogin(event)">
+<h2>Admin Login</h2>
+<input id="adminPass" placeholder="Passord" required="" type="password"/>
+<br/><br/>
+<button type="submit">Logg inn</button>
+</form>
+</div>
+<button class="carousel-nav left" onclick="prevSlide()">❮</button>
+<button class="carousel-nav right" onclick="nextSlide()">❯</button>
+<div class="carousel">
+<div class="carousel-track" id="carousel-track"></div>
+</div>
+<script>
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
     let currentIndex = 0;
 
+    function showLogin() {
+      document.getElementById("loginModal").style.display = "flex";
+    }
+
     function checkLogin(event) {
-      console.log("checkLogin function triggered")
       event.preventDefault();
       const password = document.getElementById("adminPass").value;
-      console.log("🔑 Entered password:", password);
-
-      console.log("🔐 Attempting login...");
-    
-      fetch("https://handlingsplan-backend.onrender.com/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "admin",
-          password: password
-        })
-      })
-      .then(res => {
-        if (res.ok) {
-          console.log("✅ Login success, showing admin controls");
-          document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
-          document.getElementById("adminLoginBtn").style.display = "none";
-          document.getElementById("logoutBtn").style.display = "inline-block";
-          localStorage.setItem("adminLoggedIn", "true");
-        } else {
-          alert("Feil brukernavn eller passord.");
-        }
-      })
-      .catch(err => {
-        console.error("Login error:", err);
-        alert("Kunne ikke logge inn. Sjekk nettverket.");
-      });
+      if (password === "admin123") {
+        document.getElementById("loginModal").style.display = "none";
+        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+        document.getElementById("adminLoginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        localStorage.setItem("adminLoggedIn", "true");
+      } else {
+        alert("Feil passord. Prøv igjen.");
+      }
     }
 
     function logout() {
@@ -330,7 +330,29 @@
 
     function checkStoredLogin() {
       if (localStorage.getItem("adminLoggedIn") === "true") {
+        document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+        document.getElementById("adminLoginBtn").style.display = "none";
+        document.getElementById("logoutBtn").style.display = "inline-block";
       }
+    }
+
+    // Store vedtatt rows in localStorage
+    function saveVedtatt(rowId) {
+      const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
+      if (!stored.includes(rowId)) {
+        stored.push(rowId);
+        localStorage.setItem('vedtattRows', JSON.stringify(stored));
+      }
+    }
+
+    function loadVedtatt() {
+      const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
+      stored.forEach(id => {
+        const row = document.querySelector(`[data-row-id="${id}"]`);
+        if (row) {
+          row.classList.add('vedtatt');
+        }
+      });
     }
 
     function handleVedtaClick(button) {
@@ -348,8 +370,6 @@
     document.addEventListener('DOMContentLoaded', loadVedtatt);
 
     async function loadCSV() {
-      tr.setAttribute("data-row-id", row[3]); // assuming row[3] is the unique ID
-      console.log("📌 Created row with data-row-id:", row[3]);
       const response = await fetch(csvUrl);
       const text = await response.text();
       const rows = text.trim().split("\n").map(row => row.split(","));
@@ -435,11 +455,6 @@
           btn.className = "vedta-button";
           btn.onclick = () => {
             tr.classList.toggle("vedtatt");
-            const rowId = tr.getAttribute('data-row-id');
-            const tema = h2.textContent; // grab the tema from the heading
-            if (rowId && tema) {
-              saveVedtatt(rowId, tema);
-            }
           };
           tdAction.appendChild(btn);
           tr.appendChild(tdAction);
@@ -476,4 +491,4 @@
     window.addEventListener("DOMContentLoaded", loadCSV);
   </script>
 </body>
-</html>
+</body></html>
