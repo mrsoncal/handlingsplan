@@ -21,20 +21,26 @@
     }
 
     .header-bar {
-      display: flex;
-      align-items: center;
-      text-align: center;
+      position: relative;
+      height: 60px; /* adjust based on your preferred spacing */
       margin-bottom: 3rem;
     }
 
     .header-bar h1 {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       margin: 0;
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #dadada;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #3a3a3a;
     }
 
     .admin-buttons {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
       display: flex;
       gap: 1rem;
     }
