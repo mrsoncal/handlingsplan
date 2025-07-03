@@ -368,15 +368,6 @@
       }
     }
 
-    // Store vedtatt rows in localStorage
-    function saveVedtatt(rowId) {
-      const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
-      if (!stored.includes(rowId)) {
-        stored.push(rowId);
-        localStorage.setItem('vedtattRows', JSON.stringify(stored));
-      }
-    }
-
     function loadVedtatt() {
       const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
       stored.forEach(id => {
