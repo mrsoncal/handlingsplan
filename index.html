@@ -197,51 +197,6 @@
       border-bottom-right-radius: 10px;
     }
 
-    #loginModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-
-    #loginModal form {
-      background: white;
-      padding: 3rem;
-      border-radius: 12px;
-      text-align: center;
-      animation: popIn 0.3s ease-out;
-    }
-
-    #loginModal input[type="password"] {
-      width: 80%;
-      padding: 0.75rem;
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    #loginModal button[type="submit"] {
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    #loginModal button[type="submit"]:hover {
-      background: #218838;
-    }
-
     tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
       background-color: #fafafa;
     }
@@ -287,12 +242,10 @@
   <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
   <button id="logoutBtn" onclick="logout()">Logg ut</button>
 
-  <div id="loginModal">
+  <div id="loginBox" style="margin-top: 1rem;">
     <form onsubmit="checkLogin(event)">
-      <h2>Admin Login</h2>
-      <input type="password" id="adminPass" placeholder="Passord" required>
-      <br><br>
-      <button type="submit">Logg inn</button>
+      <input type="password" id="adminPass" placeholder="Admin passord" required style="padding: 0.5rem; font-size: 1rem;">
+      <button type="submit" style="padding: 0.5rem 1rem; font-size: 1rem;">Logg inn</button>
     </form>
   </div>
 
@@ -353,10 +306,6 @@
         console.error("❌ Error loading vedtatt rows:", err);
       }
     }
-    
-    function showLogin() {
-      document.getElementById("loginModal").style.display = "flex";
-    }
 
     function checkLogin(event) {
       console.log("checkLogin function triggered")
@@ -377,7 +326,6 @@
       .then(res => {
         if (res.ok) {
           console.log("✅ Login success, showing admin controls");
-          document.getElementById("loginModal").style.display = "none";
           document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
           document.getElementById("adminLoginBtn").style.display = "none";
           document.getElementById("logoutBtn").style.display = "inline-block";
