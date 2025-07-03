@@ -6,6 +6,14 @@ const bodyParser = require('body-parser');
 
 const app = express();
 const db = new sqlite3.Database('./data.db');
+const express = require('express');
+const path = require('path');
+
+app.use(express.static(path.join(__dirname, 'public'))); // assuming 'public' contains index.html
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -95,3 +103,5 @@ app.get('/vedtak', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+
+
