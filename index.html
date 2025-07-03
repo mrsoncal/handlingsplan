@@ -38,7 +38,7 @@
 
     table {
       border-collapse: collapse;
-      border-spacing: 0;
+      border-spacing: 0 0.5rem; /* Adds vertical space between rows */
       width: 100%;
       margin-top: 1rem;
       animation: fadeIn 0.4s ease-in;
@@ -47,7 +47,7 @@
 
     th, td {
       border: none;
-      padding: 8px;
+      padding: 1rem 1rem; /* More padding all around */
       text-align: left;
       transition: background-color 0.3s ease;
     }
@@ -130,16 +130,13 @@
       right: 0;
     }
 
-    th, td {
-      border: none;
-      padding: 8px;
-      text-align: left;
-      transition: background-color 0.3s ease;
+    td:first-child {
+      padding-left: 1.5rem; /* extra space before the tag label */
     }
 
     td.button-cell {
       background: none;
-      padding: 0;
+      padding-right: 1.5rem; /* space on the action button */
       text-align: right;
       border: none;
     }
