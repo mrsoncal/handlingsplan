@@ -41,61 +41,241 @@
       width: 100%;
       margin-top: 1rem;
       animation: fadeIn 0.4s ease-in;
-      border-left: 2px solid black;
-      border-top: 2px solid black;
-      border-bottom: 2px solid black;
+      border: 1px solid rgb(63, 63, 63);
     }
 
     th, td {
+      border: none;
       padding: 8px;
       text-align: left;
-      border: none;
       transition: background-color 0.3s ease;
     }
 
-    /* Apply right border to 'Endre til' column (6th column) */
-    th:nth-child(6), td:nth-child(6) {
-      border-right: 2px solid black;
+    td:nth-child(6), th:nth-child(6) {
+      border-right: 1px solid rgb(63, 63, 63);
     }
 
-    /* Remove all borders and background from the entire button column (7th column) */
-    th:nth-child(7), td:nth-child(7) {
+    td:nth-child(7), th:nth-child(7) {
       border: none !important;
       background: none;
       padding: 0;
+      text-align: right;
     }
 
-    .vedtatt td:nth-child(7) {
-      background-color: white !important;
-    }
-
+    .vedtatt td:nth-child(7),
     .vedtatt td.button-cell {
       background-color: white !important;
     }
 
-    /* Optional: striped row background for readability */
-    tbody tr:nth-child(even):not(.vedtatt) td:not(:nth-child(7)) {
+    #adminLoginBtn, #logoutBtn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      background: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 2001;
+      border-radius: 5px;
+    }
+
+    #logoutBtn {
+      display: none;
+    }
+
+    .carousel {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      width: 100%;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      box-sizing: border-box;
+      padding: 0 1rem;
+    }
+
+    .carousel-slide:nth-child(1) table th { background-color: #ffdddd; }
+    .carousel-slide:nth-child(2) table th { background-color: #ddffdd; }
+    .carousel-slide:nth-child(3) table th { background-color: #ddddff; }
+    .carousel-slide:nth-child(4) table th { background-color: #fff5cc; }
+    .carousel-slide:nth-child(5) table th { background-color: #ffe6ff; }
+    .carousel-slide:nth-child(6) table th { background-color: #e0f7fa; }
+
+    .carousel-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 10rem;
+      z-index: 1000;
+    }
+
+    .carousel-nav.left {
+      left: 0;
+    }
+
+    .carousel-nav.right {
+      right: 0;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      margin-top: 1rem;
+      animation: fadeIn 0.4s ease-in;
+      border-left: 1px solid rgb(63, 63, 63);
+      border-top: 1px solid rgb(63, 63, 63);
+      border-bottom: 1px solid rgb(63, 63, 63);
+    }
+
+    th, td {
+      border: none;
+      padding: 8px;
+      text-align: left;
+      transition: background-color 0.3s ease;
+    }
+
+    td.button-cell {
+      background: none;
+      padding: 0;
+      text-align: right;
+      border: none;
+    }
+
+    th.button-header { display: none; }
+    .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
+    .vedtatt td.button-cell { background-color: white !important; }
+
+    .vedta-button {
+      display: none;
+      padding: 0.5rem 1rem;
+      margin-left: 0.75rem;
+      background: #e2e2e2;
+      color: rgb(27, 27, 27);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 12px;
+    }
+
+    .vedta-button:hover {
+      background: #b9b9b9;
+    }
+
+    .vedtatt .vedta-button {
+      background: #28a745 !important;
+      color: white;
+    }
+
+    th.rounded-left {
+      border-top-left-radius: 10px;
+    }
+
+    td.rounded-left {
+      border-bottom-left-radius: 10px;
+    }
+
+    th.rounded-right {
+      border-top-right-radius: 10px;
+    }
+
+    td.rounded-right {
+      border-bottom-right-radius: 10px;
+    }
+
+    #loginModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    #loginModal form {
+      background: white;
+      padding: 3rem;
+      border-radius: 12px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    #loginModal input[type="password"] {
+      width: 80%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #loginModal button[type="submit"] {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #loginModal button[type="submit"]:hover {
+      background: #218838;
+    }
+
+    tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
       background-color: #fafafa;
     }
 
-    tr:hover:not(.vedtatt) td:not(:nth-child(7)) {
+    tr:hover:not(.vedtatt) td:not(.button-cell) {
       background-color: #dfdfdf !important;
     }
 
-    /* Color coding for row types */
-    .Legge\ til\ et\ punkt td:not(:nth-child(7)) {
+    tr, td {
+      transition: background-color 0.3s ease;
+    }
+
+    .Legge\ til\ et\ punkt td:not(.button-cell) {
       background-color: #e6ffe6;
       border-left: 5px solid #5cb85c;
     }
 
-    .Endre\ et\ punkt td:not(:nth-child(7)) {
+    .Endre\ et\ punkt td:not(.button-cell) {
       background-color: #e6f0ff;
       border-left: 5px solid #0275d8;
     }
 
-    .Fjerne\ et\ punkt td:not(:nth-child(7)) {
+    .Fjerne\ et\ punkt td:not(.button-cell) {
       background-color: #ffe6e6;
       border-left: 5px solid #d9534f;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
