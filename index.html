@@ -308,7 +308,7 @@
     let currentIndex = 0;
 
     async function saveVedtatt(rowId, tema) {
-      await fetch('https://localhost:3000/vedtak', {
+      await fetch('http://localhost:3000/vedtak', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ row_id: rowId, tema, timestamp: new Date().toISOString() })
@@ -316,14 +316,13 @@
     }
 
     async function loadVedtatt() {
-      const response = await fetch('https://localhost:3000/vedtak');
+      const response = await fetch('http://localhost:3000/vedtak');
       const rowIds = await response.json();
       rowIds.forEach(id => {
         const row = document.querySelector(`[data-row-id="${id}"]`);
         if (row) row.classList.add('vedtatt');
       });
     }
-
     function showLogin() {
       document.getElementById("loginModal").style.display = "flex";
     }
@@ -488,6 +487,11 @@
           btn.className = "vedta-button";
           btn.onclick = () => {
             tr.classList.toggle("vedtatt");
+            const rowId = tr.getAttribute('data-row-id');
+            const tema = h2.textContent; // grab the tema from the heading
+            if (rowId && tema) {
+              saveVedtatt(rowId, tema);
+            }
           };
           tdAction.appendChild(btn);
           tr.appendChild(tdAction);
