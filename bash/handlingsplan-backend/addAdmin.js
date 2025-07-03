@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 const db = new sqlite3.Database('./data.db');
 const username = 'admin';
-const password = 'your-password';
+const password = 'admin123';
 
 bcrypt.hash(password, 10, (err, hash) => {
   db.run('INSERT INTO admins (username, password) VALUES (?, ?)', [username, hash], () => {
