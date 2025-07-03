@@ -156,6 +156,7 @@
     }
 
     .carousel {
+      overflow: hidden;
       position: relative;
     }
 
@@ -188,7 +189,6 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      z-index: 10;
       font-size: 2rem;
       background: rgba(0, 0, 0, 0.1);
       border-radius: 50%;
@@ -197,16 +197,15 @@
       line-height: 40px;
       text-align: center;
       color: black;
+      z-index: 10;
     }
 
-    @media (max-width: 600px) {
-      .carousel-nav.left {
-        left: -1rem;
-      }
+    .carousel-nav.left {
+      left: -2rem;
+    }
 
-      .carousel-nav.right {
-        right: -1rem;
-      }
+    .carousel-nav.right {
+      right: -2rem;
     }
 
     td:first-child {
@@ -427,8 +426,12 @@
     <button class="carousel-nav left" onclick="prevSlide()">❮</button>
     <button class="carousel-nav right" onclick="nextSlide()">❯</button>
     <div class="carousel-wrapper">
-    <div class="carousel">
+    <div class="carousel-wrapper">
+      <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
+      <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
+      <div class="carousel">
         <div class="carousel-track" id="carousel-track"></div>
+      </div>
     </div>
     <script>
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
