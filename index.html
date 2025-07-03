@@ -340,6 +340,39 @@
       }
     }
 
+    // Store vedtatt rows in localStorage
+    function saveVedtatt(rowId) {
+      const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
+      if (!stored.includes(rowId)) {
+        stored.push(rowId);
+        localStorage.setItem('vedtattRows', JSON.stringify(stored));
+      }
+    }
+
+    function loadVedtatt() {
+      const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
+      stored.forEach(id => {
+        const row = document.querySelector(`[data-row-id="${id}"]`);
+        if (row) {
+          row.classList.add('vedtatt');
+        }
+      });
+    }
+
+    function handleVedtaClick(button) {
+      const row = button.closest('tr');
+      if (row && !row.classList.contains('vedtatt')) {
+        row.classList.add('vedtatt');
+        button.classList.add('vedtatt');
+        const rowId = row.getAttribute('data-row-id');
+        if (rowId) {
+          saveVedtatt(rowId);
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadVedtatt);
+
     async function loadCSV() {
       const response = await fetch(csvUrl);
       const text = await response.text();
