@@ -7,8 +7,6 @@
 <style>
     body {
       font-family: sans-serif;
-      max-width: 1000px;
-      margin: 2rem auto;
       padding: 1rem;
       overflow-x: hidden;
       position: relative;
@@ -166,7 +164,13 @@
 
     .carousel {
       position: relative;
-      overflow: hidden;
+    }
+
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
     }
 
     .carousel-track {
