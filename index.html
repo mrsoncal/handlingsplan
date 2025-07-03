@@ -244,16 +244,26 @@
       transition: background-color 0.3s ease;
     }
 
+    .Legge\ til\ et\ punkt td:first-child,
+    .Endre\ et\ punkt td:first-child,
+    .Fjerne\ et\ punkt td:first-child {
+      position: relative;
+    }
+
+    /* Basic tag layout */
     td:first-child .tag-label {
       display: inline-block;
       padding: 0.25rem 0.75rem;
       border-radius: 12px;
       font-size: 0.85rem;
       font-weight: 600;
-      text-align: center;
       white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
+    /* Color for each action type */
     .Legge\ til\ et\ punkt td:first-child .tag-label {
       background-color: #d4edda;
       color: #155724;
