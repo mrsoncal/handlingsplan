@@ -28,7 +28,7 @@
       margin: 0;
       font-size: 1.5rem;
       font-weight: bold;
-      color: #009BC2;
+      color: #1a1a1a;
       text-align: center;
     }
 
@@ -58,19 +58,41 @@
 
     /* individual styles */
     .forms-button {
-      background-color: #5A2E61;
+      background-color: #1a1a1a;
     }
 
     .forms-button:hover {
-      background-color: #4d2753;
+      background-color: #0c0c0c;
     }
 
     .plan-button {
-      background-color: #009BC2;
+      background-color: #1a1a1a;
     }
 
     .plan-button:hover {
-      background-color: #006c86;
+      background-color: #0c0c0c;
+    }
+
+    #adminLoginBtn,
+    #logoutBtn {
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 2001;
+      border-radius: 5px;
+    }
+
+    #adminLoginBtn:hover,
+    #logoutBtn:hover {
+      background: #0c0c0c;
+    }
+
+    #logoutBtn {
+      display: none;
     }
 
     .admin-buttons {
@@ -132,28 +154,6 @@
       background-color: white !important;
     }
 
-    #adminLoginBtn,
-    #logoutBtn {
-      padding: 0.75rem 1.25rem;
-      font-size: 1rem;
-      font-weight: bold;
-      background: #5A2E61;
-      color: white;
-      border: none;
-      cursor: pointer;
-      z-index: 2001;
-      border-radius: 5px;
-    }
-
-    #adminLoginBtn:hover,
-    #logoutBtn:hover {
-      background: #4d2753;
-    }
-
-    #logoutBtn {
-      display: none;
-    }
-
     .carousel {
       overflow: hidden;
       position: relative;
@@ -185,10 +185,9 @@
     .carousel-slide:nth-child(6) table th { background-color: #DD1367; color: white; padding: 1rem;}
 
     .carousel-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: #009BC2;
+      position: fixed; /* so they float on the screen */
+      top: 10rem;       /* vertical position from the top */
+      background-color: #1a1a1a;
       color: white;
       border: none;
       border-radius: 50%;
@@ -198,7 +197,7 @@
       line-height: 40px;
       text-align: center;
       cursor: pointer;
-      z-index: 10;
+      z-index: 1000;
       transition: background-color 0.3s ease;
     }
 
@@ -207,11 +206,11 @@
     }
 
     .carousel-nav.left {
-      left: 0;
+      left: 1rem;
     }
 
     .carousel-nav.right {
-      right: 0;
+      right: 1rem;
     }
 
     td:first-child {
