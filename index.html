@@ -645,16 +645,19 @@
                 if (index === 1) return; // skip Tema
                 const th = document.createElement("th");
                 th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-                const widths = isMobile
-                  ? [6, 2.5, 8, 8, 8]
-                  : [9.375, 3.75, 12.5, 12.5, 12.5];
+
+                // Define rem widths only for desktop
+                const widths = [9.375, 3.75, 12.5, 12.5, 12.5]; // desktop widths in rem
                 const visibleIndex = index < 1 ? index : index - 1;
+
                 if (!isMobile) {
                   th.style.width = widths[visibleIndex] + "rem";
                 }
+
                 if (index === 2) th.style.textAlign = "center";
                 tr.appendChild(th);
               });
+
 
               const thBtn = document.createElement("th");
               thBtn.className = "button-header";
