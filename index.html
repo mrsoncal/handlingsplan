@@ -1,129 +1,790 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="no">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Handlingsplan</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Forslag til Handlingsplan 2026</title>
+<style>
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      animation: fadeInPage 0.6s ease-out;
+    }
+
+    @keyframes fadeInPage {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    main {
+      flex: 1; /* fills available space between header and footer */
+    }
+
+    .page-header {
+      padding: 3rem 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: bolder;
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    .left-buttons {
+      position: fixed;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+
+    .left-button-wrapper {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .forms-button,
+    .plan-button {
+      padding: 0.6rem 1.25rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      background-color: #1a1a1a;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .forms-button:hover,
+    .plan-button:hover {
+      background-color: #007aa3;
+    }
+
+    #adminLoginBtn,
+    #logoutBtn {
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      font-weight: bold;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      cursor: pointer;
+      z-index: 2001;
+      border-radius: 5px;
+    }
+
+    #adminLoginBtn:hover,
+    #logoutBtn:hover {
+      background: #007aa3;
+    }
+
+    #logoutBtn {
+      display: none;
+    }
+
+    .admin-buttons {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 1rem;
+    }
+
+    .carousel-slide h2 {
+      font-size: 1.25rem;
+      font-weight: bold;             /* heavier weight */
+      color: #141414;        
+      margin-bottom: 1rem;         /* adds vertical space below the title */
+      margin-top: 5rem;            /* optional: adds space above the title */
+      text-align: left;            /* or center if you prefer */
+    }
+
+    .carousel-slide {
+      animation: slideIn 0.5s ease-in-out;
+    }
+
+    @keyframes slideIn {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    table {
+      border-collapse: collapse;
+      border-spacing: 0 0.5rem; /* Adds vertical space between rows */
+      width: 100%;
+      margin-top: 1rem;
+      animation: fadeIn 0.4s ease-in;
+      border: none;
+    }
+
+    th, td {
+      border: none;
+      padding: 1rem 1rem; /* More padding all around */
+      text-align: left;
+      transition: background-color 0.3s ease;
+    }
+
+    td:nth-child(6), th:nth-child(6) {
+      border-right: 1px solid rgb(63, 63, 63);
+    }
+
+    td:nth-child(7), th:nth-child(7) {
+      border: none !important;
+      background: none;
+      padding: 0;
+      text-align: right;
+    }
+
+    .vedtatt td:nth-child(7),
+    .vedtatt td.button-cell {
+      background-color: white !important;
+    }
+
+    .carousel {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      width: 100%;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      box-sizing: border-box;
+      padding: 0 1rem;
+    }
+
+    .carousel-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .carousel-slide:nth-child(1) table th { background-color: #DD1367; color: white; padding: 1rem;}
+    .carousel-slide:nth-child(2) table th { background-color: #FF6A18; color: white; padding: 1rem;}
+    .carousel-slide:nth-child(3) table th { background-color: #C5182C; color: white; padding: 1rem;}
+    .carousel-slide:nth-child(4) table th { background-color: #52A23E; color: white; padding: 1rem;}
+    .carousel-slide:nth-child(5) table th { background-color: #1C7A23; color: white; padding: 1rem;}
+    .carousel-slide:nth-child(6) table th { background-color: #DD1367; color: white; padding: 1rem;}
+
+    .carousel-nav {
+      position: fixed;
+      top: 50%;                           /* center vertically */
+      transform: translateY(-50%);       /* align to vertical center */
+      background-color: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5rem;
+      line-height: 40px;
+      text-align: center;
+      cursor: pointer;
+      z-index: 1000;
+      transition: background-color 0.3s ease;
+    }
+
+    .carousel-nav:hover {
+      background-color: #007aa3; /* slightly darker */
+    }
+
+    .carousel-nav.left {
+      left: 1rem;
+    }
+
+    .carousel-nav.right {
+      right: 1rem;
+    }
+
+    td:first-child {
+      padding-left: 1.5rem; /* extra space before the tag label */
+    }
+
+    td.button-cell {
+      background: none;
+      padding-right: 1.5rem; /* space on the action button */
+      text-align: right;
+      border: none;
+    }
+
+    th.button-header { display: none; }
+    .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
+    .vedtatt td.button-cell { background-color: white !important; }
+
+    .vedta-button {
+      display: none;
+      padding: 0.5rem 1rem;
+      margin-left: 0.75rem;
+      margin-right: 0.75rem;
+      background: #e2e2e2;
+      color: rgb(27, 27, 27);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 12px;
+    }
+
+    .vedta-button:hover {
+      background: #b9b9b9;
+    }
+
+    .vedtatt .vedta-button {
+      background: #28a745 !important;
+      color: white;
+    }
+
+    #loginModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    #loginModal form {
+      background: white;
+      padding: 3rem;
+      border-radius: 12px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    #loginModal input[type="password"] {
+      width: 80%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #loginModal button[type="submit"] {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #loginModal button[type="submit"]:hover {
+      background: #218838;
+    }
+
+    tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
+      background-color: #f0f0f0;
+    }
+
+    tr:hover:not(.vedtatt) td:not(.button-cell) {
+      background-color: #dfdfdf !important;
+    }
+
+    tr, td {
+      transition: background-color 0.3s ease;
+    }
+
+    .Legge-til-et-punkt td:first-child,
+    .Endre-et-punkt td:first-child,
+    .Fjerne-et-punkt td:first-child {
+      position: relative;
+    }
+
+    /* Basic tag layout */
+    td:first-child .tag-label {
+      display: inline-block;
+      padding: 0.6rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Color for each action type */
+    .Legge-til-et-punkt td:first-child .tag-label {
+      background-color: #cbe2e7;
+      color: #009BC2;
+    }
+
+    .Endre-et-punkt td:first-child .tag-label {
+      background-color: #bdbdbd;
+      color: #3b3b3b;
+    }
+
+    .Fjerne-et-punkt td:first-child .tag-label {
+      background-color: #e3c8e7;
+      color: #5A2E61;
+    }
+
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .container {
+      position: relative;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Make header and footer stretch full width */
+    .page-header,
+    .site-footer {
+      width: 100%;
+      background-color: #cbe2e7; /* already used for footer */
+    }
+
+    .site-footer {
+      padding: 2rem 0;
+      margin-top: 4rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      height: 80px;
+      max-width: 150px;
+      object-fit: contain;
+    }
+
+    .mobile-only {
+      display: none;
+    }
+
+    .mobile-hide {
+      display: block;
+    }
+
     @media (max-width: 600px) {
+      .page-header h1 {
+        font-size: 1.25rem;
+        padding: 0.5rem 0;
+      }
+
+      h2 {
+        margin-top: 1.5rem !important;
+      }
+
+      .mobile-only {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .mobile-hide {
+        display: none;
+      }
+
+      .footer-buttons a {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+
+      .carousel-wrapper {
+        text-align: center;
+      }
+
       .carousel-nav {
-        display: none !important;
+        position: static;
+        transform: none;
+        margin: 1rem 0;
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+        display: inline-block;
       }
 
-      .carousel-track.stacked {
-        display: block !important;
-      }
-
-      .carousel-slide {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-bottom: 2rem;
+      .carousel-nav.left,
+      .carousel-nav.right {
+        display: inline-block;
+        margin: 0 0.5rem;
       }
 
       .table-wrapper {
-        width: 100% !important;
-        overflow-x: auto !important;
+        overflow-x: auto;
+        width: 100%;
       }
 
       .table-wrapper table {
         width: 100% !important;
+        max-width: 100%;
+        min-width: unset !important;
         table-layout: auto !important;
       }
 
-      .table-wrapper th,
-      .table-wrapper td {
-        width: auto !important;
-        white-space: normal !important;
+      .carousel,
+      .carousel-track,
+      .carousel-slide {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden;
+      }
+
+      #adminLoginBtn {
+        display: none;
       }
     }
-  </style>
+
+
+
+
+@media (max-width: 600px) {
+  .carousel-nav {
+    display: none !important;
+  }
+
+  .carousel-track.stacked {
+    display: block !important;
+  }
+
+  .carousel-slide {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 2rem;
+  }
+
+  .table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  .table-wrapper table {
+    width: 100% !important;
+    table-layout: auto !important;
+  }
+
+  .table-wrapper th,
+  .table-wrapper td {
+    width: auto !important;
+    white-space: normal !important;
+  }
+}
+</style>
 </head>
 <body>
-  <div id="carousel-track" class="carousel-track"></div>
-  <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
-    const isMobile = window.innerWidth <= 600;
-    const track = document.getElementById("carousel-track");
-    if (isMobile && track) track.classList.add("stacked");
+<header class="page-header">
+<div class="container">
+<div class="left-button-wrapper mobile-hide">
+<div class="left-buttons">
+<a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" rel="noopener noreferrer" target="_blank">
+            åpne forms
+          </a>
+<a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">
+            handlingsplan
+          </a>
+</div>
+</div>
+<h1>Forslag til Handlingsplan 2026</h1>
+<div class="admin-buttons">
+<button id="adminLoginBtn" onclick="showLogin()">Admin</button>
+<button id="logoutBtn" onclick="logout()">Logg ut</button>
+</div>
+</div>
+</header>
+<main class="main-content container">
+<div id="loginModal">
+<form onsubmit="return checkLogin(event)">
+<h2>Admin Login</h2>
+<input id="adminPass" placeholder="Passord" required="" type="password"/>
+<br/><br/>
+<button type="submit">Logg inn</button>
+</form>
+</div>
+<div class="carousel-wrapper">
+<button class="carousel-nav left" onclick="prevSlide()">❮</button>
+<button class="carousel-nav right" onclick="nextSlide()">❯</button>
+<div class="carousel">
+<div class="carousel-track" id="carousel-track"></div>
+</div>
+</div>
+<script>
+      const isMobile = window.innerWidth <= 600;
+      const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
+const isMobile = window.innerWidth <= 600;
+const track = document.getElementById("carousel-track");
+if (isMobile && track) track.classList.add("stacked");
+        let currentIndex = 0;
+        
 
-    async function loadCSV() {
-      try {
-        const response = await fetch(csvUrl);
-        const text = await response.text();
+        function showLogin() {
+          document.getElementById("loginModal").style.display = "flex";
+        }
 
-        const rows = text.trim().split("\n").map(row => row.split(","));
-        const headers = rows[0];
-        const data = rows.slice(1);
+        function checkLogin(event) {
+          event.preventDefault();
+          const password = document.getElementById("adminPass").value;
+          if (password === "admin123") {
+            document.getElementById("loginModal").style.display = "none";
+            document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+            document.getElementById("adminLoginBtn").style.display = "none";
+            document.getElementById("logoutBtn").style.display = "inline-block";
+            localStorage.setItem("adminLoggedIn", "true");
+          } else {
+            alert("Feil passord. Prøv igjen.");
+          }
+        }
 
-        const grouped = {};
-        data.forEach(row => {
-          const tema = row[2].trim();
-          if (!grouped[tema]) grouped[tema] = [];
-          grouped[tema].push(row);
-        });
+        function logout() {
+          document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "none");
+          document.getElementById("adminLoginBtn").style.display = "inline-block";
+          document.getElementById("logoutBtn").style.display = "none";
+          localStorage.removeItem("adminLoggedIn");
+        }
 
-        const temaOrder = [
-          "Ungdomsdemokrati og Medvirkning",
-          "Samferdsel",
-          "Utdanning og Kompetanse",
-          "Folkehelse",
-          "Klima og Miljø",
-          "Kultur"
-        ];
+        function checkStoredLogin() {
+          if (localStorage.getItem("adminLoggedIn") === "true") {
+            document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
+            document.getElementById("adminLoginBtn").style.display = "none";
+            document.getElementById("logoutBtn").style.display = "inline-block";
+          }
+        }
 
-        temaOrder.forEach(tema => {
-          const groupRows = grouped[tema];
-          if (!groupRows || groupRows.length === 0) return;
+        // Store vedtatt rows in localStorage
+        function saveVedtatt(rowId) {
+          const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
+          if (!stored.includes(rowId)) {
+            stored.push(rowId);
+            localStorage.setItem('vedtattRows', JSON.stringify(stored));
+          }
+        }
 
-          const slide = document.createElement("div");
-          slide.className = "carousel-slide";
-
-          const h2 = document.createElement("h2");
-          h2.textContent = tema;
-          slide.appendChild(h2);
-
-          const table = document.createElement("table");
-          const thead = document.createElement("thead");
-          const tr = document.createElement("tr");
-
-          headers.slice(1).forEach((h, index) => {
-            if (index === 1) return;
-            const th = document.createElement("th");
-            th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-            tr.appendChild(th);
+        function loadVedtatt() {
+          const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
+          stored.forEach(id => {
+            const row = document.querySelector(`[data-row-id="${id}"]`);
+            if (row) {
+              row.classList.add('vedtatt');
+            }
           });
+        }
 
-          thead.appendChild(tr);
-          table.appendChild(thead);
+        function handleVedtaClick(button) {
+          const row = button.closest('tr');
+          if (row && !row.classList.contains('vedtatt')) {
+            row.classList.add('vedtatt');
+            button.classList.add('vedtatt');
+            const rowId = row.getAttribute('data-row-id');
+            if (rowId) {
+              saveVedtatt(rowId);
+            }
+          }
+        }
 
-          const tbody = document.createElement("tbody");
-          groupRows.forEach(row => {
-            const tr = document.createElement("tr");
-            row.slice(1).forEach((cell, index) => {
-              if (index === 1) return;
-              const td = document.createElement("td");
-              td.textContent = cell;
-              tr.appendChild(td);
+        document.addEventListener('DOMContentLoaded', loadVedtatt);
+
+        async function loadCSV() {
+          try {
+            const response = await fetch(csvUrl);
+            if (!response.ok) {
+              console.error("Fetch error:", response.status, response.statusText);
+              return;
+            }
+
+            const text = await response.text(); // ✅ This now comes AFTER fetch
+            console.log("CSV text loaded:", text.slice(0, 500));
+
+            const rows = text.trim().split("\n").map(row => row.split(","));
+            const headers = rows[0];
+            const data = rows.slice(1);
+
+            const grouped = {};
+            data.forEach(row => {
+              const tema = row[2].trim();
+              if (!grouped[tema]) grouped[tema] = [];
+              grouped[tema].push(row);
             });
-            tbody.appendChild(tr);
-          });
 
-          table.appendChild(tbody);
+            const temaOrder = [
+              "Ungdomsdemokrati og Medvirkning",
+              "Samferdsel",
+              "Utdanning og Kompetanse",
+              "Folkehelse",
+              "Klima og Miljø",
+              "Kultur"
+            ];
 
-          const wrapper = document.createElement("div");
-          wrapper.className = "table-wrapper";
-          wrapper.appendChild(table);
-          slide.appendChild(wrapper);
+            const track = document.getElementById("carousel-track");
+            const isMobile = window.innerWidth <= 600;
 
-          track.appendChild(slide);
-        });
-      } catch (error) {
-        console.error("Failed to fetch CSV:", error);
-      }
-    }
+            temaOrder.forEach(tema => {
+              console.log("Processing tema:", tema, grouped[tema]);
+              const groupRows = grouped[tema];
+              if (!groupRows || groupRows.length === 0) return;
 
-    loadCSV();
-  </script>
+              const slide = document.createElement("div");
+              slide.className = "carousel-slide";
+
+              const h2 = document.createElement("h2");
+              h2.textContent = tema;
+              slide.appendChild(h2);
+
+              const table = document.createElement("table");
+              const thead = document.createElement("thead");
+              const tr = document.createElement("tr");
+
+              headers.slice(1).forEach((h, index) => {
+                if (index === 1) return; // skip Tema
+                const th = document.createElement("th");
+                th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
+                const widths = isMobile
+                  ? [6, 2.5, 8, 8, 8]
+                  : [9.375, 3.75, 12.5, 12.5, 12.5];
+                const visibleIndex = index < 1 ? index : index - 1;
+                if (!isMobile) {
+                }
+                if (index === 2) th.style.textAlign = "center";
+                tr.appendChild(th);
+              });
+
+              const thBtn = document.createElement("th");
+              thBtn.className = "button-header";
+              tr.appendChild(thBtn);
+              thead.appendChild(tr);
+              table.appendChild(thead);
+
+              const tbody = document.createElement("tbody");
+              const order = ["Legge til et punkt", "Endre et punkt", "Fjerne et punkt"];
+              groupRows.sort((a, b) => {
+                const aPunkt = parseInt(a[3], 10) || 0;
+                const bPunkt = parseInt(b[3], 10) || 0;
+                if (aPunkt !== bPunkt) return aPunkt - bPunkt;
+                return order.indexOf(a[1]) - order.indexOf(b[1]);
+              }).forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = row[1].trim().replace(/\s/g, "-");
+
+                row.slice(1).forEach((cell, index) => {
+                  if (index === 1) return;
+                  const td = document.createElement("td");
+                  const widths = isMobile
+                    ? [6, 2.5, 8, 8, 8]
+                    : [9.375, 3.75, 12.5, 12.5, 12.5];
+                  const visibleIndex = index < 1 ? index : index - 1;
+                  if (!isMobile) {
+                  }
+                  if (index === 2) td.style.textAlign = "center";
+                  if (visibleIndex === 0) {
+                    const tagDiv = document.createElement("div");
+                    tagDiv.className = "tag-label";
+                    tagDiv.textContent = cell;
+                    td.appendChild(tagDiv);
+                  } else {
+                    td.textContent = cell;
+                  }
+                  tr.appendChild(td);
+                });
+
+                const tdAction = document.createElement("td");
+                tdAction.className = "button-cell";
+                const btn = document.createElement("button");
+                btn.textContent = "Vedta";
+                btn.className = "vedta-button";
+                btn.onclick = () => {
+                  tr.classList.toggle("vedtatt");
+                };
+                tdAction.appendChild(btn);
+                tr.appendChild(tdAction);
+
+                tbody.appendChild(tr);
+              });
+
+              table.appendChild(tbody);
+
+              const wrapper = document.createElement("div");
+              wrapper.className = "table-wrapper";
+              wrapper.appendChild(table);
+
+              slide.appendChild(wrapper);
+              console.log("Appending slide for:", tema);
+              track.appendChild(slide);
+            });
+
+            updateCarousel();
+            checkStoredLogin();
+          } catch (error) {
+            console.error("Failed to fetch CSV:", error);
+          }
+        }
+
+
+        function updateCarousel() {
+          const track = document.getElementById("carousel-track");
+          const totalSlides = track.children.length;
+          currentIndex = (currentIndex + totalSlides) % totalSlides;
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        function nextSlide() {
+          currentIndex++;
+          updateCarousel();
+        }
+
+        function prevSlide() {
+          currentIndex--;
+          updateCarousel();
+        }
+
+        window.addEventListener("DOMContentLoaded", loadCSV);
+    </script>
+</main>
+<div class="footer-buttons mobile-only">
+<a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
+<a class="plan-button" href="Handlingsplan.pdf" target="_blank">Handlingsplan</a>
+</div>
+<footer class="site-footer">
+<div class="container">
+<img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
+</div>
+</footer>
 </body>
 </html>
