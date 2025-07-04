@@ -663,7 +663,9 @@
               row.slice(1).forEach((cell, index) => {
                 if (index === 1) return;
                 const td = document.createElement("td");
-                const widths = [9.375, 3.75, 12.5, 12.5, 12.5]; // px ÷ 16 = rem
+                const widths = isMobile
+                  ? [6, 2.5, 8, 8, 8]
+                  : [9.375, 3.75, 12.5, 12.5, 12.5];
                 const visibleIndex = index < 1 ? index : index - 1;
                 td.style.width = widths[visibleIndex] + "rem";
                 if (index === 2) td.style.textAlign = "center";
