@@ -550,6 +550,9 @@
 <script>
       const isMobile = window.innerWidth <= 600;
       const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
+const isMobile = window.innerWidth <= 600;
+const track = document.getElementById("carousel-track");
+if (isMobile && track) track.classList.add("stacked");
         let currentIndex = 0;
         
 
@@ -651,8 +654,6 @@
             ];
 
             const track = document.getElementById("carousel-track");
-const isMobile = window.innerWidth <= 600;
-if (isMobile) track.classList.add("stacked");
             const isMobile = window.innerWidth <= 600;
 
             temaOrder.forEach(tema => {
@@ -675,18 +676,15 @@ if (isMobile) track.classList.add("stacked");
                 if (index === 1) return; // skip Tema
                 const th = document.createElement("th");
                 th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-
-                // Define rem widths only for desktop
-                const widths = [9.375, 3.75, 12.5, 12.5, 12.5]; // desktop widths in rem
+                const widths = isMobile
+                  ? [6, 2.5, 8, 8, 8]
+                  : [9.375, 3.75, 12.5, 12.5, 12.5];
                 const visibleIndex = index < 1 ? index : index - 1;
-
                 if (!isMobile) {
                 }
-
                 if (index === 2) th.style.textAlign = "center";
                 tr.appendChild(th);
               });
-
 
               const thBtn = document.createElement("th");
               thBtn.className = "button-header";
@@ -761,8 +759,6 @@ if (isMobile) track.classList.add("stacked");
 
         function updateCarousel() {
           const track = document.getElementById("carousel-track");
-const isMobile = window.innerWidth <= 600;
-if (isMobile) track.classList.add("stacked");
           const totalSlides = track.children.length;
           currentIndex = (currentIndex + totalSlides) % totalSlides;
           track.style.transform = `translateX(-${currentIndex * 100}%)`;
