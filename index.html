@@ -49,11 +49,11 @@
       position: absolute;
       left: 1rem;
       top: 50%;
-      text-align: center;
       transform: translateY(-50%);
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      align-items: flex-start; /* NEW: Aligns buttons vertically from the left */
     }
 
     .forms-button,
@@ -358,12 +358,6 @@
     }
 
     @media (max-width: 600px) {
-      .left-buttons,
-      .admin-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
       .page-header h1 {
         font-size: 1.25rem;
         padding: 0.5rem 0;
