@@ -646,12 +646,12 @@
             const table = document.createElement("table");
             const thead = document.createElement("thead");
             const tr = document.createElement("tr");
+            const isMobile = window.innerWidth <= 600;
 
             headers.slice(1).forEach((h, index) => {
               if (index === 1) return; // skip Tema
               const th = document.createElement("th");
               th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-              const isMobile = window.innerWidth <= 600;
               const widths = isMobile
                 ? [6, 2.5, 8, 8, 8]  // smaller rems on mobile
                 : [9.375, 3.75, 12.5, 12.5, 12.5];
