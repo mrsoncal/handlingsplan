@@ -647,12 +647,12 @@
                 th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
 
                 // Define rem widths only for desktop
-                const widths = [9.375, 3.75, 12.5, 12.5, 12.5]; // desktop widths in rem
+                const widths = isMobile
+                  ? [6, 3, 9, 9, 9]       // mobile rem sizes (smaller)
+                  : [9.375, 3.75, 12.5, 12.5, 12.5];  // desktop rem sizes
                 const visibleIndex = index < 1 ? index : index - 1;
 
-                if (!isMobile) {
-                  th.style.width = widths[visibleIndex] + "rem";
-                }
+                th.style.width = widths[visibleIndex] + "rem";
 
                 if (index === 2) th.style.textAlign = "center";
                 tr.appendChild(th);
