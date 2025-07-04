@@ -215,28 +215,6 @@
       right: 1rem;
     }
 
-    @media (max-width: 600px) {
-      .carousel-nav {
-        position: static;
-        transform: none;
-        margin: 1rem 0;
-        width: 36px;
-        height: 36px;
-        font-size: 1.25rem;
-        display: inline-block;
-      }
-
-      .carousel-wrapper {
-        text-align: center; /* center nav buttons */
-      }
-
-      .carousel-nav.left,
-      .carousel-nav.right {
-        display: inline-block;
-        margin: 0 0.5rem;
-      }
-    }
-
     td:first-child {
       padding-left: 1.5rem; /* extra space before the tag label */
     }
@@ -416,6 +394,29 @@
       max-width: 150px;
       object-fit: contain;
     }
+
+    @media (max-width: 600px) {
+      .carousel-wrapper {
+        text-align: center;
+      }
+
+      .carousel-nav {
+        position: static;
+        transform: none;
+        margin: 1rem 0;
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+        display: inline-block;
+      }
+
+      .carousel-nav.left,
+      .carousel-nav.right {
+        display: inline-block;
+        margin: 0 0.5rem;
+      }
+    }
+
 </style>
 </head>
 
