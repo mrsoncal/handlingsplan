@@ -469,15 +469,15 @@
 <body>
 
   <header class="page-header">
+    <div class="left-buttons mobile-hide">
+      <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="forms-button">
+        åpne forms
+      </a>
+      <a href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank" class="plan-button">
+        handlingsplan
+      </a>
+    </div>
     <div class="container">
-      <div class="left-buttons mobile-hide">
-        <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="forms-button">
-          åpne forms
-        </a>
-        <a href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank" class="plan-button">
-          handlingsplan
-        </a>
-      </div>
 
       <h1>Forslag til Handlingsplan 2026</h1>
 
@@ -620,7 +620,7 @@
               th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
               const widths = [150, 60, 200, 200, 200];
               const visibleIndex = index < 1 ? index : index - 1;
-              th.style.width = widths[visibleIndex] + "px";
+              th.style.width = widths[visibleIndex] + "rem";
               if (index === 2) th.style.textAlign = "center";
               tr.appendChild(th);
             });
@@ -645,9 +645,9 @@
               row.slice(1).forEach((cell, index) => {
                 if (index === 1) return;
                 const td = document.createElement("td");
-                const widths = [150, 60, 200, 200, 200];
+                const widths = [9.375, 3.75, 12.5, 12.5, 12.5]; // px ÷ 16 = rem
                 const visibleIndex = index < 1 ? index : index - 1;
-                td.style.width = widths[visibleIndex] + "px";
+                td.style.width = widths[visibleIndex] + "rem";
                 if (index === 2) td.style.textAlign = "center";
                 if (visibleIndex === 0) {
                   const tagDiv = document.createElement("div");
