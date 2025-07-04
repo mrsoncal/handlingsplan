@@ -599,7 +599,6 @@
               return;
             }
 
-            const text = await response.text();
             console.log("CSV text loaded:", text.slice(0, 500)); // ✅ good
             // Continue with processing...
 
@@ -657,6 +656,9 @@
                 : [9.375, 3.75, 12.5, 12.5, 12.5];
               const visibleIndex = index < 1 ? index : index - 1;
               th.style.width = widths[visibleIndex] + "rem";
+              if (!isMobile) {
+                th.style.width = widths[visibleIndex] + "rem";
+              }
               if (index === 2) th.style.textAlign = "center";
               tr.appendChild(th);
             });
