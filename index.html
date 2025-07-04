@@ -488,7 +488,16 @@
         padding: 0.5rem 1rem;
       }
 
-      .footer-buttons a {
+      .header-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .header-buttons a {
         flex: 1 1 auto;
         text-align: center;
       }
@@ -599,9 +608,9 @@
 </div>
 </div>
 </header>
-<div class="left-buttons mobile-only">
-  <a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">åpne forms</a>
-  <a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">handlingsplan</a>
+<div class="header-buttons mobile-only">
+  <a class="forms-button" href="https://forms.gle/..." target="_blank">Åpne Forms</a>
+  <a class="plan-button" href="Handlingsplan.pdf" target="_blank">Handlingsplan</a>
 </div>
 <main class="main-content container">
 <div id="loginModal">
@@ -850,10 +859,6 @@
         window.addEventListener("DOMContentLoaded", loadCSV);
     </script>
 </main>
-<div class="footer-buttons mobile-only">
-<a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
-<a class="plan-button" href="Handlingsplan.pdf" target="_blank">Handlingsplan</a>
-</div>
 <footer class="site-footer">
 <div class="container">
 <img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
