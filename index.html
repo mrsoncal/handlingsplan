@@ -3,7 +3,7 @@
 <html lang="no">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Forslag til Handlingsplan 2026</title>
 <style>
 
@@ -475,51 +475,69 @@
     }
 
 
+
+
+@media (max-width: 600px) {
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table-wrapper table {
+    width: 100% !important;
+    table-layout: auto !important;
+    min-width: unset !important;
+    max-width: unset !important;
+    display: table !important;
+  }
+
+  .table-wrapper th,
+  .table-wrapper td {
+    width: auto !important;
+    max-width: none !important;
+    min-width: unset !important;
+    white-space: normal !important;
+  }
+}
 </style>
 </head>
-
 <body>
-
-  <header class="page-header">
-    <div class="container">
-
-      <div class="left-button-wrapper mobile-hide">
-        <div class="left-buttons">
-          <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="forms-button">
+<header class="page-header">
+<div class="container">
+<div class="left-button-wrapper mobile-hide">
+<div class="left-buttons">
+<a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" rel="noopener noreferrer" target="_blank">
             åpne forms
           </a>
-          <a href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank" class="plan-button">
+<a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">
             handlingsplan
           </a>
-        </div>
-      </div>
-
-      <h1>Forslag til Handlingsplan 2026</h1>
-
-      <div class="admin-buttons">
-        <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
-        <button id="logoutBtn" onclick="logout()">Logg ut</button>
-      </div>
-    </div>
-  </header>
-
-  <main class="main-content container">
-    <div id="loginModal">
-      <form onsubmit="return checkLogin(event)">
-        <h2>Admin Login</h2>
-        <input id="adminPass" placeholder="Passord" required="" type="password"/>
-        <br/><br/>
-        <button type="submit">Logg inn</button>
-      </form>
-    </div>
-    <div class="carousel-wrapper">
-      <button class="carousel-nav left" onclick="prevSlide()">&#10094;</button>
-      <button class="carousel-nav right" onclick="nextSlide()">&#10095;</button>
-      <div class="carousel">
-        <div class="carousel-track" id="carousel-track"></div>
-      </div>
-    </div>
-    <script>
+</div>
+</div>
+<h1>Forslag til Handlingsplan 2026</h1>
+<div class="admin-buttons">
+<button id="adminLoginBtn" onclick="showLogin()">Admin</button>
+<button id="logoutBtn" onclick="logout()">Logg ut</button>
+</div>
+</div>
+</header>
+<main class="main-content container">
+<div id="loginModal">
+<form onsubmit="return checkLogin(event)">
+<h2>Admin Login</h2>
+<input id="adminPass" placeholder="Passord" required="" type="password"/>
+<br/><br/>
+<button type="submit">Logg inn</button>
+</form>
+</div>
+<div class="carousel-wrapper">
+<button class="carousel-nav left" onclick="prevSlide()">❮</button>
+<button class="carousel-nav right" onclick="nextSlide()">❯</button>
+<div class="carousel">
+<div class="carousel-track" id="carousel-track"></div>
+</div>
+</div>
+<script>
       const isMobile = window.innerWidth <= 600;
       const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
         let currentIndex = 0;
@@ -752,18 +770,15 @@
 
         window.addEventListener("DOMContentLoaded", loadCSV);
     </script>
-  </main>
-
-  <div class="footer-buttons mobile-only">
-    <a href="https://forms.gle/32jMP85aCXgax7Ss8" class="forms-button" target="_blank">Åpne Forms</a>
-    <a href="Handlingsplan.pdf" class="plan-button" target="_blank">Handlingsplan</a>
-  </div>
-
-  <footer class="site-footer">
-    <div class="container">
-      <img src="Bilde1.png" alt="Telemark Ungdomsråd logo" class="footer-logo">
-    </div>
-  </footer>
-
+</main>
+<div class="footer-buttons mobile-only">
+<a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
+<a class="plan-button" href="Handlingsplan.pdf" target="_blank">Handlingsplan</a>
+</div>
+<footer class="site-footer">
+<div class="container">
+<img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
+</div>
+</footer>
 </body>
 </html>
