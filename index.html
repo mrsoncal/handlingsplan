@@ -397,6 +397,10 @@
         padding: 0.5rem 0;
       }
 
+      h2 {
+        margin-top: 1.5rem !important;
+      }
+
       .mobile-only {
         display: flex;
         justify-content: center;
@@ -436,21 +440,25 @@
       }
 
       .table-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden;
       }
 
       .table-wrapper table {
-        width: 100% !important;   /* Force table to fit the screen */
+        width: 100% !important;
         min-width: unset !important;
+        table-layout: auto !important;
+      }
+
+      .carousel,
+      .carousel-track,
+      .carousel-slide {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden;
       }
 
       #adminLoginBtn {
         display: none;
-      }
-
-      .carousel-slide {
-        padding: 0;
       }
     }
 
