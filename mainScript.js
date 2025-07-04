@@ -204,4 +204,4 @@ function prevSlide() {
     updateCarousel();
 }
 
-window.addEventListener("DOMContentLoaded", loadCSV);
+loadCSV();
