@@ -396,9 +396,32 @@
       object-fit: contain;
     }
 
+    .mobile-only {
+      display: none;
+    }
+
+    .mobile-hide {
+      display: block;
+    }
+
     @media (max-width: 600px) {
-      body {
-        background-color: pink;
+
+      .mobile-only {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        padding: 1rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .mobile-hide {
+        display: none;
+      }
+
+      .footer-buttons a {
+        flex: 1 1 auto;
+        text-align: center;
       }
 
       .carousel-wrapper {
@@ -406,9 +429,8 @@
       }
 
       .carousel-nav {
-        background-color: red !important;
-        position: static !important;
-        transform: none !important;
+        position: static;
+        transform: none;
         margin: 1rem 0;
         width: 36px;
         height: 36px;
@@ -420,6 +442,19 @@
       .carousel-nav.right {
         display: inline-block;
         margin: 0 0.5rem;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        min-width: 600px;
+      }
+
+      #adminLoginBtn {
+        display: none;
       }
     }
 
@@ -636,7 +671,12 @@
             });
 
             table.appendChild(tbody);
-            slide.appendChild(table);
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "table-wrapper";
+            wrapper.appendChild(table);
+
+            slide.appendChild(wrapper);
             track.appendChild(slide);
           });
 
@@ -664,6 +704,11 @@
         window.addEventListener("DOMContentLoaded", loadCSV);
       </script>
   </main>
+
+  <div class="footer-buttons mobile-only">
+    <a href="https://forms.gle/..." class="forms-button" target="_blank">Åpne Forms</a>
+    <a href="Handlingsplan.pdf" class="plan-button" target="_blank">Handlingsplan</a>
+  </div>
 
   <footer class="site-footer">
     <div class="container">
