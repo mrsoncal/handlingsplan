@@ -46,13 +46,14 @@
     }
 
     .left-buttons {
-      position: absolute;
+      position: fixed;
       left: 1rem;
       top: 50%;
       transform: translateY(-50%);
-      display: flex !important;
-      flex-direction: column !important;
+      display: flex;
+      flex-direction: column;
       gap: 0.5rem;
+      text-align: center;
     }
 
     .forms-button,
@@ -440,8 +441,8 @@
       }
 
       .table-wrapper table {
-        min-width: 600px;
-        width: max-content;
+        width: 100% !important;   /* Force table to fit the screen */
+        min-width: unset !important;
       }
 
       #adminLoginBtn {
