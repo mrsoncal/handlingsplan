@@ -520,8 +520,10 @@
       </div>
     </div>
     <script>
+      const isMobile = window.innerWidth <= 600;
       const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
         let currentIndex = 0;
+        
 
         function showLogin() {
           document.getElementById("loginModal").style.display = "flex";
@@ -591,9 +593,17 @@
 
         async function loadCSV() {
           try {
-            const response = await fetch(csvUrl);
-            if (!response.ok) {
-              console.error("Fetch error:", response.status, response.statusText);
+            try {
+              const response = await fetch(csvUrl);
+              if (!response.ok) {
+                console.error("Fetch error:", response.status, response.statusText);
+                return;
+              }
+              const text = await response.text();
+              console.log("CSV text loaded:", text.slice(0, 500)); // first 500 characters
+              // continue parsing CSV...
+            } catch (error) {
+              console.error("Failed to fetch CSV:", error); // no reference to response here
               return;
             }
             const text = await response.text();
