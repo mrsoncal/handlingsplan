@@ -5,6 +5,14 @@
 <meta charset="utf-8"/>
 <title>Forslag til Handlingsplan 2026</title>
 <style>
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
     body {
       font-family: sans-serif;
       margin: 0;
@@ -17,6 +25,10 @@
     @keyframes fadeInPage {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    main {
+      flex: 1; /* fills available space between header and footer */
     }
 
     .page-header {
@@ -203,6 +215,28 @@
       right: 1rem;
     }
 
+    @media (max-width: 600px) {
+      .carousel-nav {
+        position: static;
+        transform: none;
+        margin: 1rem 0;
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+        display: inline-block;
+      }
+
+      .carousel-wrapper {
+        text-align: center; /* center nav buttons */
+      }
+
+      .carousel-nav.left,
+      .carousel-nav.right {
+        display: inline-block;
+        margin: 0 0.5rem;
+      }
+    }
+
     td:first-child {
       padding-left: 1.5rem; /* extra space before the tag label */
     }
@@ -234,6 +268,11 @@
 
     .vedta-button:hover {
       background: #b9b9b9;
+    }
+
+    .vedtatt .vedta-button {
+      background: #28a745 !important;
+      color: white;
     }
 
     #loginModal {
