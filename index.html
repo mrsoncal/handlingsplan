@@ -478,24 +478,22 @@
 
 
 @media (max-width: 600px) {
-  .table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-  }
-
+  .carousel-slide,
+  .carousel-track,
+  .table-wrapper,
   .table-wrapper table {
     width: 100% !important;
-    table-layout: auto !important;
-    min-width: unset !important;
-    max-width: unset !important;
-    display: table !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+    display: block !important;
   }
 
   .table-wrapper th,
   .table-wrapper td {
     width: auto !important;
     max-width: none !important;
-    min-width: unset !important;
+    min-width: 0 !important;
     white-space: normal !important;
   }
 }
@@ -664,12 +662,12 @@
                 const th = document.createElement("th");
                 th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
 
-                const widths = [9.375, 3.75, 12.5, 12.5, 12.5]; // only used on desktop
+                // Define rem widths only for desktop
+                const widths = isMobile
+                  ? [6, 3, 9, 9, 9]       // mobile rem sizes (smaller)
+                  : [9.375, 3.75, 12.5, 12.5, 12.5];  // desktop rem sizes
                 const visibleIndex = index < 1 ? index : index - 1;
 
-                if (!isMobile) {
-                  th.style.width = widths[visibleIndex] + "rem";
-                }
 
                 if (index === 2) th.style.textAlign = "center";
                 tr.appendChild(th);
@@ -696,16 +694,13 @@
                 row.slice(1).forEach((cell, index) => {
                   if (index === 1) return;
                   const td = document.createElement("td");
-
-                  const widths = [9.375, 3.75, 12.5, 12.5, 12.5];
+                  const widths = isMobile
+                    ? [6, 2.5, 8, 8, 8]
+                    : [9.375, 3.75, 12.5, 12.5, 12.5];
                   const visibleIndex = index < 1 ? index : index - 1;
-
                   if (!isMobile) {
-                    td.style.width = widths[visibleIndex] + "rem";
                   }
-
                   if (index === 2) td.style.textAlign = "center";
-
                   if (visibleIndex === 0) {
                     const tagDiv = document.createElement("div");
                     tagDiv.className = "tag-label";
@@ -714,7 +709,6 @@
                   } else {
                     td.textContent = cell;
                   }
-
                   tr.appendChild(td);
                 });
 
