@@ -599,11 +599,13 @@
                 console.error("Fetch error:", response.status, response.statusText);
                 return;
               }
+
               const text = await response.text();
-              console.log("CSV text loaded:", text.slice(0, 500)); // first 500 characters
-              // continue parsing CSV...
+              console.log("CSV text loaded:", text.slice(0, 500)); // ✅ good
+              // Continue with processing...
+
             } catch (error) {
-              console.error("Failed to fetch CSV:", error); // no reference to response here
+              console.error("Failed to fetch CSV:", error); // ✅ no 'response' here
               return;
             }
             const text = await response.text();
