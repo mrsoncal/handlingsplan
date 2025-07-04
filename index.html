@@ -593,27 +593,21 @@
 
         async function loadCSV() {
           try {
-            try {
-              const response = await fetch(csvUrl);
-              if (!response.ok) {
-                console.error("Fetch error:", response.status, response.statusText);
-                return;
-              }
-
-              const text = await response.text();
-              console.log("CSV text loaded:", text.slice(0, 500)); // ✅ good
-              // Continue with processing...
-
-            } catch (error) {
-              console.error("Failed to fetch CSV:", error); // ✅ no 'response' here
+            const response = await fetch(csvUrl);
+            if (!response.ok) {
+              console.error("Fetch error:", response.status, response.statusText);
               return;
             }
+
             const text = await response.text();
-            console.log("CSV text loaded:", text.slice(0, 500)); // Log first part
+            console.log("CSV text loaded:", text.slice(0, 500)); // this is good
+            // ... process CSV text here ...
+
           } catch (error) {
+            // ✅ CORRECT: only use the 'error' object in catch
             console.error("Failed to fetch CSV:", error);
-            return;
           }
+          
           const text = await response.text();
           const rows = text.trim().split("\n").map(row => row.split(","));
           const headers = rows[0];
