@@ -56,6 +56,16 @@
       text-align: center;
     }
 
+    .left-button-wrapper {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
     .forms-button,
     .plan-button {
       padding: 0.6rem 1.25rem;
@@ -471,15 +481,18 @@
 <body>
 
   <header class="page-header">
-    <div class="left-buttons mobile-hide">
-      <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="forms-button">
-        åpne forms
-      </a>
-      <a href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank" class="plan-button">
-        handlingsplan
-      </a>
-    </div>
     <div class="container">
+
+      <div class="left-button-wrapper mobile-hide">
+        <div class="left-buttons">
+          <a href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank" rel="noopener noreferrer" class="forms-button">
+            åpne forms
+          </a>
+          <a href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank" class="plan-button">
+            handlingsplan
+          </a>
+        </div>
+      </div>
 
       <h1>Forslag til Handlingsplan 2026</h1>
 
@@ -715,9 +728,11 @@
   </main>
 
   <div class="footer-buttons mobile-only">
-    <a href="https://forms.gle/..." class="forms-button" target="_blank">Åpne Forms</a>
+    <a href="https://forms.gle/32jMP85aCXgax7Ss8" class="forms-button" target="_blank">Åpne Forms</a>
     <a href="Handlingsplan.pdf" class="plan-button" target="_blank">Handlingsplan</a>
   </div>
+
+  
 
   <footer class="site-footer">
     <div class="container">
