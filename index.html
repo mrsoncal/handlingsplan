@@ -461,54 +461,49 @@
         table-layout: auto !important;
       }
 
-      .carousel,
-      .carousel-track,
-      .carousel-slide {
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow: hidden;
-      }
-
       #adminLoginBtn {
         display: none;
       }
+
+      .carousel-nav {
+        display: none !important;
+      }
+
+      .carousel-track.stacked {
+        display: block !important;
+      }
+
+      .carousel-slide {
+        display: block !important;
+        margin-bottom: 2rem;
+      }
+
+      .table-wrapper {
+        overflow-x: auto !important;
+      }
+
+      .table-wrapper table {
+        width: 100% !important;
+        table-layout: auto !important;
+      }
+
+      .carousel-slide,
+      .carousel-track,
+      .table-wrapper,
+      .carousel {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .table-wrapper td,
+      .table-wrapper th {
+        word-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+      }
     }
 
-
-
-
-@media (max-width: 600px) {
-  .carousel-nav {
-    display: none !important;
-  }
-
-  .carousel-track.stacked {
-    display: block !important;
-  }
-
-  .carousel-slide {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-bottom: 2rem;
-  }
-
-  .table-wrapper {
-    width: 100% !important;
-    overflow-x: auto !important;
-  }
-
-  .table-wrapper table {
-    width: 100% !important;
-    table-layout: auto !important;
-  }
-
-  .table-wrapper th,
-  .table-wrapper td {
-    width: auto !important;
-    white-space: normal !important;
-  }
-}
 </style>
 </head>
 <body>
