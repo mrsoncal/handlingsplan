@@ -520,7 +520,6 @@
       </div>
     </div>
     <script>
-      const text = await response.text();
       const isMobile = window.innerWidth <= 600;
       const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
         let currentIndex = 0;
@@ -593,6 +592,7 @@
         document.addEventListener('DOMContentLoaded', loadVedtatt);
 
         async function loadCSV() {
+          const text = await response.text();
           try {
             const response = await fetch(csvUrl);
             if (!response.ok) {
