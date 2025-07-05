@@ -516,12 +516,32 @@
         height: 36px;
         font-size: 1.25rem;
         display: inline-block;
+        display: none !important;
       }
 
       .carousel-nav.left,
       .carousel-nav.right {
         display: inline-block;
         margin: 0 0.5rem;
+      }
+
+      /* Round top-left and bottom-left corners of first visible column */
+      .carousel-slide table tbody tr td:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+        overflow: hidden;
+      }
+
+      /* Round top-right and bottom-right corners of the last visible column before the button cell */
+      .carousel-slide table tbody tr td:nth-last-child(2) {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+        overflow: hidden;
+      }
+
+      /* Optional: prevent rounding on the invisible button cell */
+      .carousel-slide table tbody tr td.button-cell {
+        border-radius: 0 !important;
       }
 
       .table-wrapper {
@@ -538,10 +558,6 @@
 
       #adminLoginBtn {
         display: none;
-      }
-
-      .carousel-nav {
-        display: none !important;
       }
 
       .carousel-track.stacked {
@@ -675,25 +691,6 @@
             document.getElementById("adminLoginBtn").style.display = "none";
             document.getElementById("logoutBtn").style.display = "inline-block";
           }
-        }
-
-        // Store vedtatt rows in localStorage
-        function saveVedtatt(rowId) {
-          const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
-          if (!stored.includes(rowId)) {
-            stored.push(rowId);
-            localStorage.setItem('vedtattRows', JSON.stringify(stored));
-          }
-        }
-
-        function loadVedtatt() {
-          const stored = JSON.parse(localStorage.getItem('vedtattRows') || '[]');
-          stored.forEach(id => {
-            const row = document.querySelector(`[data-row-id="${id}"]`);
-            if (row) {
-              row.classList.add('vedtatt');
-            }
-          });
         }
 
         function handleVedtaClick(button) {
