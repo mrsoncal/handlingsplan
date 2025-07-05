@@ -414,8 +414,17 @@
       object-fit: contain;
     }
 
-    .mobile-only {
-      display: none;
+    .top-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: -2rem; /* move closer to header */
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .top-buttons a {
+      text-align: center;
     }
 
     .mobile-hide {
@@ -502,20 +511,6 @@
         top: 20% !important;
         font-size: 0.9rem;
         padding: 0.5rem 1rem;
-      }
-
-      .mobile-top-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        padding: 1rem;
-        padding-top: 0;
-        margin: 0 auto;
-      }
-
-      .mobile-top-buttons a {
-        flex: 1 1 auto;
-        text-align: center;
       }
 
       .carousel-wrapper {
@@ -613,16 +608,6 @@
 <body>
 <header class="page-header">
 <div class="container">
-<div class="left-button-wrapper mobile-hide">
-<div class="left-buttons">
-<a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" rel="noopener noreferrer" target="_blank">
-            åpne forms
-          </a>
-<a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">
-            handlingsplan
-          </a>
-</div>
-</div>
 <h1>Forslag til Handlingsplan 2026</h1>
 <div class="admin-buttons">
 <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
@@ -630,7 +615,7 @@
 </div>
 </div>
 </header>
-<div class="mobile-top-buttons mobile-only">
+<div class="mobile-top-buttons">
   <a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
   <a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
 </div>
