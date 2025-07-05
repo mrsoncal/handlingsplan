@@ -92,37 +92,6 @@
       background-color: #007aa3;
     }
 
-    #adminLoginBtn,
-    #logoutBtn {
-      padding: 0.75rem 1.25rem;
-      font-size: 1rem;
-      font-weight: bold;
-      background: #3f3f3f;
-      color: white;
-      border: none;
-      cursor: pointer;
-      z-index: 2001;
-      border-radius: 5px;
-    }
-
-    #adminLoginBtn:hover,
-    #logoutBtn:hover {
-      background: #007aa3;
-    }
-
-    #logoutBtn {
-      display: none;
-    }
-
-    .admin-buttons {
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      gap: 1rem;
-    }
-
     .carousel-slide h2 {
       font-size: 1.25rem;
       font-weight: bold;             /* heavier weight */
@@ -283,51 +252,6 @@
     .vedtatt .vedta-button {
       background: #28a745 !important;
       color: white;
-    }
-
-    #loginModal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-
-    #loginModal form {
-      background: white;
-      padding: 3rem;
-      border-radius: 12px;
-      text-align: center;
-      animation: popIn 0.3s ease-out;
-    }
-
-    #loginModal input[type="password"] {
-      width: 80%;
-      padding: 0.75rem;
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    #loginModal button[type="submit"] {
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    #loginModal button[type="submit"]:hover {
-      background: #218838;
     }
 
     tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
@@ -536,10 +460,6 @@
         table-layout: fixed !important;
       }
 
-      #adminLoginBtn {
-        display: none;
-      }
-
       .carousel-nav {
         display: none !important;
       }
@@ -611,253 +531,202 @@
 </style>
 </head>
 <body>
-  <header class="page-header">
-    <div class="container">
-    <h1>Forslag til Handlingsplan 2026</h1>
-      <div class="admin-buttons">
-        <button id="adminLoginBtn" onclick="showLogin()">Admin</button>
-        <button id="logoutBtn" onclick="logout()">Logg ut</button>
-      </div>
-    </div>
-  </header>
+<header class="page-header">
+<div class="container">
+<h1>Forslag til Handlingsplan 2026</h1>
+</div>
+</header>
+<div class="top-buttons">
+  <a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
+  <a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
+</div>
+<main class="main-content container">
+<div class="carousel-wrapper">
+<button class="carousel-nav left" onclick="prevSlide()">❮</button>
+<button class="carousel-nav right" onclick="nextSlide()">❯</button>
+<div class="carousel">
+<div class="carousel-track" id="carousel-track"></div>
+</div>
+</div>
+<script>
+      const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
+      const isMobile = window.innerWidth <= 600;
+      const track = document.getElementById("carousel-track");
+      if (isMobile && track) track.classList.add("stacked");
+              let currentIndex = 0;
 
-  <div class="top-buttons">
-    <a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
-    <a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
-  </div>
-
-  <main class="main-content container">
-    <div id="loginModal">
-      <form onsubmit="return checkLogin(event)">
-        <h2>Admin Login</h2>
-        <input id="adminPass" placeholder="Passord" required="" type="password"/>
-        <br/><br/>
-        <button type="submit">Logg inn</button>
-      </form>
-    </div>
-  <div class="carousel-wrapper">
-  <button class="carousel-nav left" onclick="prevSlide()">❮</button>
-  <button class="carousel-nav right" onclick="nextSlide()">❯</button>
-  <div class="carousel">
-  <div class="carousel-track" id="carousel-track"></div>
-  </div>
-  </div>
-  <script>
-        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
-        const isMobile = window.innerWidth <= 600;
-        const track = document.getElementById("carousel-track");
-        if (isMobile && track) track.classList.add("stacked");
-                let currentIndex = 0;
-          
-
-          function showLogin() {
-            document.getElementById("loginModal").style.display = "flex";
-          }
-
-          function checkLogin(event) {
-            event.preventDefault();
-            const password = document.getElementById("adminPass").value;
-            if (password === "admin123") {
-              document.getElementById("loginModal").style.display = "none";
-              document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
-              document.getElementById("adminLoginBtn").style.display = "none";
-              document.getElementById("logoutBtn").style.display = "inline-block";
-              localStorage.setItem("adminLoggedIn", "true");
-            } else {
-              alert("Feil passord. Prøv igjen.");
+        function handleVedtaClick(button) {
+          const row = button.closest('tr');
+          if (row && !row.classList.contains('vedtatt')) {
+            row.classList.add('vedtatt');
+            button.classList.add('vedtatt');
+            const rowId = row.getAttribute('data-row-id');
+            if (rowId) {
+              saveVedtatt(rowId);
             }
           }
+        }
 
-          function logout() {
-            document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "none");
-            document.getElementById("adminLoginBtn").style.display = "inline-block";
-            document.getElementById("logoutBtn").style.display = "none";
-            localStorage.removeItem("adminLoggedIn");
-          }
+        async function loadCSV() {
+          try {
+            console.log("[DEBUG] Starting CSV load...");
 
-          function checkStoredLogin() {
-            if (localStorage.getItem("adminLoggedIn") === "true") {
-              document.querySelectorAll(".vedta-button").forEach(btn => btn.style.display = "inline-block");
-              document.getElementById("adminLoginBtn").style.display = "none";
-              document.getElementById("logoutBtn").style.display = "inline-block";
+            const response = await fetch(csvUrl);
+            console.log("[DEBUG] Response status:", response.status);
+
+            if (!response.ok) {
+              console.error("[ERROR] Fetch failed with status:", response.statusText);
+              document.getElementById("carousel-track").innerHTML = "<p>Kunne ikke laste inn data.</p>";
+              return;
             }
-          }
 
-          function handleVedtaClick(button) {
-            const row = button.closest('tr');
-            if (row && !row.classList.contains('vedtatt')) {
-              row.classList.add('vedtatt');
-              button.classList.add('vedtatt');
-              const rowId = row.getAttribute('data-row-id');
-              if (rowId) {
-                saveVedtatt(rowId);
-              }
+            const text = await response.text();
+            console.log("[DEBUG] CSV raw text (first 500 chars):", text.slice(0, 500));
+
+            const rows = text.trim().split("\n").map(row => row.split(","));
+            console.log("[DEBUG] Total rows parsed:", rows.length);
+
+            if (rows.length < 2) {
+              console.warn("[WARNING] Not enough data rows in CSV");
+              return;
             }
-          }
 
-          async function loadCSV() {
-            try {
-              console.log("[DEBUG] Starting CSV load...");
+            const headers = rows[0];
+            const data = rows.slice(1);
+            console.log("[DEBUG] Headers:", headers);
+            console.log("[DEBUG] First data row:", data[0]);
 
-              const response = await fetch(csvUrl);
-              console.log("[DEBUG] Response status:", response.status);
-
-              if (!response.ok) {
-                console.error("[ERROR] Fetch failed with status:", response.statusText);
-                document.getElementById("carousel-track").innerHTML = "<p>Kunne ikke laste inn data.</p>";
+            const grouped = {};
+            data.forEach(row => {
+              const tema = row[2]?.trim();
+              if (!tema) {
+                console.warn("[WARNING] Skipped row with missing tema:", row);
                 return;
               }
+              if (!grouped[tema]) grouped[tema] = [];
+              grouped[tema].push(row);
+            });
 
-              const text = await response.text();
-              console.log("[DEBUG] CSV raw text (first 500 chars):", text.slice(0, 500));
+            console.log("[DEBUG] Grouped tema keys:", Object.keys(grouped));
 
-              const rows = text.trim().split("\n").map(row => row.split(","));
-              console.log("[DEBUG] Total rows parsed:", rows.length);
+            const temaOrder = [
+              "Ungdomsdemokrati og Medvirkning",
+              "Samferdsel",
+              "Utdanning og Kompetanse",
+              "Folkehelse",
+              "Klima og Miljø",
+              "Kultur"
+            ];
 
-              if (rows.length < 2) {
-                console.warn("[WARNING] Not enough data rows in CSV");
-                return;
-              }
-
-              const headers = rows[0];
-              const data = rows.slice(1);
-              console.log("[DEBUG] Headers:", headers);
-              console.log("[DEBUG] First data row:", data[0]);
-
-              const grouped = {};
-              data.forEach(row => {
-                const tema = row[2]?.trim();
-                if (!tema) {
-                  console.warn("[WARNING] Skipped row with missing tema:", row);
-                  return;
-                }
-                if (!grouped[tema]) grouped[tema] = [];
-                grouped[tema].push(row);
-              });
-
-              console.log("[DEBUG] Grouped tema keys:", Object.keys(grouped));
-
-              const temaOrder = [
-                "Ungdomsdemokrati og Medvirkning",
-                "Samferdsel",
-                "Utdanning og Kompetanse",
-                "Folkehelse",
-                "Klima og Miljø",
-                "Kultur"
-              ];
-
-              const track = document.getElementById("carousel-track");
-              const isMobile = window.innerWidth <= 600;
-
-              temaOrder.forEach(tema => {
-                const groupRows = grouped[tema];
-                console.log(`[DEBUG] Processing tema "${tema}" with ${groupRows?.length || 0} rows`);
-                if (!groupRows || groupRows.length === 0) return;
-
-                const slide = document.createElement("div");
-                slide.className = "carousel-slide";
-
-                const h2 = document.createElement("h2");
-                h2.textContent = tema;
-                slide.appendChild(h2);
-
-                const table = document.createElement("table");
-                const thead = document.createElement("thead");
-                const tr = document.createElement("tr");
-
-                headers.slice(1).forEach((h, index) => {
-                  if (index === 1) return;
-                  const th = document.createElement("th");
-                  th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-                  tr.appendChild(th);
-                });
-
-                const thBtn = document.createElement("th");
-                thBtn.className = "button-header";
-                tr.appendChild(thBtn);
-                thead.appendChild(tr);
-                table.appendChild(thead);
-
-                const tbody = document.createElement("tbody");
-                groupRows.forEach(row => {
-                  const tr = document.createElement("tr");
-                  tr.className = row[1]?.trim().replace(/\s/g, "-");
-
-                  row.slice(1).forEach((cell, index) => {
-                    if (index === 1) return;
-                    const td = document.createElement("td");
-                    if (index === 2) td.style.textAlign = "center";
-
-                    if (index === 0) {
-                      const tagDiv = document.createElement("div");
-                      tagDiv.className = "tag-label";
-                      tagDiv.textContent = cell;
-                      td.appendChild(tagDiv);
-                    } else {
-                      td.textContent = cell;
-                    }
-
-                    tr.appendChild(td);
-                  });
-
-                  const tdAction = document.createElement("td");
-                  tdAction.className = "button-cell";
-                  const btn = document.createElement("button");
-                  btn.textContent = "Vedta";
-                  btn.className = "vedta-button";
-                  btn.onclick = () => {
-                    tr.classList.toggle("vedtatt");
-                  };
-                  tdAction.appendChild(btn);
-                  tr.appendChild(tdAction);
-                  tbody.appendChild(tr);
-                });
-
-                table.appendChild(tbody);
-
-                const wrapper = document.createElement("div");
-                wrapper.className = "table-wrapper";
-                wrapper.appendChild(table);
-
-                slide.appendChild(wrapper);
-                track.appendChild(slide);
-              });
-
-              console.log("[DEBUG] Finished populating slides");
-              updateCarousel();
-              checkStoredLogin();
-            } catch (error) {
-              console.error("[ERROR] Exception in loadCSV:", error);
-            }
-          }
-
-
-          function updateCarousel() {
             const track = document.getElementById("carousel-track");
-            const totalSlides = track.children.length;
-            currentIndex = (currentIndex + totalSlides) % totalSlides;
-            track.style.transform = `translateX(-${currentIndex * 100}%)`;
-          }
+            const isMobile = window.innerWidth <= 600;
 
-          function nextSlide() {
-            currentIndex++;
+            temaOrder.forEach(tema => {
+              const groupRows = grouped[tema];
+              console.log(`[DEBUG] Processing tema "${tema}" with ${groupRows?.length || 0} rows`);
+              if (!groupRows || groupRows.length === 0) return;
+
+              const slide = document.createElement("div");
+              slide.className = "carousel-slide";
+
+              const h2 = document.createElement("h2");
+              h2.textContent = tema;
+              slide.appendChild(h2);
+
+              const table = document.createElement("table");
+              const thead = document.createElement("thead");
+              const tr = document.createElement("tr");
+
+              headers.slice(1).forEach((h, index) => {
+                if (index === 1) return;
+                const th = document.createElement("th");
+                th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
+                tr.appendChild(th);
+              });
+
+              const thBtn = document.createElement("th");
+              thBtn.className = "button-header";
+              tr.appendChild(thBtn);
+              thead.appendChild(tr);
+              table.appendChild(thead);
+
+              const tbody = document.createElement("tbody");
+              groupRows.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = row[1]?.trim().replace(/\s/g, "-");
+
+                row.slice(1).forEach((cell, index) => {
+                  if (index === 1) return;
+                  const td = document.createElement("td");
+                  if (index === 2) td.style.textAlign = "center";
+
+                  if (index === 0) {
+                    const tagDiv = document.createElement("div");
+                    tagDiv.className = "tag-label";
+                    tagDiv.textContent = cell;
+                    td.appendChild(tagDiv);
+                  } else {
+                    td.textContent = cell;
+                  }
+
+                  tr.appendChild(td);
+                });
+
+                const tdAction = document.createElement("td");
+                tdAction.className = "button-cell";
+                const btn = document.createElement("button");
+                btn.textContent = "Vedta";
+                btn.className = "vedta-button";
+                btn.onclick = () => {
+                  tr.classList.toggle("vedtatt");
+                };
+                tdAction.appendChild(btn);
+                tr.appendChild(tdAction);
+                tbody.appendChild(tr);
+              });
+
+              table.appendChild(tbody);
+
+              const wrapper = document.createElement("div");
+              wrapper.className = "table-wrapper";
+              wrapper.appendChild(table);
+
+              slide.appendChild(wrapper);
+              track.appendChild(slide);
+            });
+
+            console.log("[DEBUG] Finished populating slides");
             updateCarousel();
+          } catch (error) {
+            console.error("[ERROR] Exception in loadCSV:", error);
           }
+        }
 
-          function prevSlide() {
-            currentIndex--;
-            updateCarousel();
-          }
 
-          window.addEventListener("DOMContentLoaded", loadCSV);
-      </script>
-  </main>
+        function updateCarousel() {
+          const track = document.getElementById("carousel-track");
+          const totalSlides = track.children.length;
+          currentIndex = (currentIndex + totalSlides) % totalSlides;
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
 
-  <footer class="site-footer">
-    <div class="container">
-      <img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
-    </div>
-  </footer>
+        function nextSlide() {
+          currentIndex++;
+          updateCarousel();
+        }
 
+        function prevSlide() {
+          currentIndex--;
+          updateCarousel();
+        }
+
+        window.addEventListener("DOMContentLoaded", loadCSV);
+    </script>
+</main>
+<footer class="site-footer">
+<div class="container">
+<img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
+</div>
+</footer>
 </body>
 </html>
