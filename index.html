@@ -540,6 +540,13 @@
   <a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
 </div>
 <main class="main-content container">
+  <div id="login-section">
+    <h2>Logg inn</h2>
+    <input type="email" id="email" placeholder="E-post" required>
+    <input type="password" id="password" placeholder="Passord" required>
+    <button onclick="login()">Logg inn</button>
+    <p id="login-status"></p>
+  </div>
 <div class="carousel-wrapper">
 <button class="carousel-nav left" onclick="prevSlide()">❮</button>
 <button class="carousel-nav right" onclick="nextSlide()">❯</button>
@@ -720,6 +727,30 @@
         }
 
         window.addEventListener("DOMContentLoaded", loadCSV);
+    </script>
+    <script>
+      async function login() {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const status = document.getElementById("login-status");
+
+        const response = await fetch("https://your-backend-api.com/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem("token", result.token); // Save token
+          status.textContent = "Innlogging vellykket!";
+          document.getElementById("login-section").style.display = "none";
+          // Optionally unlock other content
+        } else {
+          status.textContent = "Feil e-post eller passord.";
+        }
+      }
     </script>
 </main>
 <footer class="site-footer">
