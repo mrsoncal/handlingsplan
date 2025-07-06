@@ -2,7 +2,7 @@ async function login() {
 const password = document.getElementById("password").value.trim();
 const status = document.getElementById("login-status");
 
-const response = await fetch("https://your-backend-api.com/login", {
+const response = await fetch("https://handlingsplan-backend.onrender.com/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password })
