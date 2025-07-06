@@ -347,7 +347,7 @@ display: block;
 }
 
 .login-section {
-display: none !important;
+display: none;
 }
 
 @media (max-width: 600px) {
