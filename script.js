@@ -18,11 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!token) {
     loginSection.style.display = "none";
-    mainContent.style.display = "none";
     loginButton.style.display = "inline-block";
   } else {
     loginSection.style.display = "none";
-    mainContent.style.display = "block";
     loginButton.style.display = "none";
   }
 
