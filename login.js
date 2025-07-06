@@ -1,21 +1,23 @@
-async function login() {
-const password = document.getElementById("password").value.trim();
-const status = document.getElementById("login-status");
+const passwordInput = document.getElementById("password");
+const loginForm = document.getElementById("login-form");
 
-const response = await fetch("https://handlingsplan-backend.onrender.com/login", {
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const password = passwordInput.value;
+
+  const response = await fetch("https://handlingsplan-backend.onrender.com/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password })
+    body: JSON.stringify({ password }),
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+    // Save token globally (localStorage or cookie)
+    localStorage.setItem("token", data.token);
+    window.location.reload(); // This will now show the main content
+  } else {
+    alert("Incorrect password.");
+  }
 });
-
-const result = await response.json();
-
-if (response.ok) {
-    localStorage.setItem("token", result.token); // Save token
-    status.textContent = "Innlogging vellykket!";
-    document.getElementById("login-section").style.display = "none";
-    // Optionally unlock other content
-} else {
-    status.textContent = "Feil passord.";
-}
-}

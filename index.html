@@ -17,11 +17,11 @@
     <a class="plan-button" href="docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
   </div>
   <main class="main-content container">
-    <div id="login-section">
-      <h2>Logg inn</h2>
-      <input type="password" id="password" placeholder="Passord" required>
-      <button onclick="login()">Logg inn</button>
-      <p id="login-status"></p>
+    <div class="login-section" id="login-section">
+      <form id="login-form">
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Logg inn</button>
+      </form>
     </div>
     <div class="carousel-wrapper">
       <button class="carousel-nav left" onclick="prevSlide()">❮</button>
@@ -36,5 +36,9 @@
       <img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
     </div>
   </footer>
+
+  <script src="login.js"></script>
+  <script src="script.js"></script>
+
 </body>
 </html>

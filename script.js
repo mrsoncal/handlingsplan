@@ -4,6 +4,20 @@ const track = document.getElementById("carousel-track");
 if (isMobile && track) track.classList.add("stacked");
         let currentIndex = 0;
 
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    // Not logged in
+    document.getElementById("login-section").style.display = "block";
+    document.getElementById("main-content").style.display = "none";
+  } else {
+    // Logged in
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("main-content").style.display = "block";
+  }
+});
+
 function handleVedtaClick(button) {
     const row = button.closest('tr');
     if (row && !row.classList.contains('vedtatt')) {
