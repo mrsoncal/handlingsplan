@@ -199,23 +199,3 @@ function prevSlide() {
 }
 
 window.addEventListener("DOMContentLoaded", loadCSV);
-
-document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    // Show login button only if not logged in
-    document.getElementById("login-button").style.display = "inline-block";
-  } else {
-    document.getElementById("login-button").style.display = "none";
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("main-content").style.display = "block";
-  }
-
-  const loginButton = document.getElementById("login-button");
-  loginButton.addEventListener("click", () => {
-    document.getElementById("login-section").style.display = "block";
-    loginButton.style.display = "none";
-    console.log("Form loaded")
-  });
-});
