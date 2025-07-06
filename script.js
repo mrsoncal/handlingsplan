@@ -217,5 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loginButton.addEventListener("click", () => {
     document.getElementById("login-section").style.display = "block";
     loginButton.style.display = "none";
+    console.log("Form loaded")
   });
 });
