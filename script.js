@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginSection = document.getElementById("login-section");
   const mainContent = document.getElementById("main-content");
   const loginButton = document.getElementById("login-button");
+  const logoutButton = document.getElementById("logout-button");
 
   if (!loginSection || !mainContent || !loginButton) {
     console.warn("One or more required elements are missing.");
@@ -18,16 +19,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!token) {
     loginSection.style.display = "none";
+    mainContent.style.display = "none";
     loginButton.style.display = "inline-block";
-  } else {
+    logoutButton.style.display = "none";
+    } else {
     loginSection.style.display = "none";
+    mainContent.style.display = "block";
     loginButton.style.display = "none";
-  }
+    logoutButton.style.display = "inline-block";
+    }
 
-  loginButton.addEventListener("click", () => {
-    loginSection.style.display = "block";
+    loginButton.addEventListener("click", () => {
+    loginSection.style.display = "flex";
     loginButton.style.display = "none";
-  });
+    });
+
+    logoutButton.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    location.reload();
+    });
 });
 
 
