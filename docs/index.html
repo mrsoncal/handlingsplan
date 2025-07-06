@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html lang="no">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Forslag til Handlingsplan 2026</title>
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>Forslag til Handlingsplan 2026</h1>
+    </div>
+  </header>
+  <div class="top-buttons">
+    <a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
+    <a class="plan-button" href="Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
+  </div>
+  <main class="main-content container">
+    <div id="login-section">
+      <h2>Logg inn</h2>
+      <input type="email" id="email" placeholder="E-post" required>
+      <input type="password" id="password" placeholder="Passord" required>
+      <button onclick="login()">Logg inn</button>
+      <p id="login-status"></p>
+    </div>
+    <div class="carousel-wrapper">
+      <button class="carousel-nav left" onclick="prevSlide()">❮</button>
+      <button class="carousel-nav right" onclick="nextSlide()">❯</button>
+      <div class="carousel">
+        <div class="carousel-track" id="carousel-track"></div>
+      </div>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png"/>
+    </div>
+  </footer>
+</body>
+</html>
