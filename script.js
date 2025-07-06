@@ -7,16 +7,31 @@ if (isMobile && track) track.classList.add("stacked");
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("token");
 
-  if (!token) {
-    // Not logged in
-    document.getElementById("login-section").style.display = "block";
-    document.getElementById("main-content").style.display = "none";
-  } else {
-    // Logged in
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("main-content").style.display = "block";
+  const loginSection = document.getElementById("login-section");
+  const mainContent = document.getElementById("main-content");
+  const loginButton = document.getElementById("show-login-button");
+
+  if (!loginSection || !mainContent || !loginButton) {
+    console.warn("One or more required elements are missing.");
+    return;
   }
+
+  if (!token) {
+    loginSection.style.display = "none";
+    mainContent.style.display = "none";
+    loginButton.style.display = "inline-block";
+  } else {
+    loginSection.style.display = "none";
+    mainContent.style.display = "block";
+    loginButton.style.display = "none";
+  }
+
+  loginButton.addEventListener("click", () => {
+    loginSection.style.display = "block";
+    loginButton.style.display = "none";
+  });
 });
+
 
 function handleVedtaClick(button) {
     const row = button.closest('tr');
