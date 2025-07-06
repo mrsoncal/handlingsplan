@@ -190,15 +190,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!token) {
     // Show login button only if not logged in
-    document.getElementById("show-login-button").style.display = "inline-block";
+    document.getElementById("login-button").style.display = "inline-block";
     document.getElementById("login-section").style.display = "none";
   } else {
-    document.getElementById("show-login-button").style.display = "none";
+    document.getElementById("login-button").style.display = "none";
     document.getElementById("login-section").style.display = "none";
     document.getElementById("main-content").style.display = "block";
   }
 
-  const loginButton = document.getElementById("show-login-button");
+  const loginButton = document.getElementById("login-button");
   loginButton.addEventListener("click", () => {
     document.getElementById("login-section").style.display = "block";
     loginButton.style.display = "none";
