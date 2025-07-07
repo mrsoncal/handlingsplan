@@ -218,20 +218,12 @@ async function loadCSV() {
     }
 }
 
-document.addEventListener("click", function (event) {
-  const overlay = document.getElementById("login-section");
+document.getElementById("login-section").addEventListener("click", function (event) {
   const form = document.querySelector(".login-form");
 
-  if (
-    overlay.style.display === "flex" &&
-    !form.contains(event.target) &&
-    event.target.closest("#login-section")
-  ) {
-    overlay.style.opacity = 0;
-    setTimeout(() => {
-      overlay.style.display = "none";
-      overlay.style.opacity = 1;
-    }, 300);
+  // If the clicked target is the overlay itself (not inside the form), close the overlay
+  if (!form.contains(event.target)) {
+    this.style.display = "none";
   }
 });
 
