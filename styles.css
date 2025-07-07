@@ -35,8 +35,6 @@ flex: 1; /* fills available space between header and footer */
 .page-header {
 padding: 3rem 1rem;
 margin-bottom: 1rem;
-display: flex;
-text-align: center !important;
 }
 
 .page-header h1 {
