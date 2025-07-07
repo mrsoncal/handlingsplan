@@ -110,7 +110,8 @@ animation: slideIn 0.5s ease-in-out;
 }
 
 table {
-border-collapse: separate;
+border-collapse: collapse;
+border-spacing: 0 0.5rem; /* Adds vertical space between rows */
 width: 100%;
 margin-top: 1rem;
 animation: fadeIn 0.4s ease-in;
@@ -255,11 +256,6 @@ color: white;
   padding: 0;
   border: none;
   padding: 0;
-}
-
-/* Ensure it overrides striping */
-tbody tr.filler-row td {
-  background-color: inherit !important;
 }
 
 /* Rounded bottom corners (left and right) */
