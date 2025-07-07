@@ -294,7 +294,7 @@ tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #dfdfdf !important;
 }
 
-tbody tr.vedtatt:hover:nth-child(even):not(.filler-row) td:not(.button-cell) {
+tbody tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
   background-color: #afd3b4 !important;
 }
 
