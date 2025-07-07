@@ -255,7 +255,6 @@ color: white;
   height: 1.25rem;
   padding: 0;
   border: none;
-  padding: 0;
 }
 
 /* Rounded bottom corners (left and right) */
@@ -448,6 +447,12 @@ display: block;
 
 .login-out-button {
     display: none !important;
+}
+
+.filler-row td {
+  height: 0.75rem;
+  padding: 0;
+  border: none;
 }
 
 body {
