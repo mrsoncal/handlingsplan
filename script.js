@@ -286,6 +286,7 @@ function updateCarousel() {
     const totalSlides = track.children.length;
     currentIndex = (currentIndex + totalSlides) % totalSlides;
     track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function nextSlide() {
