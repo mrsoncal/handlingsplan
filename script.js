@@ -171,20 +171,29 @@ async function loadCSV() {
             tbody.appendChild(tr);
         });
 
-        // Add empty row with styled background and rounded bottom corners
+        // Create filler row
         const fillerRow = document.createElement("tr");
         fillerRow.className = "filler-row";
 
-        const totalColumns = headers.length - 1; // -1 because index 1 is skipped
+        // Determine total columns in table (excluding skipped index 1)
+        const totalColumns = headers.length - 1;
+
+        // Copy background color from thead th elements
+        const firstTh = thead.querySelector("th");
+        let headerBg = "";
+        if (firstTh) {
+        const computedStyle = window.getComputedStyle(firstTh);
+        headerBg = computedStyle.backgroundColor;
+        }
+
         for (let i = 0; i < totalColumns; i++) {
         const td = document.createElement("td");
-        td.innerHTML = "&nbsp;"; // blank space
+        td.innerHTML = "&nbsp;";
+        if (headerBg) td.style.backgroundColor = headerBg;
         fillerRow.appendChild(td);
         }
 
         tbody.appendChild(fillerRow);
-
-
 
         table.appendChild(tbody);
 

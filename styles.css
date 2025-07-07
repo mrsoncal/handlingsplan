@@ -420,31 +420,6 @@ display: block;
   border-bottom-right-radius: 12px;
 }
 
-.carousel-slide:nth-child(1) table th {
-  background-color: #DD1367;
-  color: white;
-}
-.carousel-slide:nth-child(1) table th {
-  background-color: #FF6A18;
-  color: white;
-}
-.carousel-slide:nth-child(1) table th {
-  background-color: #C5182C;
-  color: white;
-}
-.carousel-slide:nth-child(1) table th {
-  background-color: #52A23E;
-  color: white;
-}
-.carousel-slide:nth-child(1) table th {
-  background-color: #1C7A23;
-  color: white;
-}
-.carousel-slide:nth-child(1) table th {
-  background-color: #DD1367;
-  color: white;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
