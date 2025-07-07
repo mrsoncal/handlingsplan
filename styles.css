@@ -440,6 +440,17 @@ display: block;
   gap: 0.5rem;
 }
 
+.password-toggle input[type="password"],
+.password-toggle input[type="text"] {
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 #togglePassword {
   background: none;
   border: none;

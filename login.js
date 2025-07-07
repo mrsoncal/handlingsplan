@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePasswordBtn.addEventListener("click", () => {
       const isPassword = passwordInput.type === "password";
       passwordInput.type = isPassword ? "text" : "password";
-      togglePasswordBtn.textContent = isPassword ? "Skjul passord" : "Vis passord";
+      togglePasswordBtn.textContent = isPassword ? "gjem" : "👁";
     });
   }
 });
