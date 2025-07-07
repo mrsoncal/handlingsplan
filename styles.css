@@ -434,7 +434,7 @@ display: block;
   border-radius: 8px;
 }
 
-#login-form button {
+#login-form button[type="submit"] {
   padding: 0.75rem;
   font-size: 1rem;
   background-color: #3f3f3f;
@@ -445,7 +445,7 @@ display: block;
   transition: background-color 0.3s ease;
 }
 
-#login-form button:hover {
+#login-form button[type="submit"]:hover {
   background-color: #007aa3;
 }
 
