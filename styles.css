@@ -37,6 +37,7 @@ flex: 1; /* fills available space between header and footer */
   width: 100%;
   background-color: #cbe2e7;
   padding: 2rem;
+  margin-bottom: 2rem;
   box-sizing: border-box;
   text-align: center;
 }
