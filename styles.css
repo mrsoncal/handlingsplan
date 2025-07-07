@@ -450,7 +450,7 @@ display: block;
 }
 
 .filler-row td {
-  height: 0.75rem;
+  height: 0.5rem !important;
 }
 
 body {
