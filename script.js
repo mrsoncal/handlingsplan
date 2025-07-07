@@ -63,7 +63,6 @@ async function loadCSV() {
     try {
         const response = await fetch(csvUrl);
         if (!response.ok) {
-            console.error("[ERROR] Fetch failed with status:", response.statusText);
             document.getElementById("carousel-track").innerHTML = "<p>Kunne ikke laste inn data.</p>";
             return;
         }
@@ -79,13 +78,13 @@ async function loadCSV() {
 
                 // ✅ Remove any unexpected keys like "_1"
                 data = data.map(row => {
-                const cleaned = {};
-                for (const key of Object.keys(row)) {
-                    if (key && !key.startsWith("_")) {
-                    cleaned[key] = row[key];
+                    const cleaned = {};
+                    for (const key of Object.keys(row)) {
+                        if (key && !key.startsWith("_")) {
+                            cleaned[key] = row[key];
+                        }
                     }
-                }
-                return cleaned;
+                    return cleaned;
                 });
 
                 const headers = Object.keys(data[0]);
@@ -96,22 +95,34 @@ async function loadCSV() {
                     const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
                     if (res.ok) {
                         savedVedtatt = await res.json();
-                    } else {
-                        console.warn("[WARNING] Failed to fetch saved vedtatt states");
                     }
-                } catch (err) {
-                    console.error("[ERROR] Fetching vedtatt states:", err);
-                }
+                } catch (err) {}
 
                 // ✅ Group by tema
                 const grouped = {};
                 data.forEach(row => {
                     const tema = row["Velg et tema"]?.trim();
-                    if (!tema) {
-                        return;
-                    }
+                    if (!tema) return;
                     if (!grouped[tema]) grouped[tema] = [];
                     grouped[tema].push(row);
+                });
+
+                // ✅ Sort rows within each tema
+                Object.keys(grouped).forEach(tema => {
+                    grouped[tema] = grouped[tema].sort((a, b) => {
+                        const numA = parseInt(a["Velg et punkt (nr)"]) || 0;
+                        const numB = parseInt(b["Velg et punkt (nr)"]) || 0;
+                        if (numA !== numB) return numA - numB;
+
+                        const actionOrder = {
+                            "Legge til et punkt": 0,
+                            "Endre et punkt": 1,
+                            "Fjerne et punkt": 2
+                        };
+                        const actionA = actionOrder[a["Hva vil du gjøre?"]] ?? 99;
+                        const actionB = actionOrder[b["Hva vil du gjøre?"]] ?? 99;
+                        return actionA - actionB;
+                    });
                 });
 
                 const temaOrder = [
@@ -215,7 +226,6 @@ async function loadCSV() {
                     slide.appendChild(wrapper);
                     track.appendChild(slide);
 
-                    // ✅ Add filler row
                     let headerBg = "#f0f0f0";
                     const th = slide.querySelector("th:not(.button-header)");
                     if (th) {
@@ -237,6 +247,7 @@ async function loadCSV() {
 
                     tbody.appendChild(fillerRow);
                 });
+
                 updateCarousel();
             }
         });
@@ -244,6 +255,7 @@ async function loadCSV() {
         console.error("[ERROR] Exception in loadCSV:", error);
     }
 }
+
 
 
 document.getElementById("login-section").addEventListener("click", function (event) {
