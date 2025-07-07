@@ -36,7 +36,6 @@ flex: 1; /* fills available space between header and footer */
 padding: 3rem 1rem;
 margin-bottom: 1rem;
 display: flex;
-align-items: center;
 }
 
 .page-header h1 {
