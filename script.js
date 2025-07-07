@@ -171,6 +171,18 @@ async function loadCSV() {
             tbody.appendChild(tr);
         });
 
+        // ✅ NEW: Get actual header color from a styled column, not the empty button column
+        let headerBg = "";
+        const firstDataRow = tbody.querySelector("tr:not(.filler-row)");
+        if (firstDataRow) {
+        const firstDataCell = firstDataRow.querySelector("td:not(.button-cell)");
+        if (firstDataCell) {
+            const computedStyle = window.getComputedStyle(firstDataCell);
+            headerBg = computedStyle.backgroundColor;
+        }
+        }
+        console.log("Filler row background color for tema", tema, ":", headerBg); // optional debug
+
         // Create filler row
         const fillerRow = document.createElement("tr");
         fillerRow.className = "filler-row";
@@ -180,7 +192,6 @@ async function loadCSV() {
 
         // Copy background color from thead th elements
         const firstTh = thead.querySelector("th");
-        let headerBg = "";
         if (firstTh) {
         const computedStyle = window.getComputedStyle(firstTh);
         headerBg = computedStyle.backgroundColor;
@@ -190,6 +201,7 @@ async function loadCSV() {
         const td = document.createElement("td");
         td.innerHTML = "&nbsp;";
         if (headerBg) td.style.backgroundColor = headerBg;
+        console.log("Filler row background color for tema", tema, ":", headerBg);
         fillerRow.appendChild(td);
         }
 
