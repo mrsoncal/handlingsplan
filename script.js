@@ -207,8 +207,15 @@ async function loadCSV() {
                 tr.classList.add("vedtatt");
                 btn.classList.add("vedtatt");
                 btn.textContent = "Vedtatt";
-            }
 
+                // ✅ Add label only if not logged in
+                if (!localStorage.getItem("token")) {
+                    const label = document.createElement("span");
+                    label.className = "vedtatt-label";
+                    label.textContent = "✔ Vedtatt!";
+                    tdAction.appendChild(label);
+                }
+            }
             tbody.appendChild(tr);
         });
 

@@ -251,6 +251,18 @@ background: #28a745 !important;
 color: white;
 }
 
+.vedtatt-label {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  background-color: #28a745;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
 .filler-row td {
   height: 1.25rem;
   padding: 0;
