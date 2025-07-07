@@ -218,6 +218,22 @@ async function loadCSV() {
     }
 }
 
+document.addEventListener("click", function (event) {
+  const overlay = document.getElementById("login-section");
+  const form = document.querySelector(".login-form");
+
+  if (
+    overlay?.style.display === "flex" &&
+    overlay.contains(event.target) &&
+    !form.contains(event.target)
+  ) {
+    overlay.style.opacity = 0;
+        setTimeout(() => {
+        overlay.style.display = "none";
+        overlay.style.opacity = 1; // reset for next open
+    }, 300);
+  }
+});
 
 function updateCarousel() {
     const track = document.getElementById("carousel-track");
