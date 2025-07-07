@@ -38,25 +38,20 @@ margin-bottom: 1rem;
 }
 
 .page-header h1 {
-margin: 0;
-font-size: 1.5rem;
-font-weight: bolder;
-color: #1a1a1a;
-text-align: center;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bolder;
+  color: #1a1a1a;
+  text-align: center;
 }
 
 .header-flex {
   display: flex;
-  align-items: center;
+  align-items: center;        /* ⬅️ vertically align items */
   justify-content: space-between;
   flex-wrap: wrap;
-}
-
-.header-flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  padding: 0 1rem;
+  gap: 1rem;
 }
 
 /* Unified login/logout button style */
