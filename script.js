@@ -1,6 +1,7 @@
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 const isMobile = window.innerWidth <= 600;
 const track = document.getElementById("carousel-track");
+let currentSlideIndex = 0;
 if (isMobile && track) track.classList.add("stacked");
         let currentIndex = 0;
 
