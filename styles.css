@@ -398,6 +398,10 @@ display: block;
   gap: 1.25rem;
 }
 
+#login-form h2 {
+  margin: 2rem;
+}
+
 #login-form input[type="password"] {
   padding: 0.75rem;
   font-size: 1rem;
