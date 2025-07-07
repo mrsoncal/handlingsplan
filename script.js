@@ -223,14 +223,14 @@ document.addEventListener("click", function (event) {
   const form = document.querySelector(".login-form");
 
   if (
-    overlay?.style.display === "flex" &&
-    overlay.contains(event.target) &&
-    !form.contains(event.target)
+    overlay.style.display === "flex" &&
+    !form.contains(event.target) &&
+    event.target.closest("#login-section")
   ) {
     overlay.style.opacity = 0;
-        setTimeout(() => {
-        overlay.style.display = "none";
-        overlay.style.opacity = 1; // reset for next open
+    setTimeout(() => {
+      overlay.style.display = "none";
+      overlay.style.opacity = 1;
     }, 300);
   }
 });
