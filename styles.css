@@ -252,7 +252,7 @@ color: white;
 }
 
 .filler-row td {
-  background-color: #ccc; /* fallback color */
+  background-color: inherit !important;
   height: 1.25rem;
   border: none;
   padding: 0;
