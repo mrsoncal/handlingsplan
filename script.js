@@ -44,23 +44,27 @@ document.addEventListener("DOMContentLoaded", () => {
 function handleVedtaClick(tr, btn) {
   tr.classList.toggle("vedtatt");
   const isVedtatt = tr.classList.contains("vedtatt");
-
-  // ✅ Toggle button appearance
-  btn.classList.toggle("vedtatt", isVedtatt);
-  btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
-
-  // ✅ Get unique row ID
   const rowId = tr.dataset.rowId;
 
-  // ✅ Send to backend
+  console.log(`[ACTION] Toggling vedtatt for rowId="${rowId}" to ${isVedtatt}`);
+
   fetch("https://handlingsplan-backend.onrender.com/vedtatt", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ rowId, vedtatt: isVedtatt }),
-  }).catch(err => {
-    console.error("[ERROR] Failed to update vedtatt status:", err);
-  });
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("[SERVER] Save response:", data);
+    })
+    .catch((err) => {
+      console.error("[ERROR] Failed to update vedtatt status:", err);
+    });
+
+  btn.classList.toggle("vedtatt", isVedtatt);
+  btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
 }
+
 
 
 async function loadCSV() {
@@ -104,6 +108,14 @@ async function loadCSV() {
     }
     } catch (err) {
     console.error("[ERROR] Fetching vedtatt states:", err);
+    }if (savedVedtatt[rowId]) {
+    console.log(`[APPLY] Applying vedtatt to rowId="${rowId}"`);
+    tr.classList.add("vedtatt");
+    const button = tr.querySelector(".vedta-button");
+    if (button) {
+        button.classList.add("vedtatt");
+        button.textContent = "Vedtatt";
+    }
     }
 
     const grouped = {};
