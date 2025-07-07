@@ -282,10 +282,25 @@ document.getElementById("login-section").addEventListener("click", function (eve
 });
 
 function updateCarousel() {
-    const track = document.getElementById("carousel-track");
-    const totalSlides = track.children.length;
-    currentIndex = (currentIndex + totalSlides) % totalSlides;
-    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+  const track = document.getElementById("carousel-track");
+  const slides = document.querySelectorAll(".carousel-slide");
+  const currentIndex = currentSlideIndex; // or wherever you're tracking the index
+
+  slides.forEach((slide, index) => {
+    slide.style.display = index === currentIndex ? "block" : "none";
+  });
+
+  // ✅ Scroll to top of current slide on desktop
+  if (window.innerWidth > 768) {
+    const currentSlide = slides[currentIndex];
+    if (currentSlide) {
+      const topOffset = currentSlide.getBoundingClientRect().top + window.pageYOffset - 20;
+      window.scrollTo({
+        top: topOffset,
+        behavior: "instant" // Use "smooth" for a subtle animation, or "instant" for immediate
+      });
+    }
+  }
 }
 
 function nextSlide() {
