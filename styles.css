@@ -282,6 +282,10 @@ tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #f0f0f0;
 }
 
+tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
+  background-color: #87c090 !important;
+}
+
 tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #dfdfdf !important;
 }
