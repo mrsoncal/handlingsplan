@@ -333,6 +333,7 @@ object-fit: contain;
 .top-buttons {
 display: flex;
 justify-content: center;
+gap: 1rem;
 padding: 1rem 0;
 margin: 0 auto;
 flex-wrap: wrap;
