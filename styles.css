@@ -251,8 +251,8 @@ background: #28a745 !important;
 color: white;
 }
 
-tbody tr:nth-child(even):not(.vedtatt) td:not(.button-cell) {
-background-color: #f0f0f0;
+tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
+  background-color: #f0f0f0;
 }
 
 tr:hover:not(.vedtatt) td:not(.button-cell) {
