@@ -257,6 +257,8 @@ color: white;
 
 .vedtatt-label {
   display: inline-block;
+  align-items: center;
+  gap: 0.2rem;
   margin-left: 0.5rem;
   padding: 0.5rem 1rem;
   background-color: #28a745;
