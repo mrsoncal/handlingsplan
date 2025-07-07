@@ -136,6 +136,10 @@ padding: 0;
 text-align: right;
 }
 
+.button-cell {
+  white-space: nowrap; /* Prevent wrapping */
+}
+
 .vedtatt td:nth-child(7),
 .vedtatt td.button-cell {
 background-color: white !important;
@@ -267,6 +271,7 @@ color: white;
   font-size: 0.75rem;
   font-weight: bold;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .filler-row td {
