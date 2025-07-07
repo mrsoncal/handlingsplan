@@ -16,7 +16,8 @@ loginForm.addEventListener("submit", async (e) => {
   if (response.ok) {
     // Save token globally (localStorage or cookie)
     localStorage.setItem("token", data.token);
-    window.location.reload(); // This will now show the main content
+    document.getElementById("login-form").style.display = "none";
+    document.getElementById("main-content").style.display = "block";
   } else {
     alert("Incorrect password.");
   }
