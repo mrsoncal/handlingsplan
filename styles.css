@@ -225,6 +225,7 @@ th.button-header { display: none; }
 .vedtatt td.button-cell { background-color: white !important; }
 
 .vedta-button {
+display: none;
 padding: 0.5rem 1rem;
 margin-left: 0.75rem;
 margin-right: 0.75rem;
@@ -235,6 +236,10 @@ border-radius: 6px;
 cursor: pointer;
 transition: background 0.3s ease;
 font-size: 12px;
+}
+
+body.logged-in .vedta-button {
+  display: inline-block;
 }
 
 .vedta-button:hover {

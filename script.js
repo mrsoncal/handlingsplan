@@ -19,14 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!token) {
     loginSection.style.display = "none";
-    mainContent.style.display = "none";
     loginButton.style.display = "inline-block";
     logoutButton.style.display = "none";
+    document.body.classList.remove("logged-in");
     } else {
     loginSection.style.display = "none";
-    mainContent.style.display = "block";
     loginButton.style.display = "none";
     logoutButton.style.display = "inline-block";
+    document.body.classList.add("logged-in");
     }
 
     loginButton.addEventListener("click", () => {
