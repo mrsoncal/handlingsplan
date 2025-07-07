@@ -54,8 +54,8 @@ flex: 1; /* fills available space between header and footer */
 /* Top-left fixed login/logout buttons */
 .login-out-button {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: 2rem;
+  left: 2rem;
   padding: 0.6rem 1.25rem;
   font-size: 1rem;
   font-weight: bold;
