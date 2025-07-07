@@ -631,4 +631,13 @@ border-bottom-left-radius: 8px;
 .table-wrapper table tbody tr:last-child td:nth-last-child(2) {
 border-bottom-right-radius: 8px;
 }
+
+.vedtatt-label {
+    display: block;
+    margin-left: 0;
+    margin-top: 0.4rem;
+    font-size: 0.65rem;
+    text-align: right;
+    padding: 0.25rem, 0.5rem;
+  }
 }
