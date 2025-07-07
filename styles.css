@@ -502,12 +502,15 @@ display: block;
   font-family: inherit;
   font-size: 1rem;
   padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #ccc !important;
+  border-radius: 6px !important;
   width: 100%;
   box-sizing: border-box;
   height: 2.5rem;        /* ✅ force consistent height */
   line-height: 1.5rem;   /* ✅ normalize vertical alignment */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 @media (max-width: 600px) {
