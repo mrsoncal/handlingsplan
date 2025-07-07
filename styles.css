@@ -224,43 +224,18 @@ th.button-header { display: none; }
 .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
 .vedtatt td.button-cell { background-color: white !important; }
 
-@keyframes slideGreen {
-  0% {
-    background-color: #e2e2e2;
-  }
-  100% {
-    background-color: #28a745;
-  }
-}
-
 .vedta-button {
-  display: none;
-  padding: 0.5rem 1rem;
-  margin-left: 0.75rem;
-  margin-right: 0.75rem;
-  background-color: #e2e2e2;
-  color: rgb(27, 27, 27);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s ease;
-}
-
-/* 🟢 Triggered animation class */
-.vedta-button.animating {
-  animation: slideGreen 0.4s forwards;
-}
-
-/* ✅ Final green state */
-.vedta-button.vedtatt-final {
-  background-color: #28a745;
-  color: white;
-}
-
-/* 🟢 Hover effect on final green */
-.vedta-button.vedtatt-final:hover {
-  background-color: #218838;
+display: none;
+padding: 0.5rem 1rem;
+margin-left: 0.75rem;
+margin-right: 0.75rem;
+background: #e2e2e2;
+color: rgb(27, 27, 27);
+border: none;
+border-radius: 6px;
+cursor: pointer;
+transition: background 0.3s ease;
+font-size: 12px;
 }
 
 body.logged-in .vedta-button {
@@ -271,15 +246,9 @@ body.logged-in .vedta-button {
 background: #b9b9b9;
 }
 
-.vedta-button::after {
-  content: "✔";
-  opacity: 0;
-  margin-left: 0.5rem;
-  transition: opacity 0.3s ease;
-}
-
-.vedtatt .vedta-button::after {
-  opacity: 1;
+.vedtatt .vedta-button {
+background: #28a745 !important;
+color: white;
 }
 
 .vedtatt-label {
@@ -314,7 +283,7 @@ tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
 }
 
 tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
-  background-color: #b6dbbc !important;
+  background-color: #87c090 !important;
 }
 
 tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
