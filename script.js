@@ -304,16 +304,20 @@ function updateCarousel() {
 }
 
 function nextSlide() {
+  console.log("Next button clicked");
   const slides = document.querySelectorAll(".carousel-slide");
   if (currentSlideIndex < slides.length - 1) {
     currentSlideIndex++;
+    console.log("Navigating to slide", currentSlideIndex);
     updateCarousel();
   }
 }
 
 function prevSlide() {
+  console.log("Previous button clicked");
   if (currentSlideIndex > 0) {
     currentSlideIndex--;
+    console.log("Navigating to slide", currentSlideIndex);
     updateCarousel();
   }
 }
