@@ -434,52 +434,6 @@ display: block;
   border-radius: 8px;
 }
 
-.password-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Button itself: no border, no background, no effects */
-#togglePassword {
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin-left: 0.5rem;
-  cursor: pointer;
-  outline: none;
-}
-
-/* Image inside the button */
-#togglePasswordIcon {
-  width: 20px;      /* Adjust to preferred size */
-  height: 20px;
-  object-fit: contain;
-  pointer-events: none; /* prevents accidental drag/select */
-}
-
-/* Remove focus/hover outlines */
-#togglePassword:focus,
-#togglePassword:active {
-  outline: none;
-  box-shadow: none;
-}
-
-#togglePassword:hover {
-  background: transparent;
-}
-
-.password-toggle input[type="password"],
-.password-toggle input[type="text"] {
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 #login-form button {
   padding: 0.75rem;
   font-size: 1rem;
@@ -508,6 +462,50 @@ display: block;
 @keyframes fadeOut {
   from { opacity: 1; }
   to { opacity: 0; }
+}
+
+.password-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Button itself: no border, no background, no effects */
+#togglePassword {
+  all: unset; /* removes all default button styling */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#togglePasswordIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Remove focus/hover outlines */
+#togglePassword:focus,
+#togglePassword:active {
+  outline: none;
+  box-shadow: none;
+}
+
+#togglePassword:hover {
+  background: transparent;
+}
+
+.password-toggle input[type="password"],
+.password-toggle input[type="text"] {
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
