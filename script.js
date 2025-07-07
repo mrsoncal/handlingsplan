@@ -219,11 +219,13 @@ async function loadCSV() {
 }
 
 document.getElementById("login-section").addEventListener("click", function (event) {
-  const form = document.querySelector(".login-box");
-
-  // If the clicked target is the overlay itself (not inside the form), close the overlay
-  if (!form.contains(event.target)) {
+  const loginBox = document.querySelector(".login-box");
+  if (loginBox && !loginBox.contains(event.target)) {
     this.style.display = "none";
+
+    // ✅ Show the login button again
+    const loginBtn = document.getElementById("login-button");
+    if (loginBtn) loginBtn.style.display = "inline-block";
   }
 });
 
