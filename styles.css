@@ -446,6 +446,10 @@ display: block;
     overflow-x: hidden;
 }
 
+.login-out-button {
+    display: none !important;
+}
+
 body {
     overflow-x: hidden;
 }
