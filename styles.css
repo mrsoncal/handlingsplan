@@ -36,18 +36,19 @@ flex: 1; /* fills available space between header and footer */
   position: relative;
   width: 100%;
   background-color: #cbe2e7;
-  padding: 3rem 1rem 1rem 1rem;
+  padding: 1rem 1rem 2rem; /* reduced top padding */
   box-sizing: border-box;
   text-align: center;
 }
 
-/* Title centered within container */
 .page-header h1 {
   margin: 0;
+  padding-top: 0.4rem; /* pushes it down slightly to align with button */
   font-size: 1.5rem;
   font-weight: bolder;
   color: #1a1a1a;
 }
+
 
 /* Top-left fixed login/logout buttons */
 .login-out-button {
