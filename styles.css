@@ -405,9 +405,6 @@ display: block;
 }
 
 #login-button {
-  float: right;
-  margin-top: -3.5rem;
-  margin-right: 1rem;
   padding: 0.6rem 1.25rem;
   font-size: 1rem;
   font-weight: bold;
