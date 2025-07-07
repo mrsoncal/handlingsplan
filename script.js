@@ -88,7 +88,19 @@ async function loadCSV() {
             header: true,
             skipEmptyLines: true,
             complete: async function (results) {
-                const data = results.data;
+                let data = results.data;
+
+                // ✅ Remove any unexpected keys like "_1"
+                data = data.map(row => {
+                const cleaned = {};
+                for (const key of Object.keys(row)) {
+                    if (key && !key.startsWith("_")) {
+                    cleaned[key] = row[key];
+                    }
+                }
+                return cleaned;
+                });
+
                 const headers = Object.keys(data[0]);
                 console.log("[DEBUG] Total rows parsed:", data.length);
                 console.log("[DEBUG] Headers:", headers);
