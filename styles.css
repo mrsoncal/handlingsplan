@@ -283,7 +283,7 @@ tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
 }
 
 tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
-  background-color: #b4daba !important;
+  background-color: #c1dfc5 !important;
 }
 
 tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
