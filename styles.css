@@ -39,12 +39,26 @@ flex: 1; /* fills available space between header and footer */
   display: flex;
 }
 
+.header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .page-header h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: bolder;
   color: #1a1a1a;
-  text-align: center !important;
+  text-align: center;
+  flex-grow: 1;
 }
 
 
