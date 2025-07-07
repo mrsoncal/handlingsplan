@@ -251,6 +251,10 @@ background: #28a745 !important;
 color: white;
 }
 
+.vedtatt .vedta-button:hover {
+  background-color: #218838;
+}
+
 .vedtatt-label {
   display: inline-block;
   margin-left: 0.5rem;
@@ -288,6 +292,10 @@ tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
 
 tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #dfdfdf !important;
+}
+
+tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
+  background-color: #a1c9a6 !important;
 }
 
 
