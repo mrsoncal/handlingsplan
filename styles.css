@@ -224,21 +224,43 @@ th.button-header { display: none; }
 .vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
 .vedtatt td.button-cell { background-color: white !important; }
 
+@keyframes slideGreen {
+  0% {
+    background-color: #e2e2e2;
+  }
+  100% {
+    background-color: #28a745;
+  }
+}
+
 .vedta-button {
   display: none;
   padding: 0.5rem 1rem;
   margin-left: 0.75rem;
   margin-right: 0.75rem;
-  background: linear-gradient(to right, #28a745 50%, #e2e2e2 50%);
-  background-size: 200% 100%;
-  background-position: 100% 0;
+  background-color: #e2e2e2;
   color: rgb(27, 27, 27);
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-position 0.4s ease, color 0.4s ease;
   font-size: 12px;
-  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* 🟢 Triggered animation class */
+.vedta-button.animating {
+  animation: slideGreen 0.4s forwards;
+}
+
+/* ✅ Final green state */
+.vedta-button.vedtatt-final {
+  background-color: #28a745;
+  color: white;
+}
+
+/* 🟢 Hover effect on final green */
+.vedta-button.vedtatt-final:hover {
+  background-color: #218838;
 }
 
 body.logged-in .vedta-button {
@@ -247,11 +269,6 @@ body.logged-in .vedta-button {
 
 .vedta-button:hover {
 background: #b9b9b9;
-}
-
-.vedtatt .vedta-button {
-  background-position: 0 0; /* Slide green in from the left */
-  color: white;
 }
 
 .vedta-button::after {

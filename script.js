@@ -61,9 +61,24 @@ function handleVedtaClick(tr, btn) {
       console.error("[ERROR] Failed to update vedtatt status:", err);
     });
 
-  btn.classList.toggle("vedtatt", isVedtatt);
-  btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
+  if (isVedtatt) {
+    // 🟢 Animate then lock into green
+    btn.classList.remove("vedtatt-final");
+    btn.classList.add("animating");
+
+    // After animation finishes, lock it
+    setTimeout(() => {
+      btn.classList.remove("animating");
+      btn.classList.add("vedtatt-final");
+    }, 400);
+
+    btn.textContent = "Vedtatt";
+  } else {
+    btn.classList.remove("animating", "vedtatt-final");
+    btn.textContent = "Vedta";
+  }
 }
+
 
 
 
