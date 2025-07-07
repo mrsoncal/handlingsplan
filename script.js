@@ -285,7 +285,6 @@ document.getElementById("login-section").addEventListener("click", function (eve
 function updateCarousel() {
   const track = document.getElementById("carousel-track");
   const slides = document.querySelectorAll(".carousel-slide");
-  const currentIndex = currentSlideIndex; // or wherever you're tracking the index
 
   slides.forEach((slide, index) => {
     slide.style.display = index === currentIndex ? "block" : "none";
@@ -305,13 +304,18 @@ function updateCarousel() {
 }
 
 function nextSlide() {
-    currentIndex++;
+  const slides = document.querySelectorAll(".carousel-slide");
+  if (currentSlideIndex < slides.length - 1) {
+    currentSlideIndex++;
     updateCarousel();
+  }
 }
 
 function prevSlide() {
-    currentIndex--;
+  if (currentSlideIndex > 0) {
+    currentSlideIndex--;
     updateCarousel();
+  }
 }
 
 window.addEventListener("DOMContentLoaded", loadCSV);
