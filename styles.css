@@ -271,9 +271,10 @@ tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #f0f0f0;
 }
 
-tr:hover:not(.vedtatt) td:not(.button-cell) {
-background-color: #dfdfdf !important;
+tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
+  background-color: #dfdfdf !important;
 }
+
 
 tr, td {
 transition: background-color 0.3s ease;
