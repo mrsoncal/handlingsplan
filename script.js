@@ -108,14 +108,6 @@ async function loadCSV() {
     }
     } catch (err) {
     console.error("[ERROR] Fetching vedtatt states:", err);
-    }if (savedVedtatt[rowId]) {
-    console.log(`[APPLY] Applying vedtatt to rowId="${rowId}"`);
-    tr.classList.add("vedtatt");
-    const button = tr.querySelector(".vedta-button");
-    if (button) {
-        button.classList.add("vedtatt");
-        button.textContent = "Vedtatt";
-    }
     }
 
     const grouped = {};
