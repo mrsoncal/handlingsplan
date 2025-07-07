@@ -21,3 +21,16 @@ loginForm.addEventListener("submit", async (e) => {
     alert("Incorrect password.");
   }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordInput = document.getElementById("password");
+  const togglePasswordBtn = document.getElementById("togglePassword");
+
+  if (passwordInput && togglePasswordBtn) {
+    togglePasswordBtn.addEventListener("click", () => {
+      const isPassword = passwordInput.type === "password";
+      passwordInput.type = isPassword ? "text" : "password";
+      togglePasswordBtn.textContent = isPassword ? "Skjul passord" : "Vis passord";
+    });
+  }
+});

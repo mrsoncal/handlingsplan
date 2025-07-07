@@ -434,6 +434,25 @@ display: block;
   border-radius: 8px;
 }
 
+.password-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#togglePassword {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+#togglePassword:hover {
+  text-decoration: underline;
+}
+
 #login-form button {
   padding: 0.75rem;
   font-size: 1rem;
