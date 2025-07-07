@@ -440,6 +440,35 @@ display: block;
   gap: 0.5rem;
 }
 
+/* Button itself: no border, no background, no effects */
+#togglePassword {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Image inside the button */
+#togglePasswordIcon {
+  width: 20px;      /* Adjust to preferred size */
+  height: 20px;
+  object-fit: contain;
+  pointer-events: none; /* prevents accidental drag/select */
+}
+
+/* Remove focus/hover outlines */
+#togglePassword:focus,
+#togglePassword:active {
+  outline: none;
+  box-shadow: none;
+}
+
+#togglePassword:hover {
+  background: transparent;
+}
+
 .password-toggle input[type="password"],
 .password-toggle input[type="text"] {
   font-family: inherit;
@@ -449,19 +478,6 @@ display: block;
   border-radius: 4px;
   width: 100%;
   box-sizing: border-box;
-}
-
-#togglePassword {
-  background: none;
-  border: none;
-  color: #007bff;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0;
-}
-
-#togglePassword:hover {
-  text-decoration: underline;
 }
 
 #login-form button {
