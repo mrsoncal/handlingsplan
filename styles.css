@@ -208,12 +208,6 @@ border-top-left-radius: 12px;
 .table-wrapper table thead tr:first-child th:nth-last-child(2) {
 border-top-right-radius: 12px;
 }
-.table-wrapper table tbody tr:last-child td:first-child {
-border-bottom-left-radius: 12px;
-}
-.table-wrapper table tbody tr:last-child td:nth-last-child(2) {
-border-bottom-right-radius: 12px;
-}
 
 td:first-child {
 padding-left: 1.5rem; /* extra space before the tag label */
@@ -408,6 +402,47 @@ display: block;
 
 #login-form button:hover {
   background-color: #005f7a;
+}
+
+.filler-row td {
+  background-color: inherit;
+  height: 1.25rem;
+  border: none;
+  padding: 0;
+}
+
+/* Rounded bottom corners (left and right) */
+.table-wrapper table tbody tr.filler-row td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.table-wrapper table tbody tr.filler-row td:nth-last-child(2) {
+  border-bottom-right-radius: 12px;
+}
+
+.carousel-slide:nth-child(1) table th {
+  background-color: #DD1367;
+  color: white;
+}
+.carousel-slide:nth-child(1) table th {
+  background-color: #FF6A18;
+  color: white;
+}
+.carousel-slide:nth-child(1) table th {
+  background-color: #C5182C;
+  color: white;
+}
+.carousel-slide:nth-child(1) table th {
+  background-color: #52A23E;
+  color: white;
+}
+.carousel-slide:nth-child(1) table th {
+  background-color: #1C7A23;
+  color: white;
+}
+.carousel-slide:nth-child(1) table th {
+  background-color: #DD1367;
+  color: white;
 }
 
 @keyframes fadeIn {

@@ -112,22 +112,22 @@ async function loadCSV() {
         console.log(`[DEBUG] Processing tema "${tema}" with ${groupRows?.length || 0} rows`);
         if (!groupRows || groupRows.length === 0) return;
 
-        const slide = document.createElement("div");
-        slide.className = "carousel-slide";
+            const slide = document.createElement("div");
+            slide.className = "carousel-slide";
 
-        const h2 = document.createElement("h2");
-        h2.textContent = tema;
-        slide.appendChild(h2);
+            const h2 = document.createElement("h2");
+            h2.textContent = tema;
+            slide.appendChild(h2);
 
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        const tr = document.createElement("tr");
+            const table = document.createElement("table");
+            const thead = document.createElement("thead");
+            const tr = document.createElement("tr");
 
-        headers.slice(1).forEach((h, index) => {
-        if (index === 1) return;
-        const th = document.createElement("th");
-        th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-        tr.appendChild(th);
+            headers.slice(1).forEach((h, index) => {
+                if (index === 1) return;
+                    const th = document.createElement("th");
+                    th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
+                    tr.appendChild(th);
         });
 
         const thBtn = document.createElement("th");
@@ -138,38 +138,53 @@ async function loadCSV() {
 
         const tbody = document.createElement("tbody");
         groupRows.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.className = row[1]?.trim().replace(/\s/g, "-");
+            const tr = document.createElement("tr");
+            tr.className = row[1]?.trim().replace(/\s/g, "-");
 
-        row.slice(1).forEach((cell, index) => {
-            if (index === 1) return;
-            const td = document.createElement("td");
-            if (index === 2) td.style.textAlign = "center";
+            row.slice(1).forEach((cell, index) => {
+                if (index === 1) return;
+                const td = document.createElement("td");
+                if (index === 2) td.style.textAlign = "center";
 
-            if (index === 0) {
-            const tagDiv = document.createElement("div");
-            tagDiv.className = "tag-label";
-            tagDiv.textContent = cell;
-            td.appendChild(tagDiv);
-            } else {
-            td.textContent = cell;
-            }
+                if (index === 0) {
+                const tagDiv = document.createElement("div");
+                tagDiv.className = "tag-label";
+                tagDiv.textContent = cell;
+                td.appendChild(tagDiv);
+                } else {
+                td.textContent = cell;
+                }
 
-            tr.appendChild(td);
+                tr.appendChild(td);
+            });
+
+            const tdAction = document.createElement("td");
+            tdAction.className = "button-cell";
+            const btn = document.createElement("button");
+            btn.textContent = "Vedta";
+            btn.className = "vedta-button";
+            btn.onclick = () => {
+                tr.classList.toggle("vedtatt");
+            };
+            tdAction.appendChild(btn);
+            tr.appendChild(tdAction);
+            tbody.appendChild(tr);
         });
 
-        const tdAction = document.createElement("td");
-        tdAction.className = "button-cell";
-        const btn = document.createElement("button");
-        btn.textContent = "Vedta";
-        btn.className = "vedta-button";
-        btn.onclick = () => {
-            tr.classList.toggle("vedtatt");
-        };
-        tdAction.appendChild(btn);
-        tr.appendChild(tdAction);
-        tbody.appendChild(tr);
-        });
+        // Add empty row with styled background and rounded bottom corners
+        const fillerRow = document.createElement("tr");
+        fillerRow.className = "filler-row";
+
+        const totalColumns = headers.length - 1; // -1 because index 1 is skipped
+        for (let i = 0; i < totalColumns; i++) {
+        const td = document.createElement("td");
+        td.innerHTML = "&nbsp;"; // blank space
+        fillerRow.appendChild(td);
+        }
+
+        tbody.appendChild(fillerRow);
+
+
 
         table.appendChild(tbody);
 
