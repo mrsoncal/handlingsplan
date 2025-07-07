@@ -92,6 +92,20 @@ async function loadCSV() {
     console.log("[DEBUG] Headers:", headers);
     console.log("[DEBUG] First data row:", data[0]);
 
+    // ✅ Load saved vedtatt states
+    let savedVedtatt = {};
+    try {
+    const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
+    if (res.ok) {
+        savedVedtatt = await res.json(); // { "Utdanning og Kompetanse-2": true, ... }
+        console.log("[DEBUG] Loaded vedtatt statuses:", savedVedtatt);
+    } else {
+        console.warn("[WARNING] Failed to fetch saved vedtatt states");
+    }
+    } catch (err) {
+    console.error("[ERROR] Fetching vedtatt states:", err);
+    }
+
     const grouped = {};
     data.forEach(row => {
         const tema = row[2]?.trim();
@@ -155,6 +169,15 @@ async function loadCSV() {
             // ✅ Unique identifier per row
             const rowId = `${tema}-${rowIndex}`;
             tr.dataset.rowId = rowId;
+
+            if (savedVedtatt[rowId]) {
+            tr.classList.add("vedtatt");
+            const button = tr.querySelector(".vedta-button");
+            if (button) {
+                button.classList.add("vedtatt");
+                button.textContent = "Vedtatt";
+            }
+            }
             
             tr.className = row[1]?.trim().replace(/\s/g, "-");
 
