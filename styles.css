@@ -287,15 +287,15 @@ tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
 }
 
 tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
-  background-color: #c1dfc5;
+  background-color: #c1dfc5 !important;
 }
 
 tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #dfdfdf !important;
 }
 
-tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
-  background-color: #a1c9a6 !important;
+tbody tr.vedtatt:hover:nth-child(even):not(.filler-row) td:not(.button-cell) {
+  background-color: #afd3b4 !important;
 }
 
 
