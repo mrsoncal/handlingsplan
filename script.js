@@ -197,7 +197,7 @@ async function loadCSV() {
         for (let i = 0; i < totalColumns; i++) {
             const td = document.createElement("td");
             td.innerHTML = "&nbsp;";
-            td.style.backgroundColor = headerBg;
+            td.style.backgroundColor = "#ff00ff"; // neon pink to test
             fillerRow.appendChild(td);
         }
 
