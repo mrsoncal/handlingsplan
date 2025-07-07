@@ -229,9 +229,9 @@ th.button-header { display: none; }
   padding: 0.5rem 1rem;
   margin-left: 0.75rem;
   margin-right: 0.75rem;
-  background: linear-gradient(120deg, #e2e2e2 50%, #28a745 50%);
+  background: linear-gradient(to right, #28a745 50%, #e2e2e2 50%);
   background-size: 200% 100%;
-  background-position: left;
+  background-position: 100% 0;
   color: rgb(27, 27, 27);
   border: none;
   border-radius: 6px;
@@ -250,7 +250,7 @@ background: #b9b9b9;
 }
 
 .vedtatt .vedta-button {
-  background-position: left bottom;
+  background-position: 0 0; /* Slide green in from the left */
   color: white;
 }
 
