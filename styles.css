@@ -408,7 +408,7 @@ display: block;
 #login-form button {
   padding: 0.75rem;
   font-size: 1rem;
-  background-color: #007aa3;
+  background-color: #3f3f3f;
   color: white;
   border: none;
   border-radius: 8px;
@@ -417,7 +417,7 @@ display: block;
 }
 
 #login-form button:hover {
-  background-color: #005f7a;
+  background-color: #007aa3;
 }
 
 @keyframes fadeIn {
