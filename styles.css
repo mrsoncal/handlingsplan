@@ -71,27 +71,6 @@ margin-bottom: 1rem;
   background-color: #007aa3;
 }
 
-.left-buttons {
-position: fixed;
-left: 1rem;
-top: 50%;
-transform: translateY(-50%);
-display: flex;
-flex-direction: column;
-gap: 0.5rem;
-text-align: center;
-}
-
-.left-button-wrapper {
-position: absolute;
-left: 1rem;
-top: 50%;
-transform: translateY(-50%);
-display: flex;
-flex-direction: column;
-gap: 0.5rem;
-}
-
 .forms-button,
 .plan-button {
 padding: 0.6rem 1.25rem;
