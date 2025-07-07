@@ -65,6 +65,11 @@ async function loadCSV() {
         document.getElementById("carousel-track").innerHTML = "<p>Kunne ikke laste inn data.</p>";
         return;
     }
+    } catch {
+    console.error("[ERROR] Exception in loadCSV:", error);
+    document.getElementById("carousel-track").innerHTML = "<p>En feil oppstod under lasting av data.</p>";
+    }
+    
 
     const text = await response.text();
     console.log("[DEBUG] CSV raw text (first 500 chars):", text.slice(0, 500));
@@ -106,6 +111,7 @@ async function loadCSV() {
 
     const track = document.getElementById("carousel-track");
     const isMobile = window.innerWidth <= 600;
+    
 
     temaOrder.forEach((tema, index) => {
         const groupRows = grouped[tema];
@@ -121,19 +127,19 @@ async function loadCSV() {
 
         const table = document.createElement("table");
         const thead = document.createElement("thead");
-        const tr = document.createElement("tr");
+        const headerRow = document.createElement("tr");
 
-        headers.slice(1).forEach((h, index) => {
-            if (index === 1) return;
+        headers.slice(1).forEach((h, i) => {
+            if (i === 1) return; // Skip index 1 (possibly Velg et tema)
             const th = document.createElement("th");
             th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-            tr.appendChild(th);
+            headerRow.appendChild(th);
         });
 
         const thBtn = document.createElement("th");
         thBtn.className = "button-header";
-        tr.appendChild(thBtn);
-        thead.appendChild(tr);
+        headerRow.appendChild(thBtn);
+        thead.appendChild(headerRow);
         table.appendChild(thead);
 
         const tbody = document.createElement("tbody");
@@ -143,8 +149,9 @@ async function loadCSV() {
             tr.className = row[1]?.trim().replace(/\s/g, "-");
 
             row.slice(1).forEach((cell, index) => {
-            if (index === 1) return;
+            if (index === 1) return; // Skip "Velg et tema"
             const td = document.createElement("td");
+
             if (index === 2) td.style.textAlign = "center";
 
             if (index === 0) {
@@ -161,12 +168,12 @@ async function loadCSV() {
 
             const tdAction = document.createElement("td");
             tdAction.className = "button-cell";
+
             const btn = document.createElement("button");
             btn.textContent = "Vedta";
             btn.className = "vedta-button";
-            btn.onclick = () => {
-            tr.classList.toggle("vedtatt");
-            };
+            btn.onclick = () => tr.classList.toggle("vedtatt");
+
             tdAction.appendChild(btn);
             tr.appendChild(tdAction);
             tbody.appendChild(tr);
@@ -178,10 +185,10 @@ async function loadCSV() {
         wrapper.className = "table-wrapper";
         wrapper.appendChild(table);
         slide.appendChild(wrapper);
-        track.appendChild(slide); // ✅ Must be in DOM to get computed style
+        track.appendChild(slide); // Must be in DOM for computedStyle to work
 
-        // ✅ Get background color from thead AFTER DOM insertion
-        let headerBg = "#f0f0f0"; // fallback
+        // ✅ Get header background color after DOM insertion
+        let headerBg = "#f0f0f0";
         const th = slide.querySelector("th:not(.button-header)");
         if (th) {
             const computed = window.getComputedStyle(th);
@@ -189,33 +196,32 @@ async function loadCSV() {
         }
         console.log("Filler row background color for tema", tema, ":", headerBg);
 
-        // ✅ Create filler row
+        // ✅ Add filler row
         const fillerRow = document.createElement("tr");
         fillerRow.className = "filler-row";
 
         const totalColumns = headers.length - 1;
         for (let i = 0; i < totalColumns; i++) {
-        const td = document.createElement("td");
-        td.innerHTML = "&nbsp;";
-        td.style.height = "1.25rem";
+            const td = document.createElement("td");
+            td.innerHTML = "&nbsp;";
+            td.style.height = "1.25rem";
 
-        // ✅ Apply color only if not the last column (button column)
-        if (i !== totalColumns - 1) {
+            if (i !== totalColumns - 1) {
             td.style.backgroundColor = headerBg;
+            }
+
+            fillerRow.appendChild(td);
         }
 
-        fillerRow.appendChild(td);
-        }
         tbody.appendChild(fillerRow);
+    });
+    
 
+        console.log("[DEBUG] Finished populating slides");
+        updateCarousel();
+    
 
-    console.log("[DEBUG] Finished populating slides");
-    updateCarousel();
-    } catch (error) {
-    console.error("[ERROR] Exception in loadCSV:", error);
-    }
-}
-
+}    
 
 function updateCarousel() {
     const track = document.getElementById("carousel-track");
@@ -235,3 +241,4 @@ function prevSlide() {
 }
 
 window.addEventListener("DOMContentLoaded", loadCSV);
+
