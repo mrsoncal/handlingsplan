@@ -175,40 +175,27 @@ async function loadCSV() {
         const tbody = document.createElement("tbody");
 
         groupRows.forEach((row, rowIndex) => {
-
             const tr = document.createElement("tr");
-
-            // ✅ Unique identifier per row
             const rowId = `${tema}-${rowIndex}`;
             tr.dataset.rowId = rowId;
 
-            if (savedVedtatt[rowId]) {
-            tr.classList.add("vedtatt");
-            const button = tr.querySelector(".vedta-button");
-            if (button) {
-                button.classList.add("vedtatt");
-                button.textContent = "Vedtatt";
-            }
-            }
-            
             tr.className = row[1]?.trim().replace(/\s/g, "-");
 
             row.slice(1).forEach((cell, index) => {
-            if (index === 1) return; // Skip "Velg et tema"
-            const td = document.createElement("td");
+                if (index === 1) return; // Skip "Velg et tema"
+                const td = document.createElement("td");
+                if (index === 2) td.style.textAlign = "center";
 
-            if (index === 2) td.style.textAlign = "center";
-
-            if (index === 0) {
+                if (index === 0) {
                 const tagDiv = document.createElement("div");
                 tagDiv.className = "tag-label";
                 tagDiv.textContent = cell;
                 td.appendChild(tagDiv);
-            } else {
+                } else {
                 td.textContent = cell;
-            }
+                }
 
-            tr.appendChild(td);
+                tr.appendChild(td);
             });
 
             const tdAction = document.createElement("td");
@@ -221,6 +208,15 @@ async function loadCSV() {
 
             tdAction.appendChild(btn);
             tr.appendChild(tdAction);
+
+            // ✅ Apply saved state *after* button is in the DOM
+            if (savedVedtatt[rowId]) {
+                console.log(`[APPLY] Marking ${rowId} as vedtatt`);
+                tr.classList.add("vedtatt");
+                btn.classList.add("vedtatt");
+                btn.textContent = "Vedtatt";
+            }
+
             tbody.appendChild(tr);
         });
 
