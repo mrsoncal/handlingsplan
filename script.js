@@ -107,27 +107,27 @@ async function loadCSV() {
     const track = document.getElementById("carousel-track");
     const isMobile = window.innerWidth <= 600;
 
-    temaOrder.forEach(tema => {
+    temaOrder.forEach((tema, index) => {
         const groupRows = grouped[tema];
         console.log(`[DEBUG] Processing tema "${tema}" with ${groupRows?.length || 0} rows`);
         if (!groupRows || groupRows.length === 0) return;
 
-            const slide = document.createElement("div");
-            slide.className = "carousel-slide";
+        const slide = document.createElement("div");
+        slide.className = "carousel-slide";
 
-            const h2 = document.createElement("h2");
-            h2.textContent = tema;
-            slide.appendChild(h2);
+        const h2 = document.createElement("h2");
+        h2.textContent = tema;
+        slide.appendChild(h2);
 
-            const table = document.createElement("table");
-            const thead = document.createElement("thead");
-            const tr = document.createElement("tr");
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const tr = document.createElement("tr");
 
-            headers.slice(1).forEach((h, index) => {
-                if (index === 1) return;
-                    const th = document.createElement("th");
-                    th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
-                    tr.appendChild(th);
+        headers.slice(1).forEach((h, index) => {
+            if (index === 1) return;
+            const th = document.createElement("th");
+            th.textContent = h === "Velg et punkt (nr)" ? "punkt" : h;
+            tr.appendChild(th);
         });
 
         const thBtn = document.createElement("th");
@@ -137,25 +137,26 @@ async function loadCSV() {
         table.appendChild(thead);
 
         const tbody = document.createElement("tbody");
+
         groupRows.forEach(row => {
             const tr = document.createElement("tr");
             tr.className = row[1]?.trim().replace(/\s/g, "-");
 
             row.slice(1).forEach((cell, index) => {
-                if (index === 1) return;
-                const td = document.createElement("td");
-                if (index === 2) td.style.textAlign = "center";
+            if (index === 1) return;
+            const td = document.createElement("td");
+            if (index === 2) td.style.textAlign = "center";
 
-                if (index === 0) {
+            if (index === 0) {
                 const tagDiv = document.createElement("div");
                 tagDiv.className = "tag-label";
                 tagDiv.textContent = cell;
                 td.appendChild(tagDiv);
-                } else {
+            } else {
                 td.textContent = cell;
-                }
+            }
 
-                tr.appendChild(td);
+            tr.appendChild(td);
             });
 
             const tdAction = document.createElement("td");
@@ -164,58 +165,45 @@ async function loadCSV() {
             btn.textContent = "Vedta";
             btn.className = "vedta-button";
             btn.onclick = () => {
-                tr.classList.toggle("vedtatt");
+            tr.classList.toggle("vedtatt");
             };
             tdAction.appendChild(btn);
             tr.appendChild(tdAction);
             tbody.appendChild(tr);
         });
 
-        // ✅ NEW: Get actual header color from a styled column, not the empty button column
-        let headerBg = "";
-        const firstDataRow = tbody.querySelector("tr:not(.filler-row)");
-        if (firstDataRow) {
-        const firstDataCell = firstDataRow.querySelector("td:not(.button-cell)");
-        if (firstDataCell) {
-            const computedStyle = window.getComputedStyle(firstDataCell);
-            headerBg = computedStyle.backgroundColor;
-        }
-        }
-        console.log("Filler row background color for tema", tema, ":", headerBg); // optional debug
-
-        // Create filler row
-        const fillerRow = document.createElement("tr");
-        fillerRow.className = "filler-row";
-
-        // Determine total columns in table (excluding skipped index 1)
-        const totalColumns = headers.length - 1;
-
-        // Copy background color from thead th elements
-        const firstTh = thead.querySelector("th");
-        if (firstTh) {
-        const computedStyle = window.getComputedStyle(firstTh);
-        headerBg = computedStyle.backgroundColor;
-        }
-
-        for (let i = 0; i < totalColumns; i++) {
-        const td = document.createElement("td");
-        td.innerHTML = "&nbsp;";
-        if (headerBg) td.style.backgroundColor = headerBg;
-        console.log("Filler row background color for tema", tema, ":", headerBg);
-        fillerRow.appendChild(td);
-        }
-
-        tbody.appendChild(fillerRow);
-
         table.appendChild(tbody);
 
         const wrapper = document.createElement("div");
         wrapper.className = "table-wrapper";
         wrapper.appendChild(table);
-
         slide.appendChild(wrapper);
-        track.appendChild(slide);
-    });
+        track.appendChild(slide); // ✅ Must be in DOM to get computed style
+
+        // ✅ Get background color from thead AFTER DOM insertion
+        let headerBg = "#f0f0f0"; // fallback
+        const th = slide.querySelector("th:not(.button-header)");
+        if (th) {
+            const computed = window.getComputedStyle(th);
+            headerBg = computed.backgroundColor;
+        }
+        console.log("Filler row background color for tema", tema, ":", headerBg);
+
+        // ✅ Create filler row
+        const fillerRow = document.createElement("tr");
+        fillerRow.className = "filler-row";
+
+        const totalColumns = headers.length - 1;
+        for (let i = 0; i < totalColumns; i++) {
+            const td = document.createElement("td");
+            td.innerHTML = "&nbsp;";
+            td.style.backgroundColor = headerBg;
+            fillerRow.appendChild(td);
+        }
+
+        tbody.appendChild(fillerRow);
+        });
+
 
     console.log("[DEBUG] Finished populating slides");
     updateCarousel();
