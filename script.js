@@ -65,11 +65,6 @@ async function loadCSV() {
         document.getElementById("carousel-track").innerHTML = "<p>Kunne ikke laste inn data.</p>";
         return;
     }
-    } catch {
-    console.error("[ERROR] Exception in loadCSV:", error);
-    document.getElementById("carousel-track").innerHTML = "<p>En feil oppstod under lasting av data.</p>";
-    }
-    
 
     const text = await response.text();
     console.log("[DEBUG] CSV raw text (first 500 chars):", text.slice(0, 500));
@@ -111,7 +106,6 @@ async function loadCSV() {
 
     const track = document.getElementById("carousel-track");
     const isMobile = window.innerWidth <= 600;
-    
 
     temaOrder.forEach((tema, index) => {
         const groupRows = grouped[tema];
@@ -215,13 +209,15 @@ async function loadCSV() {
 
         tbody.appendChild(fillerRow);
     });
-    
 
         console.log("[DEBUG] Finished populating slides");
         updateCarousel();
-    
 
-}    
+    } catch (error) {
+    console.error("[ERROR] Exception in loadCSV:", error);
+    }
+}
+
 
 function updateCarousel() {
     const track = document.getElementById("carousel-track");
@@ -241,4 +237,3 @@ function prevSlide() {
 }
 
 window.addEventListener("DOMContentLoaded", loadCSV);
-
