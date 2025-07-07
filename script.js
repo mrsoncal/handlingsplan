@@ -46,20 +46,12 @@ function handleVedtaClick(tr, btn) {
   const isVedtatt = tr.classList.contains("vedtatt");
   const rowId = tr.dataset.rowId;
 
-  console.log(`[ACTION] Toggling vedtatt for rowId="${rowId}" to ${isVedtatt}`);
-
   fetch("https://handlingsplan-backend.onrender.com/vedtatt", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ rowId, vedtatt: isVedtatt }),
   })
     .then((res) => res.json())
-    .then((data) => {
-      console.log("[SERVER] Save response:", data);
-    })
-    .catch((err) => {
-      console.error("[ERROR] Failed to update vedtatt status:", err);
-    });
 
   btn.classList.toggle("vedtatt", isVedtatt);
   btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
@@ -69,11 +61,7 @@ function handleVedtaClick(tr, btn) {
 
 async function loadCSV() {
     try {
-        console.log("[DEBUG] Starting CSV load...");
-
         const response = await fetch(csvUrl);
-        console.log("[DEBUG] Response status:", response.status);
-
         if (!response.ok) {
             console.error("[ERROR] Fetch failed with status:", response.statusText);
             document.getElementById("carousel-track").innerHTML = "<p>Kunne ikke laste inn data.</p>";
@@ -81,7 +69,6 @@ async function loadCSV() {
         }
 
         const text = await response.text();
-        console.log("[DEBUG] CSV raw text (first 500 chars):", text.slice(0, 500));
 
         // ✅ Parse CSV using PapaParse
         Papa.parse(text, {
@@ -102,9 +89,6 @@ async function loadCSV() {
                 });
 
                 const headers = Object.keys(data[0]);
-                console.log("[DEBUG] Total rows parsed:", data.length);
-                console.log("[DEBUG] Headers:", headers);
-                console.log("[DEBUG] First data row:", data[0]);
 
                 // ✅ Load saved vedtatt states
                 let savedVedtatt = {};
@@ -112,7 +96,6 @@ async function loadCSV() {
                     const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
                     if (res.ok) {
                         savedVedtatt = await res.json();
-                        console.log("[DEBUG] Loaded vedtatt statuses:", savedVedtatt);
                     } else {
                         console.warn("[WARNING] Failed to fetch saved vedtatt states");
                     }
@@ -132,8 +115,6 @@ async function loadCSV() {
                     grouped[tema].push(row);
                 });
 
-                console.log("[DEBUG] Grouped tema keys:", Object.keys(grouped));
-
                 const temaOrder = [
                     "Ungdomsdemokrati og Medvirkning",
                     "Samferdsel",
@@ -148,7 +129,6 @@ async function loadCSV() {
 
                 temaOrder.forEach((tema, index) => {
                     const groupRows = grouped[tema];
-                    console.log(`[DEBUG] Processing tema "${tema}" with ${groupRows?.length || 0} rows`);
                     if (!groupRows || groupRows.length === 0) return;
 
                     const slide = document.createElement("div");
@@ -213,7 +193,6 @@ async function loadCSV() {
                         tr.appendChild(tdAction);
 
                         if (savedVedtatt[rowId]) {
-                            console.log(`[APPLY] Marking ${rowId} as vedtatt`);
                             tr.classList.add("vedtatt");
                             btn.classList.add("vedtatt");
                             btn.textContent = "Vedtatt";
@@ -259,8 +238,6 @@ async function loadCSV() {
 
                     tbody.appendChild(fillerRow);
                 });
-
-                console.log("[DEBUG] Finished populating slides");
                 updateCarousel();
             }
         });
