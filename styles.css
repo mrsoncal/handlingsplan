@@ -45,6 +45,19 @@ color: #1a1a1a;
 text-align: center;
 }
 
+.header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+#login-button {
+  margin-left: auto;
+  font-size: 1rem;
+  padding: 0.6rem 1.25rem;
+}
+
 .left-buttons {
 position: fixed;
 left: 1rem;
@@ -404,35 +417,6 @@ display: block;
   background-color: #005f7a;
 }
 
-#login-button {
-  padding: 0.6rem 1.25rem;
-  font-size: 1rem;
-  font-weight: bold;
-  color: white;
-  background-color: #3f3f3f;
-  border: none;
-  border-radius: 5px;
-  text-decoration: none;
-  cursor: pointer;
-  display: inline-block;
-}
-
-#login-button:hover {
-  background-color: #007aa3;
-}
-
-/* Align with container max width */
-@media (min-width: 1001px) {
-  .page-header {
-    position: relative;
-  }
-  #login-button {
-    position: absolute;
-    right: calc((100% - 1000px) / 2 + 1rem);
-    top: 1.5rem;
-  }
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -457,14 +441,6 @@ display: block;
 .page-header {
     overflow-x: hidden;
 }
-
-#login-button {
-    position: absolute;
-    top: 1.2rem;
-    right: calc((100% - 600px) / 2 + 1rem);
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-  }
 
 body {
     overflow-x: hidden;
