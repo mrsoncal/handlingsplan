@@ -231,7 +231,7 @@ th.button-header { display: none; }
   margin-right: 0.75rem;
   background: linear-gradient(120deg, #e2e2e2 50%, #28a745 50%);
   background-size: 200% 100%;
-  background-position: right bottom;
+  background-position: left;
   color: rgb(27, 27, 27);
   border: none;
   border-radius: 6px;
@@ -250,8 +250,19 @@ background: #b9b9b9;
 }
 
 .vedtatt .vedta-button {
-background: #28a745 !important;
-color: white;
+  background-position: left bottom;
+  color: white;
+}
+
+.vedta-button::after {
+  content: "✔";
+  opacity: 0;
+  margin-left: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.vedtatt .vedta-button::after {
+  opacity: 1;
 }
 
 .vedtatt-label {
