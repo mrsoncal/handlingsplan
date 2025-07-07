@@ -251,6 +251,27 @@ background: #28a745 !important;
 color: white;
 }
 
+.filler-row td {
+  background-color: #ccc; /* fallback color */
+  height: 1.25rem;
+  border: none;
+  padding: 0;
+}
+
+/* Ensure it overrides striping */
+tbody tr.filler-row td {
+  background-color: inherit !important;
+}
+
+/* Rounded bottom corners (left and right) */
+.table-wrapper table tbody tr.filler-row td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.table-wrapper table tbody tr.filler-row td:nth-last-child(2) {
+  border-bottom-right-radius: 12px;
+}
+
 tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #f0f0f0;
 }
@@ -402,22 +423,6 @@ display: block;
 
 #login-form button:hover {
   background-color: #005f7a;
-}
-
-.filler-row td {
-  background-color: inherit;
-  height: 1.25rem;
-  border: none;
-  padding: 0;
-}
-
-/* Rounded bottom corners (left and right) */
-.table-wrapper table tbody tr.filler-row td:first-child {
-  border-bottom-left-radius: 12px;
-}
-
-.table-wrapper table tbody tr.filler-row td:nth-last-child(2) {
-  border-bottom-right-radius: 12px;
 }
 
 @keyframes fadeIn {
