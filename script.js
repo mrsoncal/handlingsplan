@@ -41,17 +41,27 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function handleVedtaClick(button) {
-    const row = button.closest('tr');
-    if (row && !row.classList.contains('vedtatt')) {
-    row.classList.add('vedtatt');
-    button.classList.add('vedtatt');
-    const rowId = row.getAttribute('data-row-id');
-    if (rowId) {
-        saveVedtatt(rowId);
-    }
-    }
+function handleVedtaClick(tr, btn) {
+  tr.classList.toggle("vedtatt");
+  const isVedtatt = tr.classList.contains("vedtatt");
+
+  // ✅ Toggle button appearance
+  btn.classList.toggle("vedtatt", isVedtatt);
+  btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
+
+  // ✅ Get unique row ID
+  const rowId = tr.dataset.rowId;
+
+  // ✅ Send to backend
+  fetch("https://handlingsplan-backend.onrender.com/vedtatt", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rowId, vedtatt: isVedtatt }),
+  }).catch(err => {
+    console.error("[ERROR] Failed to update vedtatt status:", err);
+  });
 }
+
 
 async function loadCSV() {
     try {
@@ -138,8 +148,14 @@ async function loadCSV() {
 
         const tbody = document.createElement("tbody");
 
-        groupRows.forEach(row => {
+        groupRows.forEach((row, rowIndex) => {
+
             const tr = document.createElement("tr");
+
+            // ✅ Unique identifier per row
+            const rowId = `${tema}-${rowIndex}`;
+            tr.dataset.rowId = rowId;
+            
             tr.className = row[1]?.trim().replace(/\s/g, "-");
 
             row.slice(1).forEach((cell, index) => {
@@ -166,7 +182,7 @@ async function loadCSV() {
             const btn = document.createElement("button");
             btn.textContent = "Vedta";
             btn.className = "vedta-button";
-            btn.onclick = () => tr.classList.toggle("vedtatt");
+            btn.onclick = () => handleVedtaClick(tr, btn);
 
             tdAction.appendChild(btn);
             tr.appendChild(tdAction);
