@@ -219,7 +219,7 @@ async function loadCSV() {
 }
 
 document.getElementById("login-section").addEventListener("click", function (event) {
-  const form = document.querySelector(".login-form");
+  const form = document.querySelector(".login-box");
 
   // If the clicked target is the overlay itself (not inside the form), close the overlay
   if (!form.contains(event.target)) {
