@@ -108,7 +108,6 @@ async function loadCSV() {
                 data.forEach(row => {
                     const tema = row["Velg et tema"]?.trim();
                     if (!tema) {
-                        console.warn("[WARNING] Skipped row with missing tema:", row);
                         return;
                     }
                     if (!grouped[tema]) grouped[tema] = [];
