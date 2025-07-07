@@ -195,14 +195,18 @@ async function loadCSV() {
 
         const totalColumns = headers.length - 1;
         for (let i = 0; i < totalColumns; i++) {
-            const td = document.createElement("td");
-            td.innerHTML = "&nbsp;";
+        const td = document.createElement("td");
+        td.innerHTML = "&nbsp;";
+        td.style.height = "1.25rem";
+
+        // ✅ Apply color only if not the last column (button column)
+        if (i !== totalColumns - 1) {
             td.style.backgroundColor = headerBg;
-            fillerRow.appendChild(td);
         }
 
+        fillerRow.appendChild(td);
+        }
         tbody.appendChild(fillerRow);
-        });
 
 
     console.log("[DEBUG] Finished populating slides");
