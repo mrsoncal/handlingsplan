@@ -1,7 +1,6 @@
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 const isMobile = window.innerWidth <= 600;
 const track = document.getElementById("carousel-track");
-let currentSlideIndex = 0;
 if (isMobile && track) track.classList.add("stacked");
         let currentIndex = 0;
 
@@ -283,42 +282,20 @@ document.getElementById("login-section").addEventListener("click", function (eve
 });
 
 function updateCarousel() {
-  const slides = document.querySelectorAll(".carousel-slide");
-
-  slides.forEach((slide, index) => {
-    slide.style.display = index === currentSlideIndex ? "block" : "none";
-  });
-
-  // ✅ Scroll to top of current slide (on desktop)
-  if (window.innerWidth > 768) {
-    const currentSlide = slides[currentSlideIndex];
-    if (currentSlide) {
-      currentSlide.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }
+    const track = document.getElementById("carousel-track");
+    const totalSlides = track.children.length;
+    currentIndex = (currentIndex + totalSlides) % totalSlides;
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
 }
 
-
 function nextSlide() {
-  console.log("Next button clicked");
-  const slides = document.querySelectorAll(".carousel-slide");
-  if (currentSlideIndex < slides.length - 1) {
-    currentSlideIndex++;
-    console.log("Navigating to slide", currentSlideIndex);
+    currentIndex++;
     updateCarousel();
-  }
 }
 
 function prevSlide() {
-  console.log("Previous button clicked");
-  if (currentSlideIndex > 0) {
-    currentSlideIndex--;
-    console.log("Navigating to slide", currentSlideIndex);
+    currentIndex--;
     updateCarousel();
-  }
 }
 
 window.addEventListener("DOMContentLoaded", loadCSV);
