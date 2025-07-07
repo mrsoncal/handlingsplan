@@ -83,7 +83,19 @@ async function loadCSV() {
     const text = await response.text();
     console.log("[DEBUG] CSV raw text (first 500 chars):", text.slice(0, 500));
 
-    const rows = text.trim().split("\n").map(row => row.split(","));
+    Papa.parse(text, {
+        header: true, // optional: use false if your CSV has no header row
+        skipEmptyLines: true,
+        complete: function(results) {
+            const rows = results.data;
+
+            // Now use `rows` like you used before
+            rows.forEach((row, index) => {
+            // Your logic here
+            });
+        }
+    });
+
     console.log("[DEBUG] Total rows parsed:", rows.length);
 
     if (rows.length < 2) {
