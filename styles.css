@@ -33,37 +33,27 @@ flex: 1; /* fills available space between header and footer */
 }
 
 .page-header {
-  max-width: 100%;
-  padding: 3rem 1rem;
-  margin-bottom: 1rem;
-  display: flex;
+  position: relative;
+  width: 100%;
+  background-color: #cbe2e7;
+  padding: 3rem 1rem 1rem 1rem;
+  box-sizing: border-box;
+  text-align: center;
 }
 
-.header-flex {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.auth-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
+/* Title centered within container */
 .page-header h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: bolder;
   color: #1a1a1a;
-  text-align: center;
-  flex-grow: 1;
 }
 
-
-/* Unified login/logout button style */
+/* Top-left fixed login/logout buttons */
 .login-out-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
   padding: 0.6rem 1.25rem;
   font-size: 1rem;
   font-weight: bold;
@@ -73,6 +63,7 @@ flex: 1; /* fills available space between header and footer */
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  z-index: 10;
 }
 
 .login-out-button:hover {
