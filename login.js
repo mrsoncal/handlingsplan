@@ -25,12 +25,14 @@ loginForm.addEventListener("submit", async (e) => {
 document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("password");
   const togglePasswordBtn = document.getElementById("togglePassword");
+  const toggleIcon = document.getElementById("togglePasswordIcon");
 
-  if (passwordInput && togglePasswordBtn) {
+  if (passwordInput && togglePasswordBtn && toggleIcon) {
     togglePasswordBtn.addEventListener("click", () => {
       const isPassword = passwordInput.type === "password";
       passwordInput.type = isPassword ? "text" : "password";
-      togglePasswordBtn.textContent = isPassword ? "gjem" : "👁";
+      toggleIcon.src = isPassword ? "/hide.png" : "/visible.png";
+      toggleIcon.alt = isPassword ? "Skjul passord" : "Vis passord";
     });
   }
 });
