@@ -443,7 +443,7 @@ display: block;
 }
 
 .page-header {
-    overflow-x: hidden;
+    overflow-x: visible;
 }
 
 .login-out-button {
