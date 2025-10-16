@@ -154,12 +154,12 @@ position: relative;
 }
 
 /* Set the accent (once per slide) */
-.carousel-slide:nth-child(1) { --accent: #DD1367; padding: 1rem; }
-.carousel-slide:nth-child(2) { --accent: #FF6A18; padding: 1rem; }
-.carousel-slide:nth-child(3) { --accent: #C5182C; padding: 1rem; }
-.carousel-slide:nth-child(4) { --accent: #52A23E; padding: 1rem; }
-.carousel-slide:nth-child(5) { --accent: #1C7A23; padding: 1rem; }
-.carousel-slide:nth-child(6) { --accent: #DD1367; padding: 1rem; }
+.carousel-slide:nth-child(1) { --accent: #DD1367; padding: 1rem; background-color: #DD1367; }
+.carousel-slide:nth-child(2) { --accent: #FF6A18; padding: 1rem; background-color: #FF6A18; }
+.carousel-slide:nth-child(3) { --accent: #C5182C; padding: 1rem; background-color: #C5182C; }
+.carousel-slide:nth-child(4) { --accent: #52A23E; padding: 1rem; background-color: #52A23E; }
+.carousel-slide:nth-child(5) { --accent: #1C7A23; padding: 1rem; background-color: #1C7A23; }
+.carousel-slide:nth-child(6) { --accent: #DD1367; padding: 1rem; background-color: #DD1367; }
 
 
 .carousel-nav {
