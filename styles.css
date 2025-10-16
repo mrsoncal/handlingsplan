@@ -325,8 +325,11 @@ tbody tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
   background-color: #afd3b4 !important;
 }
 
-
-
+.carousel-slide table th {
+  background: var(--accent);
+  color: #fff;
+  padding: 1rem;
+}
 
 tr, td {
 transition: background-color 0.3s ease;
@@ -675,8 +678,6 @@ td.button-cell {
 }
 
 .carousel-slide table th {
-    background: var(--accent);
-    color: #fff;
     padding: 0.25rem 0.25rem !important;
 }
 
