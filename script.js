@@ -316,9 +316,8 @@ async function loadCSV() {
             const td = document.createElement("td");
             td.innerHTML = "&nbsp;";
             td.style.height = "1.25rem";
-            if (i !== renderedColumns - 1)
-            fillerRow.appendChild(td);
-          }
+            fillerRow.appendChild(td);             
+        }
 
           tbody.appendChild(fillerRow);
         });
