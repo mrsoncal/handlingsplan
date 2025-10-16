@@ -271,16 +271,40 @@ color: white;
 }
 
 /* ---- BOTTOM ---- */
+
+/* Action column: do NOT affect the filler row */
+tbody tr:not(.filler-row) td.button-cell,
+thead tr:not(.filler-row) th.button-header {
+  background: none;
+  padding: 0;
+  text-align: right;
+  border: 0;
+}
+
+/* Filler row: full-width magenta bar */
+.table-wrapper table tbody tr.filler-row td {
+  background: var(--pink, #e0106f);  /* your magenta color */
+  height: 12px;
+  padding: 0;
+  border: 0;
+}
+
+/* Ensure the action column cell on this row also stays filled */
+.table-wrapper table tbody tr.filler-row td.button-cell {
+  background: var(--pink, #e0106f);
+}
+
+/* Rounded bottom corners (left & right) */
 .table-wrapper table tbody tr.filler-row td:first-child {
   border-bottom-left-radius: 12px;
 }
-
-/* Round the last VISIBLE data cell (skip hidden .id-col and the action .button-cell) */
-.table-wrapper table tbody tr.filler-row
-  > td:nth-last-child(1 of :not(.id-col, .button-cell)) {
+.table-wrapper table tbody tr.filler-row td:last-child {
   border-bottom-right-radius: 12px;
-  overflow: hidden;              /* helps clip row bg inside the radius */
-  background-clip: padding-box;  /* avoids bleed past the curved edge */
+}
+
+.table-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
@@ -298,6 +322,8 @@ tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
 tbody tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
   background-color: #afd3b4 !important;
 }
+
+
 
 
 tr, td {
