@@ -1,8 +1,5 @@
 // --- Handlingsplan script.js (ID in last column H) ---
 
-// CSV published from your Google Sheet
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
-
 const isMobile = window.innerWidth <= 600;
 const track = document.getElementById("carousel-track");
 if (isMobile && track) track.classList.add("stacked");
