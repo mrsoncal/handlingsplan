@@ -545,6 +545,11 @@ display: block;
   -moz-appearance: none;
 }
 
+html.silent-update *, html.silent-update *::before, html.silent-update *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 @media (max-width: 600px) {
 .page-header h1 {
     font-size: 1.25rem;
