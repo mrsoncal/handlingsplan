@@ -90,7 +90,7 @@ function handleVedtaClick(tr, btn) {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ suggestionId, vedtatt: isVedtatt }),
+    body: JSON.stringify({ suggestion_id: suggestionId, vedtatt: isVedtatt }),
   })
     .then((res) => {
       if (!res.ok) {
@@ -153,7 +153,8 @@ async function loadCSV() {
         try {
           const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
           if (res.ok) {
-            savedVedtatt = await res.json();
+            const arr = await res.json();
+            savedVedtatt = Object.fromEntries(arr.map(r => [r.suggestion_id, !!r.vedtatt]));
           } else {
             console.warn("GET /vedtatt failed with", res.status);
           }
@@ -315,7 +316,7 @@ async function loadCSV() {
             const td = document.createElement("td");
             td.innerHTML = "&nbsp;";
             td.style.height = "1.25rem";
-            if (i !== renderedColumns - 1) td.style.backgroundColor = headerBg;
+            if (i !== renderedColumns - 1)
             fillerRow.appendChild(td);
           }
 

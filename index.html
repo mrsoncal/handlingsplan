@@ -53,15 +53,55 @@
   <script src="login.js" defer></script>
   <script src="script.js" defer></script>
   <script>
-    const source = new EventSource("https://your-render-app.onrender.com/sse/events");
+    (function () {
+      const API_BASE = "https://handlingsplan-backend.onrender.com";
 
-    source.addEventListener("dbchange", (e) => {
-      console.log("Database change:", e.data);
-      const msg = JSON.parse(e.data);
-      // fetch the updated row and patch your table silently
-    });
+      function withSilentUI(fn) {
+        document.documentElement.classList.add("silent-update");
+        try { fn(); } finally {
+          requestAnimationFrame(() => {
+            document.documentElement.classList.remove("silent-update");
+          });
+        }
+      }
+
+      async function applyChange(suggestionId) {
+        // Fetch the updated vedtatt row
+        const r = await fetch(`${API_BASE}/vedtatt/${encodeURIComponent(suggestionId)}`);
+        if (!r.ok) return;
+        const row = await r.json(); // { suggestion_id, vedtatt, updated_at }
+
+        // Find the table row by data-suggestion-id
+        const tr = document.querySelector(`tr[data-suggestion-id="${row.suggestion_id}"]`);
+        if (!tr) return;
+
+        // Toggle only the visual state; no animations
+        withSilentUI(() => {
+          tr.classList.toggle("vedtatt", !!row.vedtatt);
+
+          // If there’s a button in the row, update its state/text too (optional)
+          const btn = tr.querySelector(".vedta-button");
+          if (btn) {
+            btn.classList.toggle("vedtatt", !!row.vedtatt);
+            btn.textContent = row.vedtatt ? "Vedtatt" : "Vedta";
+          }
+        });
+      }
+
+      // Open the SSE stream and listen for DB change events
+      const es = new EventSource(`${API_BASE}/sse/events`);
+      es.addEventListener("dbchange", (e) => {
+        try {
+          const msg = JSON.parse(e.data); // { op, suggestion_id }
+          if (msg && msg.suggestion_id) applyChange(msg.suggestion_id);
+        } catch { /* ignore bad payloads */ }
+      });
+
+      es.onerror = () => {
+        console.warn("SSE error (will reconnect on reload).");
+      };
+    })();
   </script>
-
 
 </body>
 </html>

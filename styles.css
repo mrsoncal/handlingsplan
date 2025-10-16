@@ -545,10 +545,15 @@ display: block;
   -moz-appearance: none;
 }
 
+/* Global kill switch for background updates */
 html.silent-update *, html.silent-update *::before, html.silent-update *::after {
   animation: none !important;
   transition: none !important;
 }
+
+/* If you use row fadeIn somewhere, guard it */
+.table-wrapper tr { animation: fadeIn .4s ease-in; }
+html.silent-update .table-wrapper tr { animation: none !important; }
 
 @media (max-width: 600px) {
 .page-header h1 {
