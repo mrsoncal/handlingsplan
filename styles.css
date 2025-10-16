@@ -702,22 +702,3 @@ border-bottom-right-radius: 8px;
 
 }
 
-/* --- Ignore the hidden ID column (keep CSS aligned) --- */
-
-/* Hide if any ID column slips through */
-table th:first-child,
-table td:first-child {
-  display: none;
-}
-
-/* Re-align right-border & button styling now that one column is hidden */
-td:nth-child(5), th:nth-child(5) {
-  border-right: 1px solid rgb(63, 63, 63);
-}
-
-td:nth-child(6), th:nth-child(6) {
-  border: none !important;
-  background: none;
-  padding: 0;
-  text-align: right;
-}
