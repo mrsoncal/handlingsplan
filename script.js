@@ -98,22 +98,27 @@ function handleVedtaClick(tr, btn) {
   const suggestionId = tr.dataset.suggestionId;
   const token = localStorage.getItem("token");
 
-  // Apply UI changes without animations
-  withSilentUI(() => {
-    tr.classList.toggle("vedtatt", isVedtatt);
-    btn.classList.toggle("vedtatt", isVedtatt);
-    btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
-  });
+    // Apply UI changes without animations
+    withSilentUI(() => {
+        tr.classList.toggle("vedtatt", isVedtatt);
+        btn.classList.toggle("vedtatt", isVedtatt);
+        btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
+    });
 
-  // Persist to backend
-  fetch("https://handlingsplan-backend.onrender.com/vedtatt", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify({ suggestion_id: suggestionId, vedtatt: isVedtatt }),
-  }).catch((err) => console.warn("POST /vedtatt failed:", err));
+    fetch(`${SUGG_API}/${encodeURIComponent(suggestionId)}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: isVedtatt ? "vedtatt" : "ny", actor: "admin" }),
+    }).then(async (r) => {
+        if (!r.ok) {
+            const t = await r.text();
+            console.warn("PATCH /api/suggestions failed", r.status, t);
+        }
+    }).catch((err) => console.warn("PATCH /api/suggestions failed:", err));
+
 }
 
 // ---------- Data load & render ----------
@@ -163,13 +168,19 @@ async function loadCSV() {
 
         // Load saved vedtatt states (graceful on error)
         try {
-            const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
+            // --- New API base ---
+            const API_BASE = "https://handlingsplan-backend.onrender.com";
+            const SUGG_API = API_BASE + "/api/suggestions";
+
+            const res = await fetch(SUGG_API + "?status=vedtatt", { cache: "no-store" });
             if (res.ok) {
-                const arr = await res.json();
-                savedVedtatt = Object.fromEntries(arr.map(r => [r.suggestion_id, !!r.vedtatt]));
+                const data = await res.json(); // { items, serverTime }
+                const arr = Array.isArray(data.items) ? data.items : [];
+                savedVedtatt = Object.fromEntries(arr.map(it => [it.suggestion_id, true]));
             } else {
-                console.warn("GET /vedtatt failed with", res.status);
+                console.warn("GET /api/suggestions?status=vedtatt failed with", res.status);
             }
+
         } catch (err) {
         console.warn("GET /vedtatt failed:", err);
         }
