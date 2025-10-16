@@ -675,6 +675,8 @@ td.button-cell {
 }
 
 .carousel-slide table th {
+    background: var(--accent);
+    color: #fff;
     padding: 0.25rem 0.25rem !important;
 }
 
