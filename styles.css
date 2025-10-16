@@ -153,12 +153,14 @@ margin: 0 auto;
 position: relative;
 }
 
-.carousel-slide:nth-child(1) table th { background-color: #DD1367; color: white; padding: 1rem;}
-.carousel-slide:nth-child(2) table th { background-color: #FF6A18; color: white; padding: 1rem;}
-.carousel-slide:nth-child(3) table th { background-color: #C5182C; color: white; padding: 1rem;}
-.carousel-slide:nth-child(4) table th { background-color: #52A23E; color: white; padding: 1rem;}
-.carousel-slide:nth-child(5) table th { background-color: #1C7A23; color: white; padding: 1rem;}
-.carousel-slide:nth-child(6) table th { background-color: #DD1367; color: white; padding: 1rem;}
+/* Set the accent (once per slide) */
+.carousel-slide:nth-child(1) { --accent: #DD1367; padding: 1rem; }
+.carousel-slide:nth-child(2) { --accent: #FF6A18; padding: 1rem; }
+.carousel-slide:nth-child(3) { --accent: #C5182C; padding: 1rem; }
+.carousel-slide:nth-child(4) { --accent: #52A23E; padding: 1rem; }
+.carousel-slide:nth-child(5) { --accent: #1C7A23; padding: 1rem; }
+.carousel-slide:nth-child(6) { --accent: #DD1367; padding: 1rem; }
+
 
 .carousel-nav {
 position: fixed;
@@ -283,7 +285,7 @@ thead tr:not(.filler-row) th.button-header {
 
 /* Filler row: full-width magenta bar */
 .table-wrapper table tbody tr.filler-row td {
-  background: var(--pink, #e0106f);  /* your magenta color */
+  background: var(--accent);  /* your magenta color */
   height: 12px;
   padding: 0;
   border: 0;
@@ -291,7 +293,7 @@ thead tr:not(.filler-row) th.button-header {
 
 /* Ensure the action column cell on this row also stays filled */
 .table-wrapper table tbody tr.filler-row td.button-cell {
-  background: var(--pink, #e0106f);
+  background: var(--accent);
 }
 
 /* Rounded bottom corners (left & right) */
