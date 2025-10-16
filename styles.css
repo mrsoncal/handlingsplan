@@ -197,6 +197,14 @@ left: 1rem;
 right: 1rem;
 }
 
+/* ---- ROUNDED CORNERS ON TABLE ---- */
+.table-wrapper table thead tr:first-child th:first-child {
+border-top-left-radius: 12px;
+}
+.table-wrapper table thead tr:first-child th:nth-last-child(2) {
+border-top-right-radius: 12px;
+}
+
 td:first-child {
 padding-left: 1.5rem; /* extra space before the tag label */
 }
@@ -670,19 +678,6 @@ max-width: 75px;
 object-fit: contain;
 }
 
-/* ---- ROUNDED CORNERS ON TABLE ---- */
-.table-wrapper table thead tr:first-child th:first-child {
-border-top-left-radius: 8px;
-}
-.table-wrapper table thead tr:first-child th:nth-last-child(3) {
-border-top-right-radius: 8px;
-}
-.table-wrapper table tbody tr:last-child td:first-child {
-border-bottom-left-radius: 8px;
-}
-.table-wrapper table tbody tr:last-child td:nth-last-child(3) {
-border-bottom-right-radius: 8px;
-}
 
 .vedtatt-label {
     display: none;
