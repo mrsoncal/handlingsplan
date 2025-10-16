@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     togglePasswordBtn.addEventListener("click", () => {
       const isPassword = passwordInput.type === "password";
       passwordInput.type = isPassword ? "text" : "password";
-      toggleIcon.src = isPassword ? "/hide.png" : "/visible.png";
+      toggleIcon.src = isPassword ? "hide.png" : "visible.png";
       toggleIcon.alt = isPassword ? "Skjul passord" : "Vis passord";
     });
   }
