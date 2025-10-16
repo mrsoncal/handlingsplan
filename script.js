@@ -9,6 +9,12 @@ if (isMobile && track) track.classList.add("stacked");
 
 let currentIndex = 0;
 
+let savedVedtatt = {};
+const SEEN_IDS = new Set();
+let HEADERS = [];
+let ID_COL_NAME = "Forslags-ID"; // or whatever your ID column is called in the sheet
+
+
 // ---------- Helpers ----------
 
 // Simple deterministic hash (fallback when a row lacks an ID)
@@ -75,15 +81,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+function withSilentUI(fn) {
+  document.documentElement.classList.add("silent-update");
+  try { fn(); } finally {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove("silent-update");
+    });
+  }
+}
+
 // ---------- Vedta click handler (uses suggestionId + Authorization header) ----------
 
 function handleVedtaClick(tr, btn) {
-  tr.classList.toggle("vedtatt");
-  const isVedtatt = tr.classList.contains("vedtatt");
+  // Determine the new state (toggle)
+  const isVedtatt = !tr.classList.contains("vedtatt");
   const suggestionId = tr.dataset.suggestionId;
-
   const token = localStorage.getItem("token");
 
+  // Apply UI changes without animations
+  withSilentUI(() => {
+    tr.classList.toggle("vedtatt", isVedtatt);
+    btn.classList.toggle("vedtatt", isVedtatt);
+    btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
+  });
+
+  // Persist to backend
   fetch("https://handlingsplan-backend.onrender.com/vedtatt", {
     method: "POST",
     headers: {
@@ -91,19 +113,7 @@ function handleVedtaClick(tr, btn) {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({ suggestion_id: suggestionId, vedtatt: isVedtatt }),
-  })
-    .then((res) => {
-      if (!res.ok) {
-        console.warn("POST /vedtatt failed with", res.status);
-      }
-      return res.json().catch(() => ({}));
-    })
-    .catch((err) => {
-      console.warn("POST /vedtatt failed:", err);
-    });
-
-  btn.classList.toggle("vedtatt", isVedtatt);
-  btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
+  }).catch((err) => console.warn("POST /vedtatt failed:", err));
 }
 
 // ---------- Data load & render ----------
@@ -141,25 +151,27 @@ async function loadCSV() {
         }
 
         const headers = Object.keys(data[0]);
-        const ID_COL_NAME = "ID";
-        const idIndex = headers.indexOf(ID_COL_NAME);
+
+        // Decide which ID column exists in the sheet
+        const idIndex = headers.indexOf("ID");
+        HEADERS = headers;
+        ID_COL_NAME = idIndex !== -1 ? "ID" : "Forslags-ID";  // set the GLOBAL, no shadowing
 
         if (idIndex === -1) {
           console.warn("Fant ikke 'ID'-kolonnen i CSV. Bruker fallback-hash for forslag.");
         }
 
         // Load saved vedtatt states (graceful on error)
-        let savedVedtatt = {};
         try {
-          const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
-          if (res.ok) {
-            const arr = await res.json();
-            savedVedtatt = Object.fromEntries(arr.map(r => [r.suggestion_id, !!r.vedtatt]));
-          } else {
-            console.warn("GET /vedtatt failed with", res.status);
-          }
+            const res = await fetch("https://handlingsplan-backend.onrender.com/vedtatt");
+            if (res.ok) {
+                const arr = await res.json();
+                savedVedtatt = Object.fromEntries(arr.map(r => [r.suggestion_id, !!r.vedtatt]));
+            } else {
+                console.warn("GET /vedtatt failed with", res.status);
+            }
         } catch (err) {
-          console.warn("GET /vedtatt failed:", err);
+        console.warn("GET /vedtatt failed:", err);
         }
 
         // Group by tema
@@ -234,6 +246,7 @@ async function loadCSV() {
             const idFromSheet = ((row[ID_COL_NAME] ?? "") + "").trim();
             const suggestionId = idFromSheet || fallbackSuggestionKey(row);
             tr.dataset.suggestionId = suggestionId;
+            SEEN_IDS.add(suggestionId);
 
             // Add CSS class based on action
             tr.className = row["Hva vil du gjøre?"]?.trim().replace(/\s/g, "-");
@@ -323,12 +336,140 @@ async function loadCSV() {
         });
 
         updateCarousel();
+        startCsvPolling();
       },
     });
   } catch (error) {
     console.error("[ERROR] Exception in loadCSV:", error);
   }
 }
+
+function insertSingleRow(row, headers = HEADERS, idCol = ID_COL_NAME) {
+  const tema = row["Velg et tema"]?.trim();
+  if (!tema) return;
+
+  // Find the correct slide by <h2>
+  const slides = document.querySelectorAll(".carousel-slide");
+  let slide = null;
+  for (const s of slides) {
+    const h2 = s.querySelector("h2");
+    if (h2 && h2.textContent.trim() === tema) { slide = s; break; }
+  }
+  if (!slide) return;
+
+  const table = slide.querySelector("table");
+  const tbody = table?.querySelector("tbody");
+  if (!tbody) return;
+
+  // Build the <tr> identical to initial render
+  const tr = document.createElement("tr");
+
+  const idFromSheet = ((row[ID_COL_NAME] ?? "") + "").trim();
+  const suggestionId = idFromSheet || fallbackSuggestionKey(row);
+  tr.dataset.suggestionId = suggestionId;
+
+  tr.className = row["Hva vil du gjøre?"]?.trim().replace(/\s/g, "-");
+
+  headers.forEach((header) => {
+    if (header === "Velg et tema" || header === idCol) return;
+    const td = document.createElement("td");
+    if (header === "Velg et punkt (nr)") td.style.textAlign = "center";
+    const cell = row[header];
+    if (header === "Hva vil du gjøre?") {
+      const tagDiv = document.createElement("div");
+      tagDiv.className = "tag-label";
+      tagDiv.textContent = cell;
+      td.appendChild(tagDiv);
+    } else {
+      td.textContent = cell;
+    }
+    tr.appendChild(td);
+  });
+
+  const tdAction = document.createElement("td");
+  tdAction.className = "button-cell";
+  const btn = document.createElement("button");
+  btn.textContent = "Vedta";
+  btn.className = "vedta-button";
+  btn.onclick = () => handleVedtaClick(tr, btn);
+  tdAction.appendChild(btn);
+  tr.appendChild(tdAction);
+
+  if (suggestionId && savedVedtatt[suggestionId]) {
+    tr.classList.add("vedtatt");
+    btn.classList.add("vedtatt");
+    btn.textContent = "Vedtatt";
+    if (!localStorage.getItem("token")) {
+      const label = document.createElement("span");
+      label.className = "vedtatt-label";
+      label.textContent = "✔ Vedtatt!";
+      tdAction.appendChild(label);
+    }
+  }
+
+  // Insert before the filler row so the rounded corner stays last
+  const filler = tbody.querySelector(".filler-row");
+  tbody.insertBefore(tr, filler || null);
+
+  SEEN_IDS.add(suggestionId);
+}
+
+let csvPollTimer = null;
+
+function startCsvPolling() {
+  async function checkForNew() {
+    try {
+      // cache-bust to avoid stale CSV
+      const res = await fetch(csvUrl + (csvUrl.includes("?") ? "&" : "?") + "ts=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) return;
+      const text = await res.text();
+
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const rows = (results.data || []).map((row) => {
+            const cleaned = {};
+            for (const key of Object.keys(row)) {
+              if (key && !key.startsWith("_")) cleaned[key] = row[key];
+            }
+            return cleaned;
+          });
+
+          // Scan for rows we haven't seen yet
+          const newcomers = [];
+          for (const row of rows) {
+            const idFromSheet = ((row[ID_COL_NAME] ?? "") + "").trim();
+            const suggestionId = idFromSheet || fallbackSuggestionKey(row);
+            if (!suggestionId) continue;
+            if (!SEEN_IDS.has(suggestionId)) {
+              newcomers.push(row);
+            }
+          }
+
+          if (newcomers.length) {
+            // Insert silently (no animations)
+            document.documentElement.classList.add("silent-update");
+            try {
+              newcomers.forEach((row) => insertSingleRow(row, HEADERS, ID_COL_NAME));
+            } finally {
+              requestAnimationFrame(() => {
+                document.documentElement.classList.remove("silent-update");
+              });
+            }
+          }
+        },
+      });
+    } catch (e) {
+      console.warn("CSV poll failed:", e);
+    }
+  }
+
+  // poll every 10s (tweak as you like)
+  clearInterval(csvPollTimer);
+  csvPollTimer = setInterval(checkForNew, 10000);
+}
+
 
 // Close login overlay when clicking outside the box
 const loginOverlayEl = document.getElementById("login-section");
