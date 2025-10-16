@@ -1,124 +1,107 @@
-// --- Handlingsplan script.js (DB-only version) ---
+// --- Handlingsplan script.js (Hybrid CSV + DB) ---
 
+// --- Config ---
+const CSV_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTf-bAq0V8H8vLpSSEzpf18GPcW7ZROEK-MMNvy99Mbz3Be8EQ63By7hGofAg5R2Od7KUYtr95w23JO/pub?output=csv";
 const API_BASE = "https://handlingsplan-backend.onrender.com";
 const SUGG_API = API_BASE + "/api/suggestions";
 
-const isMobile = window.innerWidth <= 600;
+// --- State ---
+let suggestions = []; // from CSV
+let statuses = {}; // from DB
+let currentIndex = 0;
+
+// --- DOM refs ---
 const track = document.getElementById("carousel-track");
+const isMobile = window.innerWidth <= 600;
 if (isMobile && track) track.classList.add("stacked");
 
-let currentIndex = 0;
-let savedVedtatt = {};
-let SEEN_IDS = new Set();
-
-// ---------- Auth / UI wiring ----------
-
-document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("token");
-  const loginSection = document.getElementById("login-section");
-  const mainContent = document.getElementById("main-content");
-  const loginButton = document.getElementById("login-button");
-  const logoutButton = document.getElementById("logout-button");
-
-  if (!loginSection || !mainContent || !loginButton) {
-    console.warn("Missing key elements for login UI.");
-    return;
-  }
-
-  if (!token) {
-    loginSection.style.display = "none";
-    loginButton.style.display = "inline-block";
-    if (logoutButton) logoutButton.style.display = "none";
-    document.body.classList.remove("logged-in");
-  } else {
-    loginSection.style.display = "none";
-    loginButton.style.display = "none";
-    if (logoutButton) logoutButton.style.display = "inline-block";
-    document.body.classList.add("logged-in");
-  }
-
-  loginButton.addEventListener("click", () => {
-    loginSection.style.display = "flex";
-    loginButton.style.display = "none";
-  });
-
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      localStorage.removeItem("token");
-      location.reload();
-    });
-  }
-});
-
-// ---------- Helpers ----------
-
-function withSilentUI(fn) {
-  document.documentElement.classList.add("silent-update");
-  try { fn(); } finally {
-    requestAnimationFrame(() => {
-      document.documentElement.classList.remove("silent-update");
-    });
-  }
-}
-
 // ---------- Vedta click handler ----------
-
-function handleVedtaClick(tr, btn) {
+async function handleVedtaClick(tr, btn, suggestionId) {
   const isVedtatt = !tr.classList.contains("vedtatt");
-  const suggestionId = tr.dataset.suggestionId;
   const token = localStorage.getItem("token");
 
-  withSilentUI(() => {
-    tr.classList.toggle("vedtatt", isVedtatt);
-    btn.classList.toggle("vedtatt", isVedtatt);
-    btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
-  });
+  tr.classList.toggle("vedtatt", isVedtatt);
+  btn.classList.toggle("vedtatt", isVedtatt);
+  btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
 
-  fetch(`${SUGG_API}/${encodeURIComponent(suggestionId)}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify({ status: isVedtatt ? "vedtatt" : "ny", actor: "admin" }),
-  }).then(async (r) => {
-    if (!r.ok) {
-      const t = await r.text();
-      console.warn("PATCH /api/suggestions failed", r.status, t);
+  statuses[suggestionId] = isVedtatt ? "vedtatt" : "ny";
+
+  try {
+    const res = await fetch(`${SUGG_API}/${encodeURIComponent(suggestionId)}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        status: isVedtatt ? "vedtatt" : "ny",
+        actor: "admin",
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn("PATCH /api/suggestions failed", res.status, text);
     }
-  }).catch((err) => console.warn("PATCH /api/suggestions failed:", err));
+  } catch (err) {
+    console.warn("PATCH /api/suggestions failed:", err);
+  }
 }
 
-// ---------- Data loading & rendering ----------
+// ---------- Fetch CSV content ----------
+async function loadCSV() {
+  return new Promise((resolve, reject) => {
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      complete: (results) => {
+        if (!results.data || !results.data.length) {
+          reject("Empty CSV");
+          return;
+        }
 
-async function loadSuggestions() {
+        suggestions = results.data.map((row) => {
+          const id = row["suggestion_id"]?.trim() || crypto.randomUUID();
+          return { suggestion_id: id, payload: row };
+        });
+        resolve();
+      },
+      error: reject,
+    });
+  });
+}
+
+// ---------- Fetch DB statuses ----------
+async function loadStatuses() {
   try {
-    const res = await fetch(SUGG_API, { cache: "no-store" });
+    const res = await fetch(SUGG_API + "?cacheBust=" + Date.now(), {
+      cache: "no-store",
+    });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
-    renderSuggestions(data.items || []);
+    statuses = Object.fromEntries(
+      (data.items || []).map((it) => [it.suggestion_id, it.status])
+    );
   } catch (err) {
-    console.error("loadSuggestions failed:", err);
-    document.getElementById("carousel-track").innerHTML =
-      "<p>Kunne ikke laste inn data fra databasen.</p>";
+    console.error("loadStatuses failed:", err);
   }
 }
 
-function renderSuggestions(items) {
-  const track = document.getElementById("carousel-track");
+// ---------- Render combined view ----------
+function render() {
+  if (!track) return;
   track.innerHTML = "";
-  SEEN_IDS = new Set();
 
-  if (!items.length) {
+  if (!suggestions.length) {
     track.innerHTML = "<p>Ingen forslag funnet.</p>";
     return;
   }
 
   const grouped = {};
-  for (const it of items) {
-    const tema = it.payload?.["Velg et tema"] || "Uten tema";
+  for (const s of suggestions) {
+    const tema = s.payload["Velg et tema"] || "Uten tema";
     if (!grouped[tema]) grouped[tema] = [];
-    grouped[tema].push(it);
+    grouped[tema].push(s);
   }
 
   const temaOrder = [
@@ -144,24 +127,30 @@ function renderSuggestions(items) {
     const table = document.createElement("table");
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    ["Velg et punkt (nr)", "Hva vil du gjøre?", "Forslag", "Begrunnelse", "Forslagsstiller"].forEach(h => {
+    [
+      "Velg et punkt (nr)",
+      "Hva vil du gjøre?",
+      "Forslag",
+      "Begrunnelse",
+      "Forslagsstiller",
+    ].forEach((h) => {
       const th = document.createElement("th");
       th.textContent = h;
       headerRow.appendChild(th);
     });
-    const thBtn = document.createElement("th");
-    headerRow.appendChild(thBtn);
+    headerRow.appendChild(document.createElement("th"));
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
 
-    for (const it of group) {
+    for (const s of group) {
       const tr = document.createElement("tr");
-      tr.dataset.suggestionId = it.suggestion_id;
-      const payload = it.payload || {};
+      const id = s.suggestion_id;
+      const status = statuses[id] || "ny";
+      const payload = s.payload;
 
-      ["Velg et punkt (nr)", "Hva vil du gjøre?", "Forslag", "Begrunnelse", "Forslagsstiller"].forEach(h => {
+      ["Velg et punkt (nr)", "Hva vil du gjøre?", "Forslag", "Begrunnelse", "Forslagsstiller"].forEach((h) => {
         const td = document.createElement("td");
         td.textContent = payload[h] || "";
         tr.appendChild(td);
@@ -169,18 +158,17 @@ function renderSuggestions(items) {
 
       const tdAction = document.createElement("td");
       const btn = document.createElement("button");
-      btn.textContent = it.status === "vedtatt" ? "Vedtatt" : "Vedta";
+      btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
       btn.className = "vedta-button";
-      if (it.status === "vedtatt") {
+      if (status === "vedtatt") {
         tr.classList.add("vedtatt");
         btn.classList.add("vedtatt");
       }
-      btn.onclick = () => handleVedtaClick(tr, btn);
+      btn.onclick = () => handleVedtaClick(tr, btn, id);
       tdAction.appendChild(btn);
       tr.appendChild(tdAction);
 
       tbody.appendChild(tr);
-      SEEN_IDS.add(it.suggestion_id);
     }
 
     table.appendChild(tbody);
@@ -191,28 +179,40 @@ function renderSuggestions(items) {
   updateCarousel();
 }
 
-// ---------- Carousel controls ----------
-
+// ---------- Carousel ----------
 function updateCarousel() {
-  const track = document.getElementById("carousel-track");
-  const totalSlides = track.children.length;
-  currentIndex = (currentIndex + totalSlides) % totalSlides;
+  const slides = track.children.length;
+  if (slides === 0) return;
+  currentIndex = (currentIndex + slides) % slides;
   track.style.transform = `translateX(-${currentIndex * 100}%)`;
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function nextSlide() {
   currentIndex++;
   updateCarousel();
 }
-
 function prevSlide() {
   currentIndex--;
   updateCarousel();
 }
 
-// ---------- Auto refresh ----------
-window.addEventListener("DOMContentLoaded", () => {
-  loadSuggestions();
-  setInterval(loadSuggestions, 10000);
-});
+// ---------- Main flow ----------
+async function init() {
+  await loadCSV();
+  await loadStatuses();
+  render();
+
+  // Poll only statuses (not CSV) every 10 s
+  setInterval(async () => {
+    const prevStatuses = { ...statuses };
+    await loadStatuses();
+
+    // Only re-render if something changed
+    const changed = Object.keys(statuses).some(
+      (id) => statuses[id] !== prevStatuses[id]
+    );
+    if (changed) render();
+  }, 10000);
+}
+
+window.addEventListener("DOMContentLoaded", init);
