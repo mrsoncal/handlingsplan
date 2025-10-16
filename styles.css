@@ -125,13 +125,6 @@ text-align: left;
 transition: background-color 0.3s ease;
 }
 
-td:nth-child(7), th:nth-child(7) {
-border: none !important;
-background: none;
-padding: 0;
-text-align: right;
-}
-
 .vedtatt td:nth-child(7),
 .vedtatt td.button-cell {
 background-color: white !important;
@@ -196,6 +189,8 @@ left: 1rem;
 .carousel-nav.right {
 right: 1rem;
 }
+
+th.id-col, td.id-col { display: none; }
 
 td:first-child {
 padding-left: 1.5rem; /* extra space before the tag label */
