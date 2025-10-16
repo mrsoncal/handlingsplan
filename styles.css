@@ -197,14 +197,6 @@ left: 1rem;
 right: 1rem;
 }
 
-/* ---- ROUNDED CORNERS ON TABLE ---- */
-.table-wrapper table thead tr:first-child th:first-child {
-border-top-left-radius: 12px;
-}
-.table-wrapper table thead tr:first-child th:nth-last-child(2) {
-border-top-right-radius: 12px;
-}
-
 td:first-child {
 padding-left: 1.5rem; /* extra space before the tag label */
 }
@@ -272,13 +264,28 @@ color: white;
   border: none;
 }
 
-/* Rounded bottom corners (left and right) */
+/* ---- TOP (unchanged except more robust) ---- */
+.table-wrapper table thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+/* Round the last VISIBLE header cell (skip hidden .id-col and .button-header) */
+.table-wrapper table thead tr:first-child
+  > th:nth-last-child(1 of :not(.id-col, .button-header)) {
+  border-top-right-radius: 12px;
+}
+
+/* ---- BOTTOM ---- */
 .table-wrapper table tbody tr.filler-row td:first-child {
   border-bottom-left-radius: 12px;
 }
 
-.table-wrapper table tbody tr.filler-row td:nth-last-child(2) {
+/* Round the last VISIBLE data cell (skip hidden .id-col and the action .button-cell) */
+.table-wrapper table tbody tr.filler-row
+  > td:nth-last-child(1 of :not(.id-col, .button-cell)) {
   border-bottom-right-radius: 12px;
+  overflow: hidden;              /* helps clip row bg inside the radius */
+  background-clip: padding-box;  /* avoids bleed past the curved edge */
 }
 
 tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
