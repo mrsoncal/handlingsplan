@@ -555,6 +555,16 @@ html.silent-update *, html.silent-update *::before, html.silent-update *::after 
 .table-wrapper tr { animation: fadeIn .4s ease-in; }
 html.silent-update .table-wrapper tr { animation: none !important; }
 
+/* Disable transitions when .updating is present */
+#suggestions tr.updating, #suggestions tr.updating * {
+transition: none !important;
+}
+
+/* Status colors driven by data-status (no JS class juggling) */
+#suggestions tr[data-status="vedtatt"] { background: #e6ffed; }
+#suggestions tr[data-status="ny"] { background: #fff; }
+#suggestions tr[data-status="avvist"] { background: #ffecec; }
+
 @media (max-width: 600px) {
 .page-header h1 {
     font-size: 1.25rem;

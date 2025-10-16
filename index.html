@@ -53,55 +53,104 @@
   <script src="login.js" defer></script>
   <script src="script.js" defer></script>
   <script>
-    (function () {
-      const API_BASE = "https://handlingsplan-backend.onrender.com";
+    const API = '/api/suggestions';
+    let store = new Map();
+    let lastServerTime = null;
+    let polling = null;
 
-      function withSilentUI(fn) {
-        document.documentElement.classList.add("silent-update");
-        try { fn(); } finally {
-          requestAnimationFrame(() => {
-            document.documentElement.classList.remove("silent-update");
-          });
-        }
+
+    function applyItem(it) {
+      store.set(it.suggestion_id, it);
+      const rowId = `row-${it.suggestion_id}`;
+      let tr = document.getElementById(rowId);
+      if (!tr) {
+        tr = document.createElement('tr');
+        tr.id = rowId;
+        tr.innerHTML = `
+        <td class="col-time"></td>
+        <td class="col-name"></td>
+        <td class="col-desc"></td>
+        <td class="col-status"></td>
+        <td class="col-actions"></td>`;
+        document.querySelector('#suggestions tbody').appendChild(tr);
       }
+      tr.classList.add('updating'); // turn off transitions
 
-      async function applyChange(suggestionId) {
-        // Fetch the updated vedtatt row
-        const r = await fetch(`${API_BASE}/vedtatt/${encodeURIComponent(suggestionId)}`);
-        if (!r.ok) return;
-        const row = await r.json(); // { suggestion_id, vedtatt, updated_at }
 
-        // Find the table row by data-suggestion-id
-        const tr = document.querySelector(`tr[data-suggestion-id="${row.suggestion_id}"]`);
-        if (!tr) return;
+      // Example fields—adapt to your payload keys
+      tr.querySelector('.col-time').textContent = new Date(it.payload?.time || it.created_at).toLocaleString();
+      tr.querySelector('.col-name').textContent = it.payload?.name || it.payload?.title || '—';
+      tr.querySelector('.col-desc').textContent = it.payload?.description || '—';
 
-        // Toggle only the visual state; no animations
-        withSilentUI(() => {
-          tr.classList.toggle("vedtatt", !!row.vedtatt);
 
-          // If there’s a button in the row, update its state/text too (optional)
-          const btn = tr.querySelector(".vedta-button");
-          if (btn) {
-            btn.classList.toggle("vedtatt", !!row.vedtatt);
-            btn.textContent = row.vedtatt ? "Vedtatt" : "Vedta";
-          }
-        });
-      }
+      const statusCell = tr.querySelector('.col-status');
+      statusCell.textContent = it.status;
+      tr.dataset.status = it.status; // for CSS coloring
 
-      // Open the SSE stream and listen for DB change events
-      const es = new EventSource(`${API_BASE}/sse/events`);
-      es.addEventListener("dbchange", (e) => {
-        try {
-          const msg = JSON.parse(e.data); // { op, suggestion_id }
-          if (msg && msg.suggestion_id) applyChange(msg.suggestion_id);
-        } catch { /* ignore bad payloads */ }
-      });
 
-      es.onerror = () => {
-        console.warn("SSE error (will reconnect on reload).");
+      const actions = tr.querySelector('.col-actions');
+      actions.innerHTML = '';
+      const btn = document.createElement('button');
+      btn.textContent = it.status === 'vedtatt' ? 'Opphev' : 'Vedtá';
+      btn.onclick = () => toggleVedtatt(it);
+      actions.appendChild(btn);
+
+
+      // Allow painting after this frame
+      requestAnimationFrame(() => tr.classList.remove('updating'));
+    }
+
+
+    async function initialLoad() {
+      const res = await fetch(API);
+      const data = await res.json();
+      lastServerTime = data.serverTime;
+      data.items.forEach(applyItem);
+    }
+
+
+    async function poll() {
+      const url = lastServerTime ? `${API}?since=${encodeURIComponent(lastServerTime)}` : API;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('poll failed');
+      const data = await res.json();
+      if (data.items?.length) data.items.forEach(applyItem);
+      lastServerTime = data.serverTime || lastServerTime;
+    }
+
+
+    async function toggleVedtatt(it) {
+      // Optimistic lock with expectedUpdatedAt
+      const body = {
+        status: it.status === 'vedtatt' ? 'ny' : 'vedtatt',
+        expectedUpdatedAt: it.updated_at,
+        actor: window.currentUser || 'admin'
       };
-    })();
-  </script>
+      const res = await fetch(`${API}/${it.suggestion_id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+      if (res.status === 409) {
+        // Conflict: refetch the latest row then re-try (optional)
+        await poll();
+        alert('Denne saken ble endret et annet sted. Viser siste status.');
+        return;
+      }
+      const data = await res.json();
+      applyItem(data.item);
+    }
+
+
+    function startPolling() {
+      if (polling) clearInterval(polling);
+      polling = setInterval(() => poll().catch(console.error), 10000); // 10s
+    }
+
+
+    window.addEventListener('load', async () => {
+      await initialLoad();
+      startPolling();
+    });
+</script>
 
 </body>
 </html>
