@@ -1,4 +1,12 @@
 // --- Handlingsplan script.js (Hybrid CSV + DB) ---
+// Uses Google Sheet for content; PostgreSQL for vedtatt status.
+// Columns to display (in this exact order, excluding ID):
+// 1) Hva vil du gjøre?
+// 2) Velg et tema
+// 3) Velg et punkt (nr)
+// 4) Formuler punktet
+// 5) Endre fra
+// 6) Endre til
 
 // --- Config ---
 const CSV_URL =
@@ -6,9 +14,19 @@ const CSV_URL =
 const API_BASE = "https://handlingsplan-backend.onrender.com";
 const SUGG_API = API_BASE + "/api/suggestions";
 
+// Column order (ID is intentionally omitted)
+const COLS = [
+  "Hva vil du gjøre?",
+  "Velg et tema",
+  "Velg et punkt (nr)",
+  "Formuler punktet",
+  "Endre fra",
+  "Endre til",
+];
+
 // --- State ---
-let suggestions = []; // from CSV
-let statuses = {}; // from DB
+let suggestions = []; // from CSV: [{ suggestion_id, payload }, ...]
+let statuses = {};    // from DB: { suggestion_id: 'vedtatt' | 'ny' }
 let currentIndex = 0;
 
 // --- DOM refs ---
@@ -16,15 +34,34 @@ const track = document.getElementById("carousel-track");
 const isMobile = window.innerWidth <= 600;
 if (isMobile && track) track.classList.add("stacked");
 
+// ---------- Helpers ----------
+
+// Fallback deterministic id from key fields (used only if CSV row lacks ID)
+function fallbackIdFromRow(row) {
+  const parts = [
+    row["Hva vil du gjøre?"] || "",
+    row["Velg et tema"] || "",
+    row["Velg et punkt (nr)"] || "",
+    row["Formuler punktet"] || "",
+    row["Endre fra"] || "",
+    row["Endre til"] || ""
+  ].join("|");
+  let h = 5381;
+  for (let i = 0; i < parts.length; i++) h = ((h << 5) + h) ^ parts.charCodeAt(i);
+  return (h >>> 0).toString(16);
+}
+
 // ---------- Vedta click handler ----------
 async function handleVedtaClick(tr, btn, suggestionId) {
   const isVedtatt = !tr.classList.contains("vedtatt");
   const token = localStorage.getItem("token");
 
+  // Instant UI feedback
   tr.classList.toggle("vedtatt", isVedtatt);
   btn.classList.toggle("vedtatt", isVedtatt);
   btn.textContent = isVedtatt ? "Vedtatt" : "Vedta";
 
+  // Update local cache
   statuses[suggestionId] = isVedtatt ? "vedtatt" : "ny";
 
   try {
@@ -48,40 +85,38 @@ async function handleVedtaClick(tr, btn, suggestionId) {
   }
 }
 
-// ---------- Fetch CSV content ----------
+// ---------- Fetch CSV content (read-only source of table content) ----------
 async function loadCSV() {
   return new Promise((resolve, reject) => {
     Papa.parse(CSV_URL, {
       download: true,
       header: true,
+      skipEmptyLines: true,
       complete: (results) => {
-        if (!results.data || !results.data.length) {
-          reject("Empty CSV");
-          return;
+        try {
+          const rows = (results.data || []).map((row) => {
+            // Prefer the "ID" column if present; otherwise fallback
+            const id = (row["ID"] || "").toString().trim() || fallbackIdFromRow(row);
+            return { suggestion_id: id, payload: row };
+          });
+          suggestions = rows;
+          resolve();
+        } catch (e) {
+          reject(e);
         }
-
-        suggestions = results.data.map((row) => {
-          const id = row["suggestion_id"]?.trim() || crypto.randomUUID();
-          return { suggestion_id: id, payload: row };
-        });
-        resolve();
       },
       error: reject,
     });
   });
 }
 
-// ---------- Fetch DB statuses ----------
+// ---------- Fetch DB statuses (single source of truth for vedtatt) ----------
 async function loadStatuses() {
   try {
-    const res = await fetch(SUGG_API + "?cacheBust=" + Date.now(), {
-      cache: "no-store",
-    });
+    const res = await fetch(SUGG_API + "?cacheBust=" + Date.now(), { cache: "no-store" });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
-    statuses = Object.fromEntries(
-      (data.items || []).map((it) => [it.suggestion_id, it.status])
-    );
+    statuses = Object.fromEntries((data.items || []).map((it) => [it.suggestion_id, it.status]));
   } catch (err) {
     console.error("loadStatuses failed:", err);
   }
@@ -97,6 +132,7 @@ function render() {
     return;
   }
 
+  // Group by "Velg et tema"
   const grouped = {};
   for (const s of suggestions) {
     const tema = s.payload["Velg et tema"] || "Uten tema";
@@ -127,35 +163,46 @@ function render() {
     const table = document.createElement("table");
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    [
-      "Velg et punkt (nr)",
-      "Hva vil du gjøre?",
-      "Forslag",
-      "Begrunnelse",
-      "Forslagsstiller",
-    ].forEach((h) => {
+
+    // Render headers exactly as requested
+    for (const label of COLS) {
       const th = document.createElement("th");
-      th.textContent = h;
+      th.textContent = label;
       headerRow.appendChild(th);
-    });
+    }
+    // Extra empty header for the button column
     headerRow.appendChild(document.createElement("th"));
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
 
+    // Optional: sort inside each tema by "Velg et punkt (nr)" numeric asc, then action
+    const order = { "Legge til et punkt": 0, "Endre et punkt": 1, "Fjerne et punkt": 2 };
+    group.sort((a, b) => {
+      const pa = a.payload, pb = b.payload;
+      const nA = parseInt(pa["Velg et punkt (nr)"]) || 0;
+      const nB = parseInt(pb["Velg et punkt (nr)"]) || 0;
+      if (nA !== nB) return nA - nB;
+      const oA = order[pa["Hva vil du gjøre?"]] ?? 99;
+      const oB = order[pb["Hva vil du gjøre?"]] ?? 99;
+      return oA - oB;
+    });
+
     for (const s of group) {
       const tr = document.createElement("tr");
       const id = s.suggestion_id;
       const status = statuses[id] || "ny";
-      const payload = s.payload;
+      const payload = s.payload || {};
 
-      ["Velg et punkt (nr)", "Hva vil du gjøre?", "Forslag", "Begrunnelse", "Forslagsstiller"].forEach((h) => {
+      // Data cells in exact order (ID is not shown)
+      for (const key of COLS) {
         const td = document.createElement("td");
-        td.textContent = payload[h] || "";
+        td.textContent = payload[key] ?? "";
         tr.appendChild(td);
-      });
+      }
 
+      // Action cell
       const tdAction = document.createElement("td");
       const btn = document.createElement("button");
       btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
@@ -187,32 +234,34 @@ function updateCarousel() {
   track.style.transform = `translateX(-${currentIndex * 100}%)`;
 }
 
-function nextSlide() {
-  currentIndex++;
-  updateCarousel();
-}
-function prevSlide() {
-  currentIndex--;
-  updateCarousel();
-}
+function nextSlide() { currentIndex++; updateCarousel(); }
+function prevSlide() { currentIndex--; updateCarousel(); }
 
-// ---------- Main flow ----------
+// ---------- Init ----------
 async function init() {
-  await loadCSV();
-  await loadStatuses();
+  await loadCSV();        // content
+  await loadStatuses();   // vedtatt status
   render();
 
-  // Poll only statuses (not CSV) every 10 s
+  // Poll only statuses every 10s (no CSV polling → no duplicates)
   setInterval(async () => {
-    const prevStatuses = { ...statuses };
+    const before = JSON.stringify(statuses);
     await loadStatuses();
-
-    // Only re-render if something changed
-    const changed = Object.keys(statuses).some(
-      (id) => statuses[id] !== prevStatuses[id]
-    );
-    if (changed) render();
+    if (JSON.stringify(statuses) !== before) render();
   }, 10000);
 }
 
 window.addEventListener("DOMContentLoaded", init);
+
+// ---------- Login overlay behavior ----------
+const loginOverlayEl = document.getElementById("login-section");
+if (loginOverlayEl) {
+  loginOverlayEl.addEventListener("click", function (event) {
+    const loginBox = document.querySelector(".login-box");
+    if (loginBox && !loginBox.contains(event.target)) {
+      this.style.display = "none";
+      const loginBtn = document.getElementById("login-button");
+      if (loginBtn) loginBtn.style.display = "inline-block";
+    }
+  });
+}
