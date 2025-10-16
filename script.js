@@ -14,6 +14,9 @@ const SEEN_IDS = new Set();
 let HEADERS = [];
 let ID_COL_NAME = "Forslags-ID"; // or whatever your ID column is called in the sheet
 
+const API_BASE = "https://handlingsplan-backend.onrender.com";
+const SUGG_API = API_BASE + "/api/suggestions";
+
 
 // ---------- Helpers ----------
 
@@ -169,9 +172,7 @@ async function loadCSV() {
         // Load saved vedtatt states (graceful on error)
         try {
             // --- New API base ---
-            const API_BASE = "https://handlingsplan-backend.onrender.com";
-            const SUGG_API = API_BASE + "/api/suggestions";
-
+            
             const res = await fetch(SUGG_API + "?status=vedtatt", { cache: "no-store" });
             if (res.ok) {
                 const data = await res.json(); // { items, serverTime }
