@@ -52,6 +52,16 @@
 
   <script src="login.js" defer></script>
   <script src="script.js" defer></script>
+  <script>
+    const source = new EventSource("https://your-render-app.onrender.com/sse/events");
+
+    source.addEventListener("dbchange", (e) => {
+      console.log("Database change:", e.data);
+      const msg = JSON.parse(e.data);
+      // fetch the updated row and patch your table silently
+    });
+  </script>
+
 
 </body>
 </html>
