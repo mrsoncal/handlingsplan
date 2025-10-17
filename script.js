@@ -398,12 +398,15 @@ function render(items) {
   // First render marker
   if (!hasPaintedOnce) hasPaintedOnce = true;
 
-  // Re-enable animations on next frame
-  requestAnimationFrame(() => {
-    rootEl.classList.remove("silent-update");
-    rootEl.classList.remove("initial-boot");
-    console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
-  });
+  // Wait two frames before re-enabling transitions to avoid any flash/flicker
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            rootEl.classList.remove("silent-update");
+            rootEl.classList.remove("initial-boot"); // stays removed after first render
+            console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
+        });
+    });
+
 }
 
 
