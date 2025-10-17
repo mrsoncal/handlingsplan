@@ -162,7 +162,6 @@ position: relative;
 padding: 1rem;
 }
 
-
 .carousel-nav {
 position: fixed;
 top: 50%;                           /* center vertically */
@@ -282,6 +281,14 @@ thead tr:not(.filler-row) th.button-header {
   padding: 0;
   text-align: right;
   border: 0;
+}
+
+/* When admin is logged in, show a narrow header to align the column */
+body.logged-in th.button-header {
+  display: table-cell;
+  width: 110px;             /* tweak if you want a thinner/wider action column */
+  text-align: right;
+  padding-right: 1.5rem;
 }
 
 /* Filler row: full-width magenta bar */
