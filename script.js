@@ -4,10 +4,26 @@ const rootEl = document.documentElement;
 let hasPaintedOnce = false;
 rootEl.classList.add('initial-boot');
 
+// Tema → accent color
+const TEMA_ACCENTS = new Map([
+  ["Ungdomsdemokrati og Medvirkning", "#DD1367"],
+  ["Samferdsel",                     "#FF6A18"],
+  ["Utdanning og Kompetanse",        "#C5182C"],
+  ["Folkehelse",                     "#52A23E"],
+  ["Klima og Miljø",                 "#1C7A23"],
+  ["Kultur",                         "#DD1367"], // per your list
+]);
+
+function applySlideAccent(slideEl, tema) {
+  const color = TEMA_ACCENTS.get(tema) || "#888";
+  slideEl.style.setProperty("--accent", color);
+  slideEl.dataset.tema = tema; // nice to have (for debugging/styling)
+}
+
+
 const API = "https://handlingsplan-backend.onrender.com/api/suggestions";
 const COLS = [
   "Hva vil du gjøre?",
-  "Velg et tema",
   "Velg et punkt (nr)",
   "Formuler punktet",
   "Endre fra",
