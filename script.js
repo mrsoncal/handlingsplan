@@ -238,8 +238,16 @@ function render(items) {
   console.debug("[render] data/login changed → rebuilding UI (admin:", isAdmin, ")");
   lastDataHash = newHash;
 
-  // Disable animations after first render
-  if (hasPaintedOnce) rootEl.classList.add("silent-update");
+    // Disable transitions for background updates (no flicker)
+    if (hasPaintedOnce) {
+        rootEl.classList.add("silent-update");
+        rootEl.classList.add("is-refreshing"); // temporary flag to freeze transitions
+    }
+
+    // temporarily pause carousel transform animation
+    const prevTransition = track.style.transition;
+    track.style.transition = "none";
+
 
   const frag = document.createDocumentFragment();
   const groups = sortAndGroup(items);
@@ -411,6 +419,12 @@ function render(items) {
 
   // First render marker
   if (!hasPaintedOnce) hasPaintedOnce = true;
+
+    // restore transitions safely after rebuild
+    void track.offsetHeight; // reflow
+    track.style.transition = prevTransition || "";
+    rootEl.classList.remove("is-refreshing");
+
 
   // Wait two frames before re-enabling transitions to avoid any flash/flicker
     requestAnimationFrame(() => {
