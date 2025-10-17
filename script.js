@@ -226,6 +226,9 @@ function render(items) {
     h2.textContent = tema;
     slide.appendChild(h2);
 
+    // Set accent color based on tema (not slide order)
+    applySlideAccent(slide, tema);
+
     const table = document.createElement("table");
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
