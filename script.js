@@ -47,10 +47,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------- FETCH FROM BACKEND ----------
 async function fetchAll() {
-  const res = await fetch(API, { cache: "no-store" });
-  if (!res.ok) throw new Error(await res.text());
-  const json = await res.json();
-  return json.items || [];
+    // Cache-buster query avoids any proxy/CDN/browser caching surprises.
+    const url = `${API}?_=${Date.now()}`;
+    const res = await fetch(API, { cache: "no-store" });
+    if (!res.ok) throw new Error(await res.text());
+    const json = await res.json();
+    console.debug("[fetchAll] received", json.items?.length ?? 0, "items at", json.serverTime);
+    return json.items || [];
 }
 
 // ---------- SORT & GROUP ----------
@@ -151,7 +154,9 @@ function render(items) {
 
       btn.onclick = async () => {
         const token = localStorage.getItem("token");
-        await fetch(`${API}/${encodeURIComponent(s.suggestion_id)}`, {
+        const endpoint = `${API}/${encodeURIComponent(s.suggestion_id)}`;
+        console.debug("[PATCH] toggling", s.suggestion_id, "from", status, "->", status === "vedtatt" ? "ny" : "vedtatt");
+        const resp = await fetch(endpoint, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -162,7 +167,14 @@ function render(items) {
             actor: "admin"
           })
         });
-        await refresh(true);
+        if (!resp.ok) {
+            const errTxt = await resp.text().catch(() => "(no text)");
+            console.error("[PATCH] failed:", resp.status, errTxt);
+        } else {
+            const data = await resp.json().catch(() => null);
+            console.debug("[PATCH] ok:", data?.item || data);
+        }
+            await refresh(true); // force immediate redraw on this client
       };
 
       tdBtn.appendChild(btn);
