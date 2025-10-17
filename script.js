@@ -92,17 +92,15 @@ function sortAndGroup(items) {
 }
 
 // ---------- RENDER ----------
-
 function render(items) {
   const track = document.getElementById("carousel-track");
   if (!track) return;
 
-  // Skip re-render if nothing has changed (for performance)
   const newHash = JSON.stringify(items.map(i => [i.suggestion_id, i.status, i.updated_at]));
-  if (newHash === lastDataHash) return;
+  if (newHash === lastDataHash) return; // nothing new, skip DOM re-render
   lastDataHash = newHash;
 
-  // 👇 Disable animations after first render
+  // 🚫 Disable animations on updates (but not on the very first paint)
   if (hasPaintedOnce) rootEl.classList.add("silent-update");
 
   const frag = document.createDocumentFragment();
@@ -118,76 +116,65 @@ function render(items) {
 
     const table = document.createElement("table");
     const thead = document.createElement("thead");
-    const headRow = document.createElement("tr");
-
-    const headers = [
-      "Tittel",
-      "Beskrivelse",
-      "Tiltakshaver",
-      "Sist oppdatert",
-      "Status",
-      "Vedtatt"
-    ];
-
-    headers.forEach(header => {
+    const trh = document.createElement("tr");
+    for (const h of COLS) {
       const th = document.createElement("th");
-      th.textContent = header;
-      headRow.appendChild(th);
-    });
-
-    thead.appendChild(headRow);
+      th.textContent = h;
+      trh.appendChild(th);
+    }
+    trh.appendChild(document.createElement("th")); // action col
+    thead.appendChild(trh);
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
 
-    group.forEach(item => {
+    for (const s of group) {
       const tr = document.createElement("tr");
-      tr.dataset.id = item.suggestion_id;
+      const status = s.status || "ny";
+      const payload = s.payload || {};
 
-      const tittel = item.payload?.Tittel || "";
-      const beskrivelse = item.payload?.Beskrivelse || "";
-      const tiltakshaver = item.payload?.Tiltakshaver || "";
-      const updated = item.updated_at
-        ? new Date(item.updated_at).toLocaleDateString("no-NO", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })
-        : "";
-      const status = item.status || "ny";
+      for (const k of COLS) {
+        const td = document.createElement("td");
+        td.textContent = payload[k] ?? "";
+        tr.appendChild(td);
+      }
 
-      const td1 = document.createElement("td");
-      td1.textContent = tittel;
-
-      const td2 = document.createElement("td");
-      td2.textContent = beskrivelse;
-
-      const td3 = document.createElement("td");
-      td3.textContent = tiltakshaver;
-
-      const td4 = document.createElement("td");
-      td4.textContent = updated;
-
-      const td5 = document.createElement("td");
-      td5.textContent = status;
-
-      const td6 = document.createElement("td");
+      const tdBtn = document.createElement("td");
       const btn = document.createElement("button");
-      btn.textContent = status === "vedtatt" ? "✓" : "Vedtá";
-      btn.className = status === "vedtatt" ? "approved" : "";
-      btn.addEventListener("click", () => toggleVedta(item));
-      td6.appendChild(btn);
+      btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
+      btn.className = "vedta-button";
+      if (status === "vedtatt") {
+        tr.classList.add("vedtatt");
+        btn.classList.add("vedtatt");
+      }
 
-      [td1, td2, td3, td4, td5, td6].forEach(td => tr.appendChild(td));
+      btn.onclick = async () => {
+        const token = localStorage.getItem("token");
+        await fetch(`${API}/${encodeURIComponent(s.suggestion_id)}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            status: status === "vedtatt" ? "ny" : "vedtatt",
+            actor: "admin"
+          })
+        });
+        await refresh(true);
+      };
+
+      tdBtn.appendChild(btn);
+      tr.appendChild(tdBtn);
       tbody.appendChild(tr);
-    });
+    }
 
     table.appendChild(tbody);
     slide.appendChild(table);
     frag.appendChild(slide);
   }
 
-  // Replace DOM content all at once
+  // Atomic DOM swap
   track.replaceChildren(frag);
 
   // ✅ Mark that first render is done
