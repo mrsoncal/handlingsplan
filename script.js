@@ -24,7 +24,7 @@ function applySlideAccent(slideEl, tema) {
 const API = "https://handlingsplan-backend.onrender.com/api/suggestions";
 const COLS = [
   "Hva vil du gjøre?",
-  "Velg et punkt (nr)",
+  "Punkt (nr)",
   "Formuler punktet",
   "Endre fra",
   "Endre til"
