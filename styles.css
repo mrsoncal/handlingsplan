@@ -597,6 +597,14 @@ transition: none !important;
   text-align: center;
 }
 
+/* Make first column (Hva vil du gjøre?) just wide enough for the tag */
+.carousel-slide table th:nth-child(1),
+.carousel-slide table td:nth-child(1) {
+  width: 18%;          /* adjust as needed — 15–20% usually fits well */
+  white-space: nowrap; /* prevent wrapping */
+  text-align: left;
+  padding-left: 1rem;  /* matches your tag’s spacing */
+}
 
 @media (max-width: 600px) {
 .page-header h1 {
