@@ -636,6 +636,26 @@ body.logged-in .carousel-slide table td:last-child {
 }
 
 
+/* === Responsive table width on desktop === */
+@media (min-width: 801px) {
+  .carousel-wrapper {
+    max-width: 80vw;   /* use 80% of the screen width */
+    width: 80vw;       /* ensures consistency across flex parents */
+    margin: 0 auto;    /* keep centered */
+  }
+
+  .container {
+    max-width: 80vw;   /* match the same width for header/footer alignment */
+  }
+
+  .table-wrapper table {
+    width: 100%;       /* occupy full width inside wrapper */
+    max-width: 100%;   /* no artificial cap */
+    table-layout: fixed;
+  }
+}
+
+
 @media (max-width: 600px) {
 .page-header h1 {
     font-size: 1.25rem;
