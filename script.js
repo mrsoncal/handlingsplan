@@ -1,4 +1,5 @@
-// --- Handlingsplan DB-only script.js ---
+// --- Handlingsplan frontend (merged version: DB source + stable visuals) ---
+
 const API = "https://handlingsplan-backend.onrender.com/api/suggestions";
 const COLS = [
   "Hva vil du gjøre?",
@@ -8,10 +9,9 @@ const COLS = [
   "Endre fra",
   "Endre til"
 ];
-const track = document.getElementById("carousel-track");
-let currentIndex = 0;
+let lastDataHash = ""; // to detect if data actually changed before re-render
 
-// ---------- Authentication UI ----------
+// ---------- AUTH HANDLING ----------
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("token");
   const loginSection = document.getElementById("login-section");
@@ -34,30 +34,23 @@ document.addEventListener("DOMContentLoaded", () => {
     loginSection.style.display = "flex";
     loginButton.style.display = "none";
   });
+
   logoutButton.addEventListener("click", () => {
     localStorage.removeItem("token");
     location.reload();
   });
 });
 
-// ---------- Fetch & Render ----------
+// ---------- FETCH FROM BACKEND ----------
 async function fetchAll() {
   const res = await fetch(API, { cache: "no-store" });
   if (!res.ok) throw new Error(await res.text());
-  return (await res.json()).items || [];
+  const json = await res.json();
+  return json.items || [];
 }
 
-function render(items) {
-  const frag = document.createDocumentFragment();
-  if (!items.length) {
-    const p = document.createElement("p");
-    p.textContent = "Ingen forslag funnet.";
-    frag.appendChild(p);
-    track.replaceChildren(frag);
-    return;
-  }
-
-  // Group by tema
+// ---------- SORT & GROUP ----------
+function sortAndGroup(items) {
   const grouped = {};
   for (const it of items) {
     const tema = it.payload?.["Velg et tema"] || "Uten tema";
@@ -70,13 +63,44 @@ function render(items) {
     "Utdanning og Kompetanse",
     "Folkehelse",
     "Klima og Miljø",
-    "Kultur",
+    "Kultur"
   ];
 
-  for (const tema of temaOrder) {
-    const group = grouped[tema];
-    if (!group) continue;
+  const order = { "Legge til et punkt": 0, "Endre et punkt": 1, "Fjerne et punkt": 2 };
 
+  for (const tema in grouped) {
+    grouped[tema].sort((a, b) => {
+      const pa = a.payload || {}, pb = b.payload || {};
+      const nA = parseInt(pa["Velg et punkt (nr)"]) || 0;
+      const nB = parseInt(pb["Velg et punkt (nr)"]) || 0;
+      if (nA !== nB) return nA - nB;
+      const oA = order[pa["Hva vil du gjøre?"]] ?? 99;
+      const oB = order[pb["Hva vil du gjøre?"]] ?? 99;
+      return oA - oB;
+    });
+  }
+
+  // Return items grouped in display order
+  const sortedGroups = [];
+  for (const tema of temaOrder) {
+    if (grouped[tema]) sortedGroups.push([tema, grouped[tema]]);
+  }
+  return sortedGroups;
+}
+
+// ---------- RENDER ----------
+function render(items) {
+  const track = document.getElementById("carousel-track");
+  if (!track) return;
+
+  const newHash = JSON.stringify(items.map(i => [i.suggestion_id, i.status, i.updated_at]));
+  if (newHash === lastDataHash) return; // nothing new, skip DOM re-render
+  lastDataHash = newHash;
+
+  const frag = document.createDocumentFragment();
+  const groups = sortAndGroup(items);
+
+  for (const [tema, group] of groups) {
     const slide = document.createElement("div");
     slide.className = "carousel-slide";
 
@@ -86,43 +110,30 @@ function render(items) {
 
     const table = document.createElement("table");
     const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    for (const label of COLS) {
+    const trh = document.createElement("tr");
+    for (const h of COLS) {
       const th = document.createElement("th");
-      th.textContent = label;
-      headerRow.appendChild(th);
+      th.textContent = h;
+      trh.appendChild(th);
     }
-    headerRow.appendChild(document.createElement("th"));
-    thead.appendChild(headerRow);
+    trh.appendChild(document.createElement("th")); // action col
+    thead.appendChild(trh);
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
 
-    // Sort: numeric then action type
-    const order = { "Legge til et punkt": 0, "Endre et punkt": 1, "Fjerne et punkt": 2 };
-    group.sort((a, b) => {
-      const pa = a.payload, pb = b.payload;
-      const nA = parseInt(pa["Velg et punkt (nr)"]) || 0;
-      const nB = parseInt(pb["Velg et punkt (nr)"]) || 0;
-      if (nA !== nB) return nA - nB;
-      const oA = order[pa["Hva vil du gjøre?"]] ?? 99;
-      const oB = order[pb["Hva vil du gjøre?"]] ?? 99;
-      return oA - oB;
-    });
-
     for (const s of group) {
       const tr = document.createElement("tr");
-      const id = s.suggestion_id;
       const status = s.status || "ny";
       const payload = s.payload || {};
 
-      for (const key of COLS) {
+      for (const k of COLS) {
         const td = document.createElement("td");
-        td.textContent = payload[key] ?? "";
+        td.textContent = payload[k] ?? "";
         tr.appendChild(td);
       }
 
-      const tdAction = document.createElement("td");
+      const tdBtn = document.createElement("td");
       const btn = document.createElement("button");
       btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
       btn.className = "vedta-button";
@@ -130,24 +141,25 @@ function render(items) {
         tr.classList.add("vedtatt");
         btn.classList.add("vedtatt");
       }
+
       btn.onclick = async () => {
         const token = localStorage.getItem("token");
-        await fetch(`${API}/${encodeURIComponent(id)}`, {
+        await fetch(`${API}/${encodeURIComponent(s.suggestion_id)}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
           },
           body: JSON.stringify({
             status: status === "vedtatt" ? "ny" : "vedtatt",
-            actor: "admin",
-          }),
+            actor: "admin"
+          })
         });
-        await refresh(); // instant reload
+        await refresh(true);
       };
 
-      tdAction.appendChild(btn);
-      tr.appendChild(tdAction);
+      tdBtn.appendChild(btn);
+      tr.appendChild(tdBtn);
       tbody.appendChild(tr);
     }
 
@@ -156,41 +168,33 @@ function render(items) {
     frag.appendChild(slide);
   }
 
+  // Atomic DOM swap (no blink)
   track.replaceChildren(frag);
-  updateCarousel();
 }
 
-// ---------- Carousel Controls ----------
-function updateCarousel() {
-  const totalSlides = track.children.length;
-  currentIndex = (currentIndex + totalSlides) % totalSlides;
-  track.style.transform = `translateX(-${currentIndex * 100}%)`;
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-function nextSlide() { currentIndex++; updateCarousel(); }
-function prevSlide() { currentIndex--; updateCarousel(); }
-
-// ---------- Periodic Refresh ----------
-async function refresh() {
+// ---------- REFRESH ----------
+async function refresh(force = false) {
   try {
     const items = await fetchAll();
+    if (force) lastDataHash = ""; // force redraw when explicit
     render(items);
   } catch (err) {
-    console.error("refresh() failed:", err);
+    console.error("refresh failed:", err);
   }
 }
 
+// ---------- AUTO REFRESH ----------
 window.addEventListener("DOMContentLoaded", async () => {
-  await refresh();
+  await refresh(true);
   setInterval(refresh, 10000); // every 10s
 });
 
-// ---------- Close login overlay ----------
+// ---------- CLOSE LOGIN OVERLAY ----------
 const loginOverlayEl = document.getElementById("login-section");
 if (loginOverlayEl) {
   loginOverlayEl.addEventListener("click", (event) => {
-    const loginBox = document.querySelector(".login-box");
-    if (loginBox && !loginBox.contains(event.target)) {
+    const box = document.querySelector(".login-box");
+    if (box && !box.contains(event.target)) {
       loginOverlayEl.style.display = "none";
       const loginBtn = document.getElementById("login-button");
       if (loginBtn) loginBtn.style.display = "inline-block";
