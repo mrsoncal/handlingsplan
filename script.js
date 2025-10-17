@@ -317,16 +317,18 @@ function render(items) {
       if (status === "vedtatt") tr.classList.add("vedtatt");
 
       // Data columns — first column uses a colored tag pill
-      for (let i = 0; i < COLS.length; i++) {
-        const key = COLS[i];
-        const td = document.createElement("td");
-        if (i === 0 && typeof makeTagLabel === "function") {
-          td.appendChild(makeTagLabel(payload[key] ?? ""));
-        } else {
-          td.textContent = payload[key] ?? "";
+        for (let i = 0; i < COLS.length; i++) {
+            const { key } = COLS[i];
+            const td = document.createElement("td");
+            const value = payload[key] ?? "";
+            if (i === 0 && typeof makeTagLabel === "function") {
+                td.appendChild(makeTagLabel(value));
+            } else {
+                td.textContent = value;
+            }
+            tr.appendChild(td);
         }
-        tr.appendChild(td);
-      }
+
 
       // Action button column ONLY when logged in
       if (isAdmin) {
