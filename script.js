@@ -64,11 +64,6 @@ function updateCarousel() {
   console.debug(`[carousel] slide ${currentSlide + 1}/${total}`);
 }
 
-// leave updates silent for just a bit longer
-setTimeout(() => {
-  rootEl.classList.remove("is-refreshing");
-}, 100); // 1 frame is usually enough, 100ms is safe
-
 // Public controls for the HTML buttons
 function nextSlide() {
   currentSlide += 1;
@@ -229,24 +224,22 @@ function render(items) {
 
   const isAdmin = document.body.classList.contains("logged-in");
 
-  // Skip no-op re-renders (data + auth fingerprint)
+  // Fingerprint of the data + login state to skip no-op rerenders
   const newHash = JSON.stringify([
     isAdmin ? 1 : 0,
     items.map(i => [i.suggestion_id, i.status, i.updated_at])
   ]);
+
   if (newHash === lastDataHash) {
     console.debug("[render] skipped (no data/login change)");
     return;
   }
+
+  console.debug("[render] data/login changed → rebuilding UI (admin:", isAdmin, ")");
   lastDataHash = newHash;
 
-  // Keep general transitions muted on background refreshes after first paint
+  // Disable animations after first render
   if (hasPaintedOnce) rootEl.classList.add("silent-update");
-
-  // ---- anti-flicker guards ----
-  rootEl.classList.add("is-refreshing"); // scope-only mute during rebuild
-  const prevTrackTransition = track.style.transition; // pause carousel tweening
-  track.style.transition = "none";
 
   const frag = document.createDocumentFragment();
   const groups = sortAndGroup(items);
@@ -256,42 +249,46 @@ function render(items) {
   for (const [tema, group] of groups) {
     slideCount++;
 
-    const slide = document.createElement("section");
-    slide.className = "slide";
+    // Slide container
+    const slide = document.createElement("div");
+    slide.className = "carousel-slide";
 
-    const h = document.createElement("header");
-    h.className = "slide-header";
+    // Slide title
+    const h2 = document.createElement("h2");
+    h2.textContent = tema;
+    slide.appendChild(h2);
 
-    const title = document.createElement("h2");
-    title.className = "tema-title";
-    title.textContent = tema;
-    title.style.setProperty("--tema-accent", TEMA_ACCENTS.get(tema) || "#1D3C5B");
+    // Set accent color based on tema
+    if (typeof applySlideAccent === "function") applySlideAccent(slide, tema);
 
-    h.appendChild(title);
-    slide.appendChild(h);
-
+    // Table wrapper (rounded corners styling)
     const wrapper = document.createElement("div");
-    wrapper.className = "table-wrap";
+    wrapper.className = "table-wrapper";
 
+    // Table + header
     const table = document.createElement("table");
-
-    // ---- Table header ----
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
+
+    // Data column headers
     for (const colHeader of COLS) {
       const th = document.createElement("th");
       th.textContent = colHeader;
       headRow.appendChild(th);
     }
+
+    // Action column header ONLY when logged in
     if (isAdmin) {
       const thAction = document.createElement("th");
       thAction.className = "button-header";
+      // thAction.textContent = "Vedtá"; // optional label
       headRow.appendChild(thAction);
     }
+
     thead.appendChild(headRow);
     table.appendChild(thead);
 
-    // ---- Table body ----
+    // Body
     const tbody = document.createElement("tbody");
 
     for (const s of group) {
@@ -300,46 +297,53 @@ function render(items) {
       tr.dataset.id = s.suggestion_id;
 
       const status = s.status || "ny";
+      const payload = s.payload || {};
+
+      // Row action class for colored tag styles
+      const actionLabel = payload["Hva vil du gjøre?"] || "";
+      if (typeof actionClassFrom === "function") {
+        const actionCls = actionClassFrom(actionLabel);
+        if (actionCls) tr.classList.add(actionCls);
+      }
       if (status === "vedtatt") tr.classList.add("vedtatt");
 
-      // Column values (from payload)
-      const p = s.payload || {};
-      const fields = [
-        p["Hva vil du gjøre?"],
-        p["Velg et punkt (nr)"],
-        p["Formuler punktet"],
-        p["Endre fra"],
-        p["Endre til"]
-      ];
-
-      for (const val of fields) {
+      // Data columns — first column uses a colored tag pill
+      for (let i = 0; i < COLS.length; i++) {
+        const key = COLS[i];
         const td = document.createElement("td");
-        td.textContent = val ?? "";
+        if (i === 0 && typeof makeTagLabel === "function") {
+          td.appendChild(makeTagLabel(payload[key] ?? ""));
+        } else {
+          td.textContent = payload[key] ?? "";
+        }
         tr.appendChild(td);
       }
 
-      // Admin "Vedta" button
+      // Action button column ONLY when logged in
       if (isAdmin) {
         const tdBtn = document.createElement("td");
-        tdBtn.className = "cell-action";
+        tdBtn.className = "button-cell";
+
         const btn = document.createElement("button");
         btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
         btn.className = "vedta-button";
         if (status === "vedtatt") btn.classList.add("vedtatt");
 
+        // Robust toggle handler (reuses your existing logic)
         btn.onclick = async (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
 
+          const trEl = btn.closest("tr");
           const id = s.suggestion_id;
-          const domIsVedtatt =
-            tr.classList.contains("vedtatt") || btn.classList.contains("vedtatt");
-          const currentStatus = (s.status === "vedtatt" || domIsVedtatt)
-            ? "vedtatt" : "ny";
+          const domStatus = trEl?.classList.contains("vedtatt") || btn.classList.contains("vedtatt") ? "vedtatt" : "ny";
+          const currentStatus = (s.status === "vedtatt" || domStatus === "vedtatt") ? "vedtatt" : "ny";
           const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
 
           const endpoint = `${API}/${encodeURIComponent(id)}`;
           const token = localStorage.getItem("token");
+
+          console.debug("[Vedta] click", { id, currentStatus, newStatus, endpoint });
 
           btn.disabled = true;
           btn.setAttribute("aria-busy", "true");
@@ -360,13 +364,15 @@ function render(items) {
               console.error("[Vedta][PATCH] failed", resp.status, txt);
             } else {
               const data = await resp.json().catch(() => null);
+              const dt = Math.round(performance.now() - t0);
+              const returned = data?.item || data || {};
               console.debug("[Vedta][PATCH] ok", {
-                ms: Math.round(performance.now() - t0),
-                returnedStatus: data?.item?.status ?? data?.status,
-                updated_at: data?.item?.updated_at ?? data?.updated_at,
-                id: data?.item?.suggestion_id ?? data?.suggestion_id
+                ms: dt,
+                returnedStatus: returned.status,
+                updated_at: returned.updated_at,
+                id: returned.suggestion_id
               });
-              await refresh(true);
+              await refresh(true); // fetch fresh + redraw
             }
           } catch (err) {
             console.error("[Vedta][PATCH] network error", err);
@@ -383,7 +389,7 @@ function render(items) {
       tbody.appendChild(tr);
     }
 
-    // Filler row for spacing
+    // Footer filler row (colSpan matches columns actually rendered)
     const filler = document.createElement("tr");
     filler.className = "filler-row";
     const fillerTd = document.createElement("td");
@@ -400,20 +406,23 @@ function render(items) {
   // Atomic DOM swap
   track.replaceChildren(frag);
 
-  // Maintain slide position after rebuild
+  // Keep current slide position valid after DOM changes
   if (typeof updateCarousel === "function") updateCarousel();
 
+  // First render marker
   if (!hasPaintedOnce) hasPaintedOnce = true;
 
-  // ---- restore transitions safely ----
-  void track.offsetHeight;
-  track.style.transition = prevTrackTransition || "";
+  // Wait two frames before re-enabling transitions to avoid any flash/flicker
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            rootEl.classList.remove("silent-update");
+            rootEl.classList.remove("initial-boot"); // stays removed after first render
+            console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
+        });
+    });
 
-  rootEl.classList.remove("initial-boot");
-  setTimeout(() => rootEl.classList.remove("is-refreshing"), 100);
-
-  console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
 }
+
 
 // ---------- REFRESH ----------
 async function refresh(force = false) {
