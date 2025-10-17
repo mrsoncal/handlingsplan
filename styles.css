@@ -288,9 +288,9 @@ body.logged-in th.button-header {
   padding-right: 1.5rem;
 }
 
-/* Filler row: full-width magenta bar */
+/* Filler row: full-width colored bar */
 .table-wrapper table tbody tr.filler-row td {
-  background: var(--accent);  /* your magenta color */
+  background: var(--accent);  /* your colors */
   height: 12px;
   padding: 0;
   border: 0;
@@ -335,6 +335,20 @@ tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
 tbody tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
   background-color: #afd3b4 !important;
 }
+
+/* Vedtatt: make the action column match the row */
+tbody tr.vedtatt:not(.filler-row) td.button-cell {
+  background-color: #d4edda !important;   /* base green */
+}
+
+tbody tr.vedtatt:nth-child(even):not(.filler-row) td.button-cell {
+  background-color: #c1dfc5 !important;   /* even-row green */
+}
+
+tbody tr.vedtatt:hover:not(.filler-row) td.button-cell {
+  background-color: #afd3b4 !important;   /* hover green */
+}
+
 
 .carousel-slide table th {
   background: var(--accent);
