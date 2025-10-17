@@ -590,6 +590,18 @@ transition: none !important;
 #suggestions tr[data-status="ny"] { background: #fff; }
 #suggestions tr[data-status="avvist"] { background: #ffecec; }
 
+/* Make text smaller for long-text columns */
+.carousel-slide table th:nth-child(3),
+.carousel-slide table td:nth-child(3),
+.carousel-slide table th:nth-child(4),
+.carousel-slide table td:nth-child(4),
+.carousel-slide table th:nth-child(5),
+.carousel-slide table td:nth-child(5) {
+  font-size: 0.9rem;    /* slightly smaller text */
+  line-height: 1.3rem;  /* balanced spacing */
+  vertical-align: top;  /* keeps multi-line text aligned neatly */
+}
+
 /* Make the 'Punkt (nr)' column narrower */
 .carousel-slide table th:nth-child(2),
 .carousel-slide table td:nth-child(2) {
