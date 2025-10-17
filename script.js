@@ -64,10 +64,6 @@ function updateCarousel() {
   console.debug(`[carousel] slide ${currentSlide + 1}/${total}`);
 }
 
-// Force one layout pass, then restore
-void track.offsetHeight; // reflow
-track.style.transition = prevTrackTransition || ""; // restore previous transition (or CSS)
-
 // leave updates silent for just a bit longer
 setTimeout(() => {
   rootEl.classList.remove("is-refreshing");
@@ -233,7 +229,7 @@ function render(items) {
 
   const isAdmin = document.body.classList.contains("logged-in");
 
-  // Fingerprint of the data + login state to skip no-op rerenders
+  // Skip no-op re-renders (data + auth fingerprint)
   const newHash = JSON.stringify([
     isAdmin ? 1 : 0,
     items.map(i => [i.suggestion_id, i.status, i.updated_at])
@@ -244,16 +240,13 @@ function render(items) {
   }
   lastDataHash = newHash;
 
-  // After first paint, keep general transitions muted for background refreshes
+  // Keep general transitions muted on background refreshes after first paint
   if (hasPaintedOnce) rootEl.classList.add("silent-update");
 
-  // ---- Start: anti-flicker guards ----
-  // 1) Scope-only mute during rebuild
-  rootEl.classList.add("is-refreshing");
-  // 2) Pause carousel tweening while we swap slides
-  const prevTrackTransition = track.style.transition;
+  // ---- anti-flicker guards ----
+  rootEl.classList.add("is-refreshing");      // scope-only mute during rebuild
+  const prevTrackTransition = track.style.transition; // pause carousel tweening
   track.style.transition = "none";
-  // ---- End: anti-flicker guards ----
 
   const frag = document.createDocumentFragment();
   const groups = sortAndGroup(items);
@@ -263,32 +256,25 @@ function render(items) {
   for (const [tema, group] of groups) {
     slideCount++;
 
-    // Slide container
     const slide = document.createElement("section");
     slide.className = "slide";
 
-    // Header
     const h = document.createElement("header");
     h.className = "slide-header";
 
     const title = document.createElement("h2");
     title.className = "tema-title";
     title.textContent = tema;
-
-    const color = TEMA_ACCENTS.get(tema) || "#1D3C5B";
-    title.style.setProperty("--tema-accent", color);
+    title.style.setProperty("--tema-accent", TEMA_ACCENTS.get(tema) || "#1D3C5B");
 
     h.appendChild(title);
     slide.appendChild(h);
 
-    // Table wrapper
     const wrapper = document.createElement("div");
     wrapper.className = "table-wrap";
 
-    // Build table
     const table = document.createElement("table");
 
-    // Head
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
     for (const colHeader of COLS) {
@@ -304,7 +290,6 @@ function render(items) {
     thead.appendChild(headRow);
     table.appendChild(thead);
 
-    // Body
     const tbody = document.createElement("tbody");
 
     for (const s of group) {
@@ -315,7 +300,7 @@ function render(items) {
       const status = s.status || "ny";
       if (status === "vedtatt") tr.classList.add("vedtatt");
 
-      // Data columns (must align with COLS)
+      // Data columns (align with your COL_MAP)
       for (const col of COL_MAP) {
         const td = document.createElement("td");
         let val = (s[col.key] ?? "");
@@ -328,7 +313,6 @@ function render(items) {
         tr.appendChild(td);
       }
 
-      // Admin action
       if (isAdmin) {
         const tdBtn = document.createElement("td");
         tdBtn.className = "cell-action";
@@ -342,15 +326,12 @@ function render(items) {
           ev.stopPropagation();
 
           const id = s.suggestion_id;
-          const domIsVedtatt =
-            tr.classList.contains("vedtatt") || btn.classList.contains("vedtatt");
+          const domIsVedtatt = tr.classList.contains("vedtatt") || btn.classList.contains("vedtatt");
           const currentStatus = (s.status === "vedtatt" || domIsVedtatt) ? "vedtatt" : "ny";
           const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
 
           const endpoint = `${API}/${encodeURIComponent(id)}`;
           const token = localStorage.getItem("token");
-
-          console.debug("[Vedta] click", { id, currentStatus, newStatus, endpoint });
 
           btn.disabled = true;
           btn.setAttribute("aria-busy", "true");
@@ -371,15 +352,13 @@ function render(items) {
               console.error("[Vedta][PATCH] failed", resp.status, txt);
             } else {
               const data = await resp.json().catch(() => null);
-              const dt = Math.round(performance.now() - t0);
-              const returned = data?.item || data || {};
               console.debug("[Vedta][PATCH] ok", {
-                ms: dt,
-                returnedStatus: returned.status,
-                updated_at: returned.updated_at,
-                id: returned.suggestion_id
+                ms: Math.round(performance.now() - t0),
+                returnedStatus: data?.item?.status ?? data?.status,
+                updated_at: data?.item?.updated_at ?? data?.updated_at,
+                id: data?.item?.suggestion_id ?? data?.suggestion_id
               });
-              await refresh(true); // fetch fresh + redraw
+              await refresh(true);
             }
           } catch (err) {
             console.error("[Vedta][PATCH] network error", err);
@@ -396,7 +375,7 @@ function render(items) {
       tbody.appendChild(tr);
     }
 
-    // Footer filler row to preserve spacing
+    // Filler row to preserve spacing
     const filler = document.createElement("tr");
     filler.className = "filler-row";
     const fillerTd = document.createElement("td");
@@ -416,26 +395,23 @@ function render(items) {
   // Keep current slide position valid after DOM changes
   if (typeof updateCarousel === "function") updateCarousel();
 
-  // First render marker
   if (!hasPaintedOnce) hasPaintedOnce = true;
 
-  // ---- Restore transitions safely ----
-  // Force one reflow to ensure transform is applied without tween
-  void track.offsetHeight;
-  track.style.transition = prevTrackTransition || "";
+  // ---- restore transitions safely (back inside render) ----
+  void track.offsetHeight;                  // ensure no tween on new transform
+  track.style.transition = prevTrackTransition || ""; // restore
 
-  // Remove only the first-load flag; keep silent updates for background refreshes
+  // First-load anims only; keep silent updates for background refreshes
   rootEl.classList.remove("initial-boot");
 
-  // Allow any pending paints to settle, then drop the scoped refresh mute
+  // Let paints settle, then drop scoped mute
   setTimeout(() => {
     rootEl.classList.remove("is-refreshing");
   }, 100);
 
-  console.debug(
-    `[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`
-  );
+  console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
 }
+
 
 
 
