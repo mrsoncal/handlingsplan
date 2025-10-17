@@ -576,6 +576,12 @@ html.silent-update *, html.silent-update *::before, html.silent-update *::after 
   transition: none !important;
 }
 
+/* Scoped refresh mute (prevents flicker on table + carousel) */
+html.is-refreshing .carousel-track { transition: none !important; }
+html.is-refreshing tr,
+html.is-refreshing td { transition: none !important; }
+
+
 /* Animate rows ONLY on the very first boot */
 html.initial-boot .table-wrapper tr { animation: fadeIn .4s ease-in; }
 

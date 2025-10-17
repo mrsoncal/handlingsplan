@@ -64,6 +64,15 @@ function updateCarousel() {
   console.debug(`[carousel] slide ${currentSlide + 1}/${total}`);
 }
 
+// Force one layout pass, then restore
+void track.offsetHeight; // reflow
+track.style.transition = prevTrackTransition || ""; // restore previous transition (or CSS)
+
+// leave updates silent for just a bit longer
+setTimeout(() => {
+  rootEl.classList.remove("is-refreshing");
+}, 100); // 1 frame is usually enough, 100ms is safe
+
 // Public controls for the HTML buttons
 function nextSlide() {
   currentSlide += 1;
@@ -229,17 +238,22 @@ function render(items) {
     isAdmin ? 1 : 0,
     items.map(i => [i.suggestion_id, i.status, i.updated_at])
   ]);
-
   if (newHash === lastDataHash) {
     console.debug("[render] skipped (no data/login change)");
     return;
   }
-
-  console.debug("[render] data/login changed → rebuilding UI (admin:", isAdmin, ")");
   lastDataHash = newHash;
 
-  // Disable animations after first render
+  // After first paint, keep general transitions muted for background refreshes
   if (hasPaintedOnce) rootEl.classList.add("silent-update");
+
+  // ---- Start: anti-flicker guards ----
+  // 1) Scope-only mute during rebuild
+  rootEl.classList.add("is-refreshing");
+  // 2) Pause carousel tweening while we swap slides
+  const prevTrackTransition = track.style.transition;
+  track.style.transition = "none";
+  // ---- End: anti-flicker guards ----
 
   const frag = document.createDocumentFragment();
   const groups = sortAndGroup(items);
@@ -250,41 +264,43 @@ function render(items) {
     slideCount++;
 
     // Slide container
-    const slide = document.createElement("div");
-    slide.className = "carousel-slide";
+    const slide = document.createElement("section");
+    slide.className = "slide";
 
-    // Slide title
-    const h2 = document.createElement("h2");
-    h2.textContent = tema;
-    slide.appendChild(h2);
+    // Header
+    const h = document.createElement("header");
+    h.className = "slide-header";
 
-    // Set accent color based on tema
-    if (typeof applySlideAccent === "function") applySlideAccent(slide, tema);
+    const title = document.createElement("h2");
+    title.className = "tema-title";
+    title.textContent = tema;
 
-    // Table wrapper (rounded corners styling)
+    const color = TEMA_ACCENTS.get(tema) || "#1D3C5B";
+    title.style.setProperty("--tema-accent", color);
+
+    h.appendChild(title);
+    slide.appendChild(h);
+
+    // Table wrapper
     const wrapper = document.createElement("div");
-    wrapper.className = "table-wrapper";
+    wrapper.className = "table-wrap";
 
-    // Table + header
+    // Build table
     const table = document.createElement("table");
+
+    // Head
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
-
-    // Data column headers
     for (const colHeader of COLS) {
       const th = document.createElement("th");
       th.textContent = colHeader;
       headRow.appendChild(th);
     }
-
-    // Action column header ONLY when logged in
     if (isAdmin) {
       const thAction = document.createElement("th");
       thAction.className = "button-header";
-      // thAction.textContent = "Vedtá"; // optional label
       headRow.appendChild(thAction);
     }
-
     thead.appendChild(headRow);
     table.appendChild(thead);
 
@@ -297,47 +313,38 @@ function render(items) {
       tr.dataset.id = s.suggestion_id;
 
       const status = s.status || "ny";
-      const payload = s.payload || {};
-
-      // Row action class for colored tag styles
-      const actionLabel = payload["Hva vil du gjøre?"] || "";
-      if (typeof actionClassFrom === "function") {
-        const actionCls = actionClassFrom(actionLabel);
-        if (actionCls) tr.classList.add(actionCls);
-      }
       if (status === "vedtatt") tr.classList.add("vedtatt");
 
-      // Data columns — first column uses a colored tag pill
-      for (let i = 0; i < COLS.length; i++) {
-        const key = COLS[i];
+      // Data columns (must align with COLS)
+      for (const col of COL_MAP) {
         const td = document.createElement("td");
-        if (i === 0 && typeof makeTagLabel === "function") {
-          td.appendChild(makeTagLabel(payload[key] ?? ""));
-        } else {
-          td.textContent = payload[key] ?? "";
+        let val = (s[col.key] ?? "");
+        if (col.key === "oppdatert" || col.key === "updated_at") {
+          val = formatDate(s.updated_at || s.created_at);
+          td.classList.add("cell-time");
         }
+        if (col.key === "tema") td.classList.add("cell-tema");
+        td.textContent = String(val);
         tr.appendChild(td);
       }
 
-      // Action button column ONLY when logged in
+      // Admin action
       if (isAdmin) {
         const tdBtn = document.createElement("td");
-        tdBtn.className = "button-cell";
-
+        tdBtn.className = "cell-action";
         const btn = document.createElement("button");
         btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
         btn.className = "vedta-button";
         if (status === "vedtatt") btn.classList.add("vedtatt");
 
-        // Robust toggle handler (reuses your existing logic)
         btn.onclick = async (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
 
-          const trEl = btn.closest("tr");
           const id = s.suggestion_id;
-          const domStatus = trEl?.classList.contains("vedtatt") || btn.classList.contains("vedtatt") ? "vedtatt" : "ny";
-          const currentStatus = (s.status === "vedtatt" || domStatus === "vedtatt") ? "vedtatt" : "ny";
+          const domIsVedtatt =
+            tr.classList.contains("vedtatt") || btn.classList.contains("vedtatt");
+          const currentStatus = (s.status === "vedtatt" || domIsVedtatt) ? "vedtatt" : "ny";
           const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
 
           const endpoint = `${API}/${encodeURIComponent(id)}`;
@@ -389,7 +396,7 @@ function render(items) {
       tbody.appendChild(tr);
     }
 
-    // Footer filler row (colSpan matches columns actually rendered)
+    // Footer filler row to preserve spacing
     const filler = document.createElement("tr");
     filler.className = "filler-row";
     const fillerTd = document.createElement("td");
@@ -412,16 +419,24 @@ function render(items) {
   // First render marker
   if (!hasPaintedOnce) hasPaintedOnce = true;
 
-  // Wait two frames before re-enabling transitions to avoid any flash/flicker
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            rootEl.classList.remove("silent-update");
-            rootEl.classList.remove("initial-boot"); // stays removed after first render
-            console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
-        });
-    });
+  // ---- Restore transitions safely ----
+  // Force one reflow to ensure transform is applied without tween
+  void track.offsetHeight;
+  track.style.transition = prevTrackTransition || "";
 
+  // Remove only the first-load flag; keep silent updates for background refreshes
+  rootEl.classList.remove("initial-boot");
+
+  // Allow any pending paints to settle, then drop the scoped refresh mute
+  setTimeout(() => {
+    rootEl.classList.remove("is-refreshing");
+  }, 100);
+
+  console.debug(
+    `[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`
+  );
 }
+
 
 
 // ---------- REFRESH ----------
