@@ -598,10 +598,17 @@ transition: none !important;
 .carousel-slide table th:nth-child(5),
 .carousel-slide table td:nth-child(5) {
   width: 25.3%;
+}
+
+.carousel-slide table td:nth-child(3),
+.carousel-slide table td:nth-child(4),
+.carousel-slide table td:nth-child(5) {
   font-size: 0.8rem;    /* slightly smaller text */
   line-height: 1.15rem;  /* balanced spacing */
   vertical-align: top;  /* keeps multi-line text aligned neatly */
 }
+
+  
 
 /* Make the 'Punkt (nr)' column narrower */
 .carousel-slide table th:nth-child(2),
