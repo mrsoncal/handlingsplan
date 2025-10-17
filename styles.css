@@ -639,18 +639,20 @@ body.logged-in .carousel-slide table td:last-child {
 /* === Responsive table width on desktop === */
 @media (min-width: 801px) {
   .carousel-wrapper {
-    max-width: 80vw;   /* use 80% of the screen width */
-    width: 80vw;       /* ensures consistency across flex parents */
-    margin: 0 auto;    /* keep centered */
+    width: 80vw;        /* flexible width: 80% of viewport */
+    max-width: 1250px;  /* never exceed this size */
+    margin: 0 auto;     /* keep centered */
   }
 
   .container {
-    max-width: 80vw;   /* match the same width for header/footer alignment */
+    width: 80vw;
+    max-width: 1250px;  /* match header/footer alignment */
+    margin: 0 auto;
   }
 
   .table-wrapper table {
-    width: 100%;       /* occupy full width inside wrapper */
-    max-width: 100%;   /* no artificial cap */
+    width: 100%;        /* fill available space */
+    max-width: 100%;
     table-layout: fixed;
   }
 }
