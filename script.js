@@ -279,11 +279,12 @@ function render(items) {
     const headRow = document.createElement("tr");
 
     // Data column headers
-    for (const colHeader of COLS) {
-      const th = document.createElement("th");
-      th.textContent = colHeader;
-      headRow.appendChild(th);
+    for (const col of COLS) {
+        const th = document.createElement("th");
+        th.textContent = col.label;  // show readable label
+        headRow.appendChild(th);
     }
+
 
     // Action column header ONLY when logged in
     if (isAdmin) {
