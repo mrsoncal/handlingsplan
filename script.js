@@ -244,7 +244,7 @@ function render(items) {
   if (hasPaintedOnce) rootEl.classList.add("silent-update");
 
   // ---- anti-flicker guards ----
-  rootEl.classList.add("is-refreshing");      // scope-only mute during rebuild
+  rootEl.classList.add("is-refreshing"); // scope-only mute during rebuild
   const prevTrackTransition = track.style.transition; // pause carousel tweening
   track.style.transition = "none";
 
@@ -275,6 +275,7 @@ function render(items) {
 
     const table = document.createElement("table");
 
+    // ---- Table header ----
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
     for (const colHeader of COLS) {
@@ -290,6 +291,7 @@ function render(items) {
     thead.appendChild(headRow);
     table.appendChild(thead);
 
+    // ---- Table body ----
     const tbody = document.createElement("tbody");
 
     for (const s of group) {
@@ -300,19 +302,23 @@ function render(items) {
       const status = s.status || "ny";
       if (status === "vedtatt") tr.classList.add("vedtatt");
 
-      // Data columns (align with your COL_MAP)
-      for (const col of COL_MAP) {
+      // Column values (from payload)
+      const p = s.payload || {};
+      const fields = [
+        p["Hva vil du gjøre?"],
+        p["Velg et punkt (nr)"],
+        p["Formuler punktet"],
+        p["Endre fra"],
+        p["Endre til"]
+      ];
+
+      for (const val of fields) {
         const td = document.createElement("td");
-        let val = (s[col.key] ?? "");
-        if (col.key === "oppdatert" || col.key === "updated_at") {
-          val = formatDate(s.updated_at || s.created_at);
-          td.classList.add("cell-time");
-        }
-        if (col.key === "tema") td.classList.add("cell-tema");
-        td.textContent = String(val);
+        td.textContent = val ?? "";
         tr.appendChild(td);
       }
 
+      // Admin "Vedta" button
       if (isAdmin) {
         const tdBtn = document.createElement("td");
         tdBtn.className = "cell-action";
@@ -326,8 +332,10 @@ function render(items) {
           ev.stopPropagation();
 
           const id = s.suggestion_id;
-          const domIsVedtatt = tr.classList.contains("vedtatt") || btn.classList.contains("vedtatt");
-          const currentStatus = (s.status === "vedtatt" || domIsVedtatt) ? "vedtatt" : "ny";
+          const domIsVedtatt =
+            tr.classList.contains("vedtatt") || btn.classList.contains("vedtatt");
+          const currentStatus = (s.status === "vedtatt" || domIsVedtatt)
+            ? "vedtatt" : "ny";
           const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
 
           const endpoint = `${API}/${encodeURIComponent(id)}`;
@@ -375,7 +383,7 @@ function render(items) {
       tbody.appendChild(tr);
     }
 
-    // Filler row to preserve spacing
+    // Filler row for spacing
     const filler = document.createElement("tr");
     filler.className = "filler-row";
     const fillerTd = document.createElement("td");
@@ -392,28 +400,20 @@ function render(items) {
   // Atomic DOM swap
   track.replaceChildren(frag);
 
-  // Keep current slide position valid after DOM changes
+  // Maintain slide position after rebuild
   if (typeof updateCarousel === "function") updateCarousel();
 
   if (!hasPaintedOnce) hasPaintedOnce = true;
 
-  // ---- restore transitions safely (back inside render) ----
-  void track.offsetHeight;                  // ensure no tween on new transform
-  track.style.transition = prevTrackTransition || ""; // restore
+  // ---- restore transitions safely ----
+  void track.offsetHeight;
+  track.style.transition = prevTrackTransition || "";
 
-  // First-load anims only; keep silent updates for background refreshes
   rootEl.classList.remove("initial-boot");
-
-  // Let paints settle, then drop scoped mute
-  setTimeout(() => {
-    rootEl.classList.remove("is-refreshing");
-  }, 100);
+  setTimeout(() => rootEl.classList.remove("is-refreshing"), 100);
 
   console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows (admin: ${isAdmin})`);
 }
-
-
-
 
 // ---------- REFRESH ----------
 async function refresh(force = false) {
