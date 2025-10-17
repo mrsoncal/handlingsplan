@@ -110,55 +110,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------- FETCH FROM BACKEND ----------
 async function fetchAll() {
-  // Build a cache-busting URL so every poll is truly fresh.
   const url = `${API}?_=${Date.now()}`;
-  console.debug("[fetchAll] GET", url);
+  const controller = new AbortController();
 
-  const t0 = performance.now();
-  let res;
-  try {
-    res = await fetch(url, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
-  } catch (netErr) {
-    console.error("[fetchAll] network error:", netErr);
-    throw netErr;
+  // 12s safety timeout
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+  // up to 3 tries (Render cold start, transient network)
+  const tries = [0, 600, 1500]; // ms backoff
+  let lastErr;
+
+  for (let i = 0; i < tries.length; i++) {
+    if (i > 0) await new Promise(r => setTimeout(r, tries[i]));
+    console.debug(`[fetchAll] GET (try ${i+1}/${tries.length})`, url);
+
+    try {
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+        signal: controller.signal
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "(no body)");
+        console.error("[fetchAll] HTTP", res.status, text);
+        // Non-2xx reached server; no need to retry unless you want to.
+        clearTimeout(timeoutId);
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+      const items = Array.isArray(json.items) ? json.items : [];
+      const latestUpdated = items.reduce((m, it) => Math.max(m, it?.updated_at ? Date.parse(it.updated_at) : 0), 0);
+
+      console.debug(
+        "[fetchAll] OK",
+        { count: items.length, serverTime: json.serverTime ?? "(n/a)", latest: latestUpdated ? new Date(latestUpdated).toISOString() : "(none)" }
+      );
+
+      clearTimeout(timeoutId);
+      return items;
+    } catch (err) {
+      lastErr = err;
+      // AbortError or “TypeError: Failed to fetch” often = CORS/mixed content/network
+      console.warn(`[fetchAll] attempt ${i+1} failed:`, err?.name, err?.message);
+    }
   }
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "(no body)");
-    console.error("[fetchAll] HTTP", res.status, body);
-    throw new Error(`fetchAll failed: ${res.status}`);
+  clearTimeout(timeoutId);
+
+  // Helpful environment dump
+  console.error("[fetchAll] FINAL FAIL", {
+    online: navigator.onLine,
+    api: API,
+    pageOrigin: location.origin,
+    userAgent: navigator.userAgent
+  });
+
+  // Extra hint for classic causes
+  if (location.protocol === "https:" && API.startsWith("http://")) {
+    console.error("Mixed content: https page cannot call http API. Use https API.");
   }
 
-  let json;
-  try {
-    json = await res.json();
-  } catch (parseErr) {
-    console.error("[fetchAll] JSON parse error:", parseErr);
-    throw parseErr;
-  }
-
-  const items = Array.isArray(json.items) ? json.items : [];
-  const t1 = performance.now();
-
-  const latestUpdated = items.reduce((max, it) => {
-    const ts = it?.updated_at ? Date.parse(it.updated_at) : 0;
-    return Math.max(max, ts);
-  }, 0);
-
-  console.debug(
-    "[fetchAll] received",
-    items.length,
-    "items | serverTime:",
-    json.serverTime ?? "(n/a)",
-    "| latest.updated_at:",
-    latestUpdated ? new Date(latestUpdated).toISOString() : "(none)",
-    `| ${Math.round(t1 - t0)} ms`
-  );
-
-  return items;
+  throw lastErr || new Error("fetchAll failed");
 }
 
 // ---------- SORT & GROUP ----------
@@ -436,6 +450,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     refresh();
   }, 10000);
 });
+
+window.addEventListener("online",  () => console.debug("[net] online — refreshing")); 
+window.addEventListener("offline", () => console.debug("[net] offline")); 
 
 // Refresh when the user focuses or returns to the tab
 document.addEventListener("visibilitychange", () => {
