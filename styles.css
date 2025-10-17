@@ -590,6 +590,14 @@ transition: none !important;
 #suggestions tr[data-status="ny"] { background: #fff; }
 #suggestions tr[data-status="avvist"] { background: #ffecec; }
 
+/* Make the 'Punkt (nr)' column narrower */
+.carousel-slide table th:nth-child(2),
+.carousel-slide table td:nth-child(2) {
+  width: 8%;   /* narrow column since it’s just digits */
+  text-align: center;
+}
+
+
 @media (max-width: 600px) {
 .page-header h1 {
     font-size: 1.25rem;

@@ -23,11 +23,11 @@ function applySlideAccent(slideEl, tema) {
 
 const API = "https://handlingsplan-backend.onrender.com/api/suggestions";
 const COLS = [
-  "Hva vil du gjøre?",
-  "Punkt (nr)",
-  "Formuler punktet",
-  "Endre fra",
-  "Endre til"
+  { key: "Hva vil du gjøre?", label: "Hva vil du gjøre?" },
+  { key: "Velg et punkt (nr)", label: "Punkt (nr)" }, // display label only
+  { key: "Formuler punktet", label: "Formuler punktet" },
+  { key: "Endre fra", label: "Endre fra" },
+  { key: "Endre til", label: "Endre til" }
 ];
 let lastDataHash = ""; // to detect if data actually changed before re-render
 
