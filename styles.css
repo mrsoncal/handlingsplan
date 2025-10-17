@@ -606,6 +606,16 @@ transition: none !important;
   padding-left: 1rem;  /* matches your tag’s spacing */
 }
 
+/* Make the action column (Vedta button) compact and aligned */
+body.logged-in .carousel-slide table th:last-child,
+body.logged-in .carousel-slide table td:last-child {
+  width: 10%;           /* narrow column — enough for one button */
+  text-align: right;    /* button aligns cleanly to the edge */
+  padding-right: 1rem;  /* same right spacing as other cells */
+  white-space: nowrap;  /* prevents wrapping of the button text */
+}
+
+
 @media (max-width: 600px) {
 .page-header h1 {
     font-size: 1.25rem;
