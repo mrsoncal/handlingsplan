@@ -100,8 +100,8 @@ margin-top: 5rem;            /* optional: adds space above the title */
 text-align: left;            /* or center if you prefer */
 }
 
-.carousel-slide {
-animation: slideIn 0.5s ease-in-out;
+html.initial-boot .carousel-slide {
+  animation: slideIn 0.5s ease-in-out;
 }
 
 @keyframes slideIn {
@@ -114,8 +114,11 @@ border-collapse: collapse;
 border-spacing: 0 0.5rem; /* Adds vertical space between rows */
 width: 100%;
 margin-top: 1rem;
-animation: fadeIn 0.4s ease-in;
 border: none;
+}
+
+html.initial-boot table {
+  animation: fadeIn 0.4s ease-in;
 }
 
 th, td {

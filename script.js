@@ -2,6 +2,7 @@
 
 const rootEl = document.documentElement;
 let hasPaintedOnce = false;
+rootEl.classList.add('initial-boot');
 
 const API = "https://handlingsplan-backend.onrender.com/api/suggestions";
 const COLS = [
@@ -181,7 +182,12 @@ function render(items) {
   if (!hasPaintedOnce) hasPaintedOnce = true;
 
   // ✅ Re-enable animations after the DOM updates
-  requestAnimationFrame(() => rootEl.classList.remove("silent-update"));
+  requestAnimationFrame(() => {
+    rootEl.classList.remove("silent-update");
+    // Remove first-load animations forever after first paint
+    rootEl.classList.remove("initial-boot");
+  })
+    
 }
 
 // ---------- REFRESH ----------
