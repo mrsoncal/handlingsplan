@@ -33,6 +33,21 @@ let lastDataHash = ""; // to detect if data actually changed before re-render
 
 let currentSlide = 0;
 
+function actionClassFrom(label = "") {
+  // Map exact values to the CSS classes you already styled
+  if (label === "Legge til et punkt") return "Legge-til-et-punkt";
+  if (label === "Endre et punkt")     return "Endre-et-punkt";
+  if (label === "Fjerne et punkt")    return "Fjerne-et-punkt";
+  return "";
+}
+
+function makeTagLabel(text) {
+  const span = document.createElement("span");
+  span.className = "tag-label";
+  span.textContent = text || "";
+  return span;
+}
+
 // Keep the track positioned to the current slide
 function updateCarousel() {
   const track = document.getElementById("carousel-track");
@@ -193,14 +208,13 @@ function render(items) {
     return;
   }
 
-  // Build a simple fingerprint of the data
+  // Fingerprint of the data to skip no-op rerenders
   const newHash = JSON.stringify(items.map(i => [
     i.suggestion_id,
     i.status,
     i.updated_at
   ]));
 
-  // Skip re-render if nothing has changed
   if (newHash === lastDataHash) {
     console.debug("[render] skipped (no data change)");
     return;
@@ -219,32 +233,45 @@ function render(items) {
 
   for (const [tema, group] of groups) {
     slideCount++;
+
+    // Slide container
     const slide = document.createElement("div");
     slide.className = "carousel-slide";
 
+    // Slide title
     const h2 = document.createElement("h2");
     h2.textContent = tema;
     slide.appendChild(h2);
 
-    // Set accent color based on tema (not slide order)
-    applySlideAccent(slide, tema);
+    // Set accent color based on tema (JS > CSS nth-child)
+    if (typeof applySlideAccent === "function") {
+      applySlideAccent(slide, tema);
+    }
 
+    // Table wrapper (enables rounded corners styling)
+    const wrapper = document.createElement("div");
+    wrapper.className = "table-wrapper";
+
+    // Table + header
     const table = document.createElement("table");
     const thead = document.createElement("thead");
     const headRow = document.createElement("tr");
 
-    // Use your constant COLS array for column headers
-    for (const h of COLS) {
+    for (const colHeader of COLS) {
       const th = document.createElement("th");
-      th.textContent = h;
+      th.textContent = colHeader;
       headRow.appendChild(th);
     }
 
-    // Add an empty <th> for the Vedta button column
-    headRow.appendChild(document.createElement("th"));
+    // Action column header (kept empty, styled via CSS)
+    const thAction = document.createElement("th");
+    thAction.className = "button-header";
+    headRow.appendChild(thAction);
+
     thead.appendChild(headRow);
     table.appendChild(thead);
 
+    // Body
     const tbody = document.createElement("tbody");
 
     for (const s of group) {
@@ -255,104 +282,131 @@ function render(items) {
       const status = s.status || "ny";
       const payload = s.payload || {};
 
-      // Fill in normal data columns
-      for (const k of COLS) {
+      // Row action class for colored tag styles
+      const actionLabel = payload["Hva vil du gjøre?"] || "";
+      if (typeof actionClassFrom === "function") {
+        const actionCls = actionClassFrom(actionLabel);
+        if (actionCls) tr.classList.add(actionCls);
+      }
+
+      if (status === "vedtatt") tr.classList.add("vedtatt");
+
+      // Data columns — first column uses a colored tag pill
+      for (let i = 0; i < COLS.length; i++) {
+        const key = COLS[i];
         const td = document.createElement("td");
-        td.textContent = payload[k] ?? "";
+
+        if (i === 0 && typeof makeTagLabel === "function") {
+          td.appendChild(makeTagLabel(payload[key] ?? ""));
+        } else {
+          td.textContent = payload[key] ?? "";
+        }
+
         tr.appendChild(td);
       }
 
       // Action button column
       const tdBtn = document.createElement("td");
+      tdBtn.className = "button-cell";
+
       const btn = document.createElement("button");
       btn.textContent = status === "vedtatt" ? "Vedtatt" : "Vedta";
       btn.className = "vedta-button";
-      if (status === "vedtatt") {
-        tr.classList.add("vedtatt");
-        btn.classList.add("vedtatt");
-      }
+      if (status === "vedtatt") btn.classList.add("vedtatt");
 
-        btn.onclick = async (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
+      // Robust toggle handler (with debug + cache-safe refresh)
+      btn.onclick = async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
 
-            // Derive current status defensively from DOM or data
-            const tr = btn.closest("tr");
-            const id = s.suggestion_id;
-            const domStatus = tr?.classList.contains("vedtatt") || btn.classList.contains("vedtatt") ? "vedtatt" : "ny";
-            const currentStatus = (s.status === "vedtatt" || domStatus === "vedtatt") ? "vedtatt" : "ny";
-            const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
+        const trEl = btn.closest("tr");
+        const id = s.suggestion_id;
+        const domStatus = trEl?.classList.contains("vedtatt") || btn.classList.contains("vedtatt") ? "vedtatt" : "ny";
+        const currentStatus = (s.status === "vedtatt" || domStatus === "vedtatt") ? "vedtatt" : "ny";
+        const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
 
-            const endpoint = `${API}/${encodeURIComponent(id)}`;
-            const token = localStorage.getItem("token");
+        const endpoint = `${API}/${encodeURIComponent(id)}`;
+        const token = localStorage.getItem("token");
 
-            console.debug("[Vedta] click",
-                { id, currentStatus, newStatus, endpoint });
+        console.debug("[Vedta] click", { id, currentStatus, newStatus, endpoint });
 
-            // Prevent double-clicks while the request is in flight
-            btn.disabled = true;
-            btn.setAttribute("aria-busy", "true");
+        btn.disabled = true;
+        btn.setAttribute("aria-busy", "true");
 
-            const t0 = performance.now();
-            try {
-                const resp = await fetch(endpoint, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {})
-                },
-                body: JSON.stringify({
-                    status: newStatus,
-                    actor: "admin"
-                    // If your API supports optimistic concurrency:
-                    // expectedUpdatedAt: s.updated_at
-                })
-                });
+        const t0 = performance.now();
+        try {
+          const resp = await fetch(endpoint, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({
+              status: newStatus,
+              actor: "admin"
+              // expectedUpdatedAt: s.updated_at, // if you later enable optimistic concurrency
+            })
+          });
 
-                if (!resp.ok) {
-                const txt = await resp.text().catch(() => "(no text)");
-                console.error("[Vedta][PATCH] failed", resp.status, txt);
-                } else {
-                const data = await resp.json().catch(() => null);
-                const dt = Math.round(performance.now() - t0);
-                const returned = data?.item || data || {};
-                console.debug("[Vedta][PATCH] ok",
-                    { ms: dt, returnedStatus: returned.status, updated_at: returned.updated_at, id: returned.suggestion_id });
+          if (!resp.ok) {
+            const txt = await resp.text().catch(() => "(no text)");
+            console.error("[Vedta][PATCH] failed", resp.status, txt);
+          } else {
+            const data = await resp.json().catch(() => null);
+            const dt = Math.round(performance.now() - t0);
+            const returned = data?.item || data || {};
+            console.debug("[Vedta][PATCH] ok", {
+              ms: dt,
+              returnedStatus: returned.status,
+              updated_at: returned.updated_at,
+              id: returned.suggestion_id
+            });
 
-                // Force an immediate fresh GET + re-render
-                await refresh(true);
-                }
-            } catch (err) {
-                console.error("[Vedta][PATCH] network error", err);
-            } finally {
-                btn.disabled = false;
-                btn.removeAttribute("aria-busy");
-            }
-        };
-
+            // Immediately fetch fresh data and re-render
+            await refresh(true);
+          }
+        } catch (err) {
+          console.error("[Vedta][PATCH] network error", err);
+        } finally {
+          btn.disabled = false;
+          btn.removeAttribute("aria-busy");
+        }
+      };
 
       tdBtn.appendChild(btn);
       tr.appendChild(tdBtn);
       tbody.appendChild(tr);
     }
 
+    // Footer filler row (matches header color via --accent, rounded corners)
+    const filler = document.createElement("tr");
+    filler.className = "filler-row";
+    const fillerTd = document.createElement("td");
+    fillerTd.colSpan = COLS.length + 1; // include the action column
+    filler.appendChild(fillerTd);
+    tbody.appendChild(filler);
+
     table.appendChild(tbody);
-    slide.appendChild(table);
+    wrapper.appendChild(table);
+    slide.appendChild(wrapper);
     frag.appendChild(slide);
   }
 
-    // Replace DOM content all at once
-     track.replaceChildren(frag);
+  // Atomic DOM swap
+  track.replaceChildren(frag);
 
-    // Keep current slide in bounds & apply transform after DOM changes
+  // Keep current slide position valid after DOM changes
+  if (typeof updateCarousel === "function") {
     updateCarousel();
+  }
 
-     // Mark that first render is done
-     if (!hasPaintedOnce) hasPaintedOnce = true;
+  // First render marker
+  if (!hasPaintedOnce) hasPaintedOnce = true;
 
-  // Re-enable animations after DOM updates
+  // Re-enable animations on next frame
   requestAnimationFrame(() => {
     rootEl.classList.remove("silent-update");
+    // also turn off first-load-only animations if still present
     rootEl.classList.remove("initial-boot");
     console.debug(`[render] complete: ${slideCount} slides, ${rowCount} rows`);
   });
