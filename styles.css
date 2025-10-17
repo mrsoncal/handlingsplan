@@ -128,11 +128,6 @@ text-align: left;
 transition: background-color 0.3s ease;
 }
 
-.vedtatt td:nth-child(7),
-.vedtatt td.button-cell {
-background-color: white !important;
-}
-
 .carousel {
 overflow: hidden;
 position: relative;
@@ -266,21 +261,23 @@ color: white;
   border-top-left-radius: 12px;
 }
 
-/* Round the last VISIBLE header cell (skip hidden .id-col and .button-header) */
-.table-wrapper table thead tr:first-child
-  > th:nth-last-child(1 of :not(.id-col, .button-header)) {
+/* Round the true last header cell (public: last is data; admin: action column) */
+.table-wrapper table thead tr:first-child > th:last-child {
   border-top-right-radius: 12px;
 }
 
 /* ---- BOTTOM ---- */
 
-/* Action column: do NOT affect the filler row */
-tbody tr:not(.filler-row) td.button-cell,
-thead tr:not(.filler-row) th.button-header {
-  background: none;
-  padding: 0;
+/* Align action column without killing its backgrounds */
+thead tr th.button-header {
   text-align: right;
   border: 0;
+  padding-right: 1.5rem;
+}
+tbody tr td.button-cell {
+  text-align: right;
+  border: 0;
+  padding-right: 1.5rem;
 }
 
 /* When admin is logged in, show a narrow header to align the column */
@@ -324,6 +321,12 @@ tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
 tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
   background-color: #c1dfc5 !important;
 }
+
+/* NEW: mirror those backgrounds for the action cell */
+tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td.button-cell { background-color: #f0f0f0; }
+tbody tr:nth-child(odd):not(.vedtatt):not(.filler-row)  td.button-cell { background-color: #ffffff; }
+tr:hover:not(.vedtatt):not(.filler-row) td.button-cell                 { background-color: #dfdfdf !important; }
+tbody tr.vedtatt td.button-cell                                        { background-color: #d4edda !important; }
 
 tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
   background-color: #dfdfdf !important;
