@@ -266,8 +266,9 @@ color: white;
   border-top-left-radius: 12px;
 }
 
-/* Round the actual last header cell (public: last is data col; admin: last is action col) */
-.table-wrapper table thead tr:first-child > th:last-child {
+/* Round the last VISIBLE header cell (skip hidden .id-col and .button-header) */
+.table-wrapper table thead tr:first-child
+  > th:nth-last-child(1 of :not(.id-col, .button-header)) {
   border-top-right-radius: 12px;
 }
 
