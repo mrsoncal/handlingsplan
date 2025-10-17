@@ -15,6 +15,38 @@ const COLS = [
 ];
 let lastDataHash = ""; // to detect if data actually changed before re-render
 
+let currentSlide = 0;
+
+// Keep the track positioned to the current slide
+function updateCarousel() {
+  const track = document.getElementById("carousel-track");
+  if (!track) return;
+  const total = track.children.length;
+  if (!total) return;
+
+  // clamp index
+  if (currentSlide < 0) currentSlide = 0;
+  if (currentSlide > total - 1) currentSlide = total - 1;
+
+  // Move the track (each slide is 100% width)
+  track.style.transform = `translateX(-${currentSlide * 100}%)`;
+  console.debug(`[carousel] slide ${currentSlide + 1}/${total}`);
+}
+
+// Public controls for the HTML buttons
+function nextSlide() {
+  currentSlide += 1;
+  updateCarousel();
+}
+function prevSlide() {
+  currentSlide -= 1;
+  updateCarousel();
+}
+
+// Expose to inline onclick handlers in index.html
+window.nextSlide = nextSlide;
+window.prevSlide  = prevSlide;
+
 // ---------- AUTH HANDLING ----------
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("token");
@@ -290,11 +322,14 @@ function render(items) {
     frag.appendChild(slide);
   }
 
-  // Replace DOM content all at once
-  track.replaceChildren(frag);
+    // Replace DOM content all at once
+     track.replaceChildren(frag);
 
-  // Mark that first render is done
-  if (!hasPaintedOnce) hasPaintedOnce = true;
+    // Keep current slide in bounds & apply transform after DOM changes
+    updateCarousel();
+
+     // Mark that first render is done
+     if (!hasPaintedOnce) hasPaintedOnce = true;
 
   // Re-enable animations after DOM updates
   requestAnimationFrame(() => {
