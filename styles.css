@@ -261,11 +261,6 @@ color: white;
   border: none;
 }
 
-/* ---- TOP (unchanged except more robust) ---- */
-.table-wrapper table thead tr:first-child th:first-child {
-  border-top-left-radius: 12px;
-}
-
 /* Round the last VISIBLE header cell (skip hidden .id-col and .button-header) */
 .table-wrapper table thead tr:first-child
   > th:nth-last-child(1 of :not(.id-col, .button-header)) {
