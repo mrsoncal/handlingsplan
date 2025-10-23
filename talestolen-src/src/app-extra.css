@@ -53,38 +53,52 @@
   padding-top: 0;
 }
 
-/* Rows of two cards should be perfectly balanced */
-.split {
+/* === Admin balanced 2×3 grid === */
+.adminGridContainer {
+  /* padding keeps tiles off the container edges */
+  padding: 12px;
+}
+
+.adminGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* two equal columns */
-  gap: 18px;
-  align-items: stretch;
-}
-@media (max-width: 1024px) {
-  .split {
-    grid-template-columns: 1fr; /* stack on smaller screens */
-  }
+  grid-template-columns: 1fr 1fr;                      /* two equal columns (50% / 50%) */
+  grid-template-rows: repeat(3, minmax(220px, 1fr));   /* three equal rows, not too tall */
+  gap: 16px;                                           /* space between tiles */
 }
 
-/* Make each card fill its grid cell */
-.card {
-  width: 85%;
-  height: 75%;
+/* Make each tile fill its grid area */
+.adminGrid > .card {
+  margin: 0;
+  height: 100%;
 }
 
-/* File input in "Upload delegates CSV" should span full width */
+/* Keep CSV file input full width inside its tile */
 .input.wide,
-.card input[type="file"] {
-  width: 60%;
+.adminGrid input[type="file"] {
+  width: 100%;
 }
 
-/* Three equal columns in "Speaking type defaults" */
+/* Center the Delegates table with same outer margin feel as tiles */
+.card.cardTable {
+  margin: 16px 12px 0;   /* match grid gap + container padding */
+  padding: 16px;
+}
+
+/* Grid for three numeric inputs */
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-.grid-3 .input {
-  width: 80%;
-}
+.grid-3 .input { width: 100%; }
 
+/* Responsive: stack tiles on narrow screens */
+@media (max-width: 1024px) {
+  .adminGrid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;    /* allow natural height when stacked */
+  }
+  .card.cardTable {
+    margin: 16px 0 0;
+  }
+}
