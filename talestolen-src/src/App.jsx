@@ -259,7 +259,7 @@ function AdminView({ state }) {
       default: break;
     }
   }
-  function sendSync() { /* LAN disabled: no-op */ });
+  function sendSync() { /* LAN disabled: no-op */ };
   }
 
   async function hostSync() {
@@ -591,7 +591,6 @@ function AdminView({ state }) {
       </section>
     </div>
   );
-}
 
 
 /* ============================
