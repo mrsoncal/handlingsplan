@@ -497,7 +497,7 @@ function AdminView({ state }) {
                         Start
                       </button>
                       <button
-                        className="btn ghost"
+                        className="btn danger"
                         onClick={() => removeFromQueue(q.id)}
                       >
                         Fjern
