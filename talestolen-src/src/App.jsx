@@ -244,9 +244,11 @@ function AdminView({ state }) {
               onChange={handleCSV}
             />
             <div className="spacer"></div>
-            <div className="muted">
-              Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
-            </div>
+              <div className="row">
+                <div className="muted">
+                  Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
+                </div>
+              </div>
           </div>
 
           <div className="card time-defaults">
