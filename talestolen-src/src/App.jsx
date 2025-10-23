@@ -249,13 +249,13 @@ function AdminView({ state }) {
             </div>
           </div>
 
-          <div className="card">
+          <div className="card time-defaults">
             <div className="title">Taletid (sekunder)</div>
             <div className="grid-3">
               <div>
                 <div className="muted">Innlegg</div>
                 <input
-                  className="input-time"
+                  className="input input-time"
                   type="number"
                   min="10"
                   step="5"
@@ -271,7 +271,7 @@ function AdminView({ state }) {
               <div>
                 <div className="muted">Replikk</div>
                 <input
-                  className="input-time"
+                  className="input input-time"
                   type="number"
                   min="10"
                   step="5"
@@ -287,7 +287,7 @@ function AdminView({ state }) {
               <div>
                 <div className="muted">Svar-replikk</div>
                 <input
-                  className="input-time"
+                  className="input input-time"
                   type="number"
                   min="10"
                   step="5"
