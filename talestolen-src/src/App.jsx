@@ -340,7 +340,7 @@ function AdminView({ state }) {
             <div className="muted">
               Preview: <b>{previewName}</b>
               {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
-              <span className="pill">{labelFor(type)}</span>
+              <span className="preview">{labelFor(type)}</span>
             </div>
           </div>
 
