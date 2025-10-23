@@ -68,14 +68,14 @@
 
 /* Make each card fill its grid cell */
 .card {
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: 90%;
 }
 
 /* File input in "Upload delegates CSV" should span full width */
 .input.wide,
 .card input[type="file"] {
-  width: 100%;
+  width: 60%;
 }
 
 /* Three equal columns in "Speaking type defaults" */
@@ -85,6 +85,6 @@
   gap: 12px;
 }
 .grid-3 .input {
-  width: 100%;
+  width: 80%;
 }
 
