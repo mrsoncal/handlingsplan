@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Talestolen</title>
+    <style>
+      /* Hide only the LiveSync card */
+      [data-component="LiveSyncCard"],
+      .LiveSyncCard,
+      .card.liveSyncHidden,
+      .card:has(.title:where(:is(:contains("Live Sync"), :contains("LAN / P2P")))) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial; }
+      body { margin: 0; background:#ffffff; color:#151515; }
+      a { color: inherit; }
+      .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+      .row { display:flex; gap:16px; flex-wrap: wrap; }
+      .card { background:#ededed; border:2px solid #009BC2; border-radius:16px; padding:16px; }
+      .btn { border:0; border-radius:12px; padding:10px 14px; cursor:pointer; background:#5A2E61; color:#ffffff; font-weight:600; }
+      .btn.secondary { background:#2a3552; color:#ffffff; }
+      .btn.danger { background:#ff5d6c; color:#1b1b1b; }
+      .btn.ghost { background:transparent; border:1px solid #009BC2; color:#1b1b1b; }
+      .btn:disabled { opacity:.5; cursor:not-allowed; }
+      .input, select { background:#ffffff; color:#1b1b1b; border:2px solid #009BC2; border-radius:10px; padding:10px 12px; }
+      .input.wide { width:100%; }
+      .list { display:flex; flex-direction:column; gap:8px; }
+      .title { font-size: 24px; font-weight: 700; margin: 12px 0 8px; }
+      .muted { opacity:.7; }
+      .badge { background:#ffffff; color:#1b1b1b; padding:4px 8px; border-radius:999px; font-size:12px; }
+      .timer { font-size: clamp(48px, 12vw, 160px); font-weight: 800; line-height: 0.95; text-align:center; margin: 6vh 0; }
+      .hint { text-align:center; opacity:.7; }
+      .split { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+      @media (max-width: 900px){ .split { grid-template-columns: 1fr; } }
+      .queue-item { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#ededed; border:2px solid #009BC2; border-radius:10px; }
+      .big { font-size: 36px; font-weight: 700; }
+      .next { color:#5A2E61; }
+      .spacer { height:6px; }
+      .row-center { display:flex; align-items:center; gap:8px; }
+      .nav { display:flex; gap:8px; padding: 12px 0; }
+      .full { min-height: 100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 24px; }
+      .name { font-size: clamp(32px, vw, 54px); opacity:.9; margin-bottom: 12px; }
+      .status { font-size: clamp(14px, 2vw, 20px); opacity:.7; margin-top: 8px; }
+      .queue { width: min(1100px, 95vw); display:flex; flex-direction:column; gap:10px; }
+      .queueRow { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-radius:12px; background:#ededed; border:2px solid #009BC2; }
+      .queueNow { background:#ffffff; }
+      .pill { border-radius:16px; padding:10px 10px; background:#009BC2; color:#1b1b1b; }
+      .header { width:min(1100px, 95vw); margin: 12px 0 16px; opacity:.85; }
+      .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      @media (max-width: 700px){ .grid-3 { grid-template-columns: 1fr; } }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    </style>
+    <script type="module" crossorigin src="/talestolen/assets/index-fdW9E35-.js"></script>
+    <link rel="stylesheet" crossorigin href="/talestolen/assets/index-vFwZvwad.css">
+  </head>
+
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
