@@ -1,57 +1,43 @@
-<!DOCTYPE html>
-<html lang="no">
+<!doctype html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Forslag til Handlingsplan 2026</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ungdomsting – Apps</title>
+  <style>
+    :root { --bg:#0c1b2a; --card:#132b45; --accent:#FAEF5D; --text:#eef2f7; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { display: grid; place-items: center; background: var(--bg); color: var(--text); font-family: system-ui, Arial, sans-serif; }
+    .wrap { width: min(1100px, 92vw); padding: 32px; }
+    h1 { margin: 0 0 22px; font-size: clamp(24px, 4vw, 40px); }
+    p.lead { opacity: .85; margin: 0 0 26px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+    .card { background: var(--card); border-radius: 18px; padding: 22px; border: 2px solid transparent; transition: transform .15s ease, border-color .15s ease; }
+    .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .title { font-size: 20px; margin: 0 0 8px; }
+    .desc { opacity: .9; font-size: 15px; line-height: 1.4; }
+    .cta { display: inline-block; margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: var(--accent); color: #111; font-weight: 600; text-decoration: none; }
+    footer { margin-top: 28px; opacity: .7; font-size: 13px; }
+  </style>
 </head>
 <body>
-  <header class="page-header">
-    <button id="login-button" class="login-out-button">Admin</button>
-    <button id="logout-button" class="login-out-button" style="display: none;">Logg ut</button>
-    <div class="container">
-      <h1>Forslag til Handlingsplan 2026</h1>
-    </div>
-  </header>
-
-  <div class="top-buttons">
-    <a class="forms-button" href="https://forms.gle/32jMP85aCXgax7Ss8" target="_blank">Åpne Forms</a>
-    <a class="plan-button" href="docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
-  </div>
-
-  <div class="login-overlay" id="login-section" style="display: none;">
-    <div class="login-box">
-      <form id="login-form">
-        <h2>Logg inn som admin</h2>
-        <div class="password-toggle">
-          <input type="password" id="password" name="password" required />
-          <button type="button" id="togglePassword" aria-label="Toggle password visibility">
-            <img id="togglePasswordIcon" src="visible.png" alt="Vis passord" />
-          </button>
-        </div>
-        <button type="submit">Logg inn</button>
-      </form>
-    </div>
-  </div>
-
-  <main class="main-content container" id="main-content">
-    <div class="carousel-wrapper">
-      <button class="carousel-nav left" onclick="prevSlide()">❮</button>
-      <button class="carousel-nav right" onclick="nextSlide()">❯</button>
-      <div class="carousel">
-        <div class="carousel-track" id="carousel-track"></div>
-      </div>
-    </div>
+  <main class="wrap">
+    <h1>Ungdomsting – Verktøy</h1>
+    <p class="lead">Velg appen du vil åpne. Denne siden samler alt på ett sted.</p>
+    <section class="grid">
+      <article class="card">
+        <h2 class="title">Handlingsplan</h2>
+        <p class="desc">Forslagsinnsamling, visning og administrasjon av vedtaksstatus i sanntid.</p>
+        <a class="cta" href="./handlingsplan/">Åpne Handlingsplan</a>
+      </article>
+      <article class="card">
+        <h2 class="title">Talestolen</h2>
+        <p class="desc">Taler‑kø, timer og LAN‑synk via WebRTC for møter og debatter.</p>
+        <a class="cta" href="./talestolen/">Åpne Talestolen</a>
+      </article>
+    </section>
+    <footer>© Ungdomstinget • Samlet nettløsning</footer>
   </main>
-
-  <footer class="site-footer">
-    <div class="container">
-      <img alt="Telemark Ungdomsråd logo" class="footer-logo" src="Bilde1.png" />
-    </div>
-  </footer>
-
-  <script src="login.js" defer></script>
-  <script src="script.js" defer></script>
 </body>
 </html>
