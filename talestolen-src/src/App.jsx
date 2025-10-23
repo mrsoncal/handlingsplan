@@ -401,8 +401,8 @@ function AdminView({ state }) {
                         ({cur.delegateNumber ? `#${cur.delegateNumber}` : "–"})
                       </span>
                     </div>
-                    <div className="muted">{cur.org || " "}</div>
-                    <div className="muted">
+                    <div className="desc">{cur.org || " "}</div>
+                    <div className="desc">
                       Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
                       {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
                     </div>
