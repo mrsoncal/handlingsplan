@@ -586,7 +586,7 @@ function QueueFull({ state }) {
   const queue = Array.isArray(state?.queue) ? state.queue : [];
 
   return (
-    <div className="full" style={{ alignItems: "stretch" }}>
+    <div id="queue" className="full queuePage" style={{ alignItems: 'stretch' }}>
       <div className="header">Taleliste</div>
 
       <div className="queue">

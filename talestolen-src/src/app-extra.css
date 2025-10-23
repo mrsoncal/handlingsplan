@@ -36,15 +36,20 @@
   justify-content: space-between;
 }
 
-/* Center timer screen content vertically & horizontally */
-.full {
+/* Center only the TIMER page */
+#timer.full {
   display: flex;
   flex-direction: column;
-  justify-content: center;  /* vertical center */
-  align-items: center;      /* horizontal center */
-  height: 100vh;            /* fill viewport height */
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
 }
+
+.full {
+  display: block;
+}
+
 
 
 .queue {
