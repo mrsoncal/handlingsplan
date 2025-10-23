@@ -259,8 +259,7 @@ function AdminView({ state }) {
       default: break;
     }
   }
-  function sendSync(type, payload) {
-    syncRef.current?.send({ type, payload: payload || null });
+  function sendSync() { /* LAN disabled: no-op */ });
   }
 
   async function hostSync() {
@@ -341,7 +340,7 @@ function AdminView({ state }) {
         <div className="spacer"></div>
 
         {/* Live Sync card */}
-<div className="card" style={{ marginBottom: 12 }}>
+<div className="card" style={{ marginBottom: 12, display: 'none' }}>
   <div className="title">Live Sync (LAN / P2P)</div>
 
   {/* Tabs */}
