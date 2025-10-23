@@ -229,7 +229,7 @@ function AdminView({ state }) {
         </a>
       </nav>
 
-      <section className="card">
+      <section className="card main-card">
         <div className="title">Talestolen · Admin</div>
         <div className="spacer"></div>
 
