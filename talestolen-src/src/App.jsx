@@ -249,7 +249,7 @@ function AdminView({ state }) {
             </div>
           </div>
 
-          <div className="card">
+          <div className="split">
             <div className="title">Taletid (sekunder)</div>
             <div className="grid-3">
               <div>
