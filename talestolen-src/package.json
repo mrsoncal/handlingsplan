@@ -16,6 +16,6 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "vite": "^7.1.12"
+    "vite": "^5.0.0"
   }
 }
