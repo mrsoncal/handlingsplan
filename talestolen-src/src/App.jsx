@@ -231,16 +231,12 @@ function AdminView({ state }) {
 
       <section className="card">
         <div className="title">Talestolen · Admin</div>
-        <div className="muted">
-          Add speakers by <span className="mono">delegatenummer</span> and
-          choose speaking type. Upload the delegates CSV to enable auto lookup.
-        </div>
         <div className="spacer"></div>
 
         {/* Row: upload + type defaults */}
         <div className="split">
           <div className="card">
-            <div className="title">Upload delegates CSV</div>
+            <div className="title">Last opp delegater (CSV)</div>
             <input
               className="input wide"
               type="file"
@@ -249,15 +245,15 @@ function AdminView({ state }) {
             />
             <div className="spacer"></div>
             <div className="muted">
-              Loaded delegates: <b>{Object.keys(state.delegates).length}</b>
+              Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
             </div>
           </div>
 
           <div className="card">
-            <div className="title">Speaking type defaults</div>
+            <div className="title">Taletid (sekunder)</div>
             <div className="grid-3">
               <div>
-                <div className="muted">Innlegg (sec)</div>
+                <div className="muted">Innlegg</div>
                 <input
                   className="input"
                   type="number"
@@ -273,7 +269,7 @@ function AdminView({ state }) {
                 />
               </div>
               <div>
-                <div className="muted">Replikk (sec)</div>
+                <div className="muted">Replikk</div>
                 <input
                   className="input"
                   type="number"
@@ -289,7 +285,7 @@ function AdminView({ state }) {
                 />
               </div>
               <div>
-                <div className="muted">Svar-replikk (sec)</div>
+                <div className="muted">Svar-replikk</div>
                 <input
                   className="input"
                   type="number"
@@ -313,11 +309,11 @@ function AdminView({ state }) {
         {/* Row: add by number + manual add */}
         <div className="split">
           <div className="card">
-            <div className="title">Add by delegatenummer</div>
+            <div className="title">Legg til i talelista</div>
             <div className="row">
               <input
                 className="input"
-                placeholder="Delegatenummer"
+                placeholder="Delegatnummer"
                 value={num}
                 onChange={(e) => setNum(e.target.value)}
               />
@@ -347,7 +343,7 @@ function AdminView({ state }) {
           </div>
 
           <div className="card">
-            <div className="title">Add manually (fallback)</div>
+            <div className="title">Legg til manuelt</div>
             <div className="row">
               <input
                 className="input"
@@ -386,7 +382,7 @@ function AdminView({ state }) {
         {/* Row: current speaker + queue */}
         <div className="split">
           <div className="card">
-            <div className="title">Current Speaker</div>
+            <div className="title">Snakker Nå</div>
             <div className="list">
               {cur ? (
                 <div
@@ -409,10 +405,10 @@ function AdminView({ state }) {
                       {cur.baseDurationSec}s • {cur.paused ? "Paused" : "Running"}
                     </div>
                   </div>
-                  <div className="badge">Remaining: {remain}</div>
+                  <div className="badge">Tid igjen: {remain}</div>
                 </div>
               ) : (
-                <div className="muted">No one is speaking.</div>
+                <div className="muted">Ingen snakker nå.</div>
               )}
             </div>
             <div className="row">
@@ -424,7 +420,7 @@ function AdminView({ state }) {
                 }}
                 disabled={!!state.currentSpeaker || state.queue.length === 0}
               >
-                Start next
+                Start neste
               </button>
               <button
                 className="btn secondary"
@@ -444,7 +440,7 @@ function AdminView({ state }) {
                 }}
                 disabled={!cur || !cur.paused}
               >
-                Resume
+                Fortsett
               </button>
               <button
                 className="btn danger"
@@ -470,16 +466,16 @@ function AdminView({ state }) {
           </div>
 
           <div className="card">
-            <div className="title">Queue</div>
+            <div className="title">Kø</div>
             <div className="list">
               {state.queue.length === 0 ? (
-                <div className="muted">Queue is empty.</div>
+                <div className="muted">Køen er tom.</div>
               ) : (
                 state.queue.map((q, i) => (
                   <div key={q.id} className="queue-item">
                     <div>
                       <div className={"big " + (i === 0 ? "next" : "")}>
-                        {i === 0 ? "Next: " : ""}
+                        {i === 0 ? "Neste: " : ""}
                         {q.name}{" "}
                         <span className="muted">
                           ({q.delegateNumber ? `#${q.delegateNumber}` : "–"})
@@ -504,7 +500,7 @@ function AdminView({ state }) {
                         className="btn ghost"
                         onClick={() => removeFromQueue(q.id)}
                       >
-                        Remove
+                        Fjern
                       </button>
                     </div>
                   </div>
@@ -542,8 +538,8 @@ function TimerFull({ state }) {
       <div className="timer">{text}</div>
       <div className="status">
         {cur
-          ? typeLabel + (cur.paused ? " · Paused" : " · Live")
-          : "Waiting for the next speaker…"}
+          ? typeLabel + (cur.paused ? " · Pauset" : " · Live")
+          : "Venter på neste taler…"}
       </div>
     </div>
   );
@@ -555,13 +551,13 @@ function QueueFull({ state }) {
 
   return (
     <div className="full" style={{ alignItems: "stretch" }}>
-      <div className="header">Speaking Queue</div>
+      <div className="header">Talekø</div>
 
       <div className="queue">
         {cur ? (
           <div className="queueRow queueNow">
             <div className="big">
-              Now: {cur.name}{" "}
+              Nå: {cur.name}{" "}
               {cur.delegateNumber ? `(#${cur.delegateNumber})` : ""}
             </div>
             <span className="pill">{labelFor(cur.type)}</span>
@@ -570,7 +566,7 @@ function QueueFull({ state }) {
 
         {queue.length === 0 ? (
           <div className="queueRow">
-            <div className="muted">No one in queue.</div>
+            <div className="muted">Ingen i køen.</div>
           </div>
         ) : (
           queue.map((q, i) => (

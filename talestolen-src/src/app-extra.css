@@ -52,3 +52,39 @@
   margin-top: 0;
   padding-top: 0;
 }
+
+/* Rows of two cards should be perfectly balanced */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* two equal columns */
+  gap: 18px;
+  align-items: stretch;
+}
+@media (max-width: 1024px) {
+  .split {
+    grid-template-columns: 1fr; /* stack on smaller screens */
+  }
+}
+
+/* Make each card fill its grid cell */
+.card {
+  width: 100%;
+  height: 100%;
+}
+
+/* File input in "Upload delegates CSV" should span full width */
+.input.wide,
+.card input[type="file"] {
+  width: 100%;
+}
+
+/* Three equal columns in "Speaking type defaults" */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.grid-3 .input {
+  width: 100%;
+}
+
