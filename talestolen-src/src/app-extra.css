@@ -68,8 +68,8 @@
 
 /* Make each card fill its grid cell */
 .card {
-  width: 90%;
-  height: 90%;
+  width: 85%;
+  height: 75%;
 }
 
 /* File input in "Upload delegates CSV" should span full width */
