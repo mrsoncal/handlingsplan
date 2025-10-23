@@ -36,17 +36,59 @@
   justify-content: space-between;
 }
 
-/* Anchor queue page to top */
+/* Center timer screen content vertically & horizontally */
 .full {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-  padding-top: 20px;
+  justify-content: center;  /* vertical center */
+  align-items: center;      /* horizontal center */
+  height: 100vh;            /* fill viewport height */
+  text-align: center;
 }
+
 
 .queue {
   margin-top: 0;
   padding-top: 0;
 }
+
+
+/* ===== QUEUE PAGE STYLING ===== */
+#queue .big {
+  font-size: 36px;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Make the queue fill full width */
+#queue .queue {
+  width: 100vw;           /* full viewport width */
+  margin: 0;              /* remove any side margins */
+  padding-right: 4vw;     /* small right padding for visual comfort */
+  box-sizing: border-box;
+}
+
+/* Align all queue rows to the right */
+#queue .queueRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* Replikk width = 90%, svar-replikk = 80%, innlegg = 100% */
+#queue .queueRow .pill {
+  min-width: 8rem; /* keep label readable */
+  text-align: center;
+}
+
+/* Shrink rows depending on type */
+#queue .queueRow[data-type="replikk"] {
+  width: 90vw;
+}
+#queue .queueRow[data-type="svar_replikk"] {
+  width: 80vw;
+}
+#queue .queueRow[data-type="innlegg"] {
+  width: 100vw;
+}
+

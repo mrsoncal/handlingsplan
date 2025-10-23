@@ -587,7 +587,7 @@ function QueueFull({ state }) {
 
   return (
     <div className="full" style={{ alignItems: "stretch" }}>
-      <div className="header">Talekø</div>
+      <div className="header">Taleliste</div>
 
       <div className="queue">
         {cur ? (
@@ -606,7 +606,11 @@ function QueueFull({ state }) {
           </div>
         ) : (
           queue.map((q, i) => (
-            <div key={q.id ?? `${q.name || "anon"}-${i}`} className="queueRow">
+            <div
+              key={q.id ?? `${q.name || 'anon'}-${i}`}
+              className="queueRow"
+              data-type={normalizeType ? normalizeType(q.type) : q.type}
+            >
               <div className={"big " + (i === 0 ? "next" : "")}>
                 {i === 0 ? "Next: " : ""}
                 {q.name} {q.delegateNumber ? `(#${q.delegateNumber})` : ""}
