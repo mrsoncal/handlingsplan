@@ -161,6 +161,20 @@ function AdminView({ state }) {
   const [type, setType] = useState("innlegg");
   const [manualName, setManualName] = useState("");
   const [manualOrg, setManualOrg] = useState("");
+  const [lastInnlegg, setLastInnlegg] = useState(null);
+
+  // When current speaker switches to an innlegg, remember them
+  useEffect(() => {
+    const s = state.currentSpeaker;
+    if (s && (normalizeType ? normalizeType(s.type) : s.type) === 'innlegg') {
+      setLastInnlegg({
+        id: s.id,
+        name: s.name,
+        org: s.org,
+        delegateNumber: s.delegateNumber ?? '',
+      });
+    }
+  }, [state.currentSpeaker?.id]);
 
   // type durations
   const [dInnlegg, setDInnlegg] = useState(state.typeDurations.innlegg);
@@ -326,7 +340,6 @@ function AdminView({ state }) {
               >
                 <option value="innlegg">Innlegg</option>
                 <option value="replikk">Replikk</option>
-                <option value="svar_replikk">Svar-replikk</option>
               </select>
               <button
                 className="btn"
@@ -366,7 +379,6 @@ function AdminView({ state }) {
               >
                 <option value="innlegg">Innlegg</option>
                 <option value="replikk">Replikk</option>
-                <option value="svar_replikk">Svar-replikk</option>
               </select>
               <button
                 className="btn"
@@ -401,8 +413,8 @@ function AdminView({ state }) {
                         ({cur.delegateNumber ? `#${cur.delegateNumber}` : "–"})
                       </span>
                     </div>
-                    <div className="desc">{cur.org || " "}</div>
-                    <div className="desc">
+                    <div className="muted">{cur.org || " "}</div>
+                    <div className="muted">
                       Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
                       {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
                     </div>
@@ -464,6 +476,28 @@ function AdminView({ state }) {
               >
                 Reset
               </button>
+              {cur && (normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk' && lastInnlegg ? (
+                <button
+                  className="btn"
+                  onClick={() => {
+                    if (lastInnlegg.delegateNumber) {
+                      addToQueueByDelegate({
+                        delegateNumber: String(lastInnlegg.delegateNumber),
+                        type: 'svar_replikk',
+                      });
+                    } else {
+                      addToQueueDirect({
+                        name: lastInnlegg.name || '',
+                        org: lastInnlegg.org || '',
+                        type: 'svar_replikk',
+                      });
+                    }
+                  }}
+                  title={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                >
+                Svar-replikk → {lastInnlegg.name || 'innlegg-holder'}
+              </button>
+              ) : null}
             </div>
           </div>
 
@@ -483,8 +517,8 @@ function AdminView({ state }) {
                           ({q.delegateNumber ? `#${q.delegateNumber}` : "–"})
                         </span>
                       </div>
-                      <div className="muted">{q.org || " "}</div>
-                      <div className="muted">
+                      <div className="desc">{q.org || " "}</div>
+                      <div className="desc">
                         Type: <b>{labelFor(q.type)}</b>
                       </div>
                     </div>
