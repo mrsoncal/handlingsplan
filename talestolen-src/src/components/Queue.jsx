@@ -3,7 +3,7 @@ export default function Queue({ state, layout }) {
   return (
     <div className="list">
       {list.length === 0 ? (
-        <div className="muted">Queue is empty.</div>
+        <div className="muted">Talelisten er tom.</div>
       ) : (
         list.map((q) => (
           <div key={q.id} className="queue-item">

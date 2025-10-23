@@ -9,7 +9,7 @@ export default function Timer({ state, layout }) {
           <div className="muted">{cur.org || ''}</div>
         </div>
       ) : (
-        <div className="muted">No one is speaking.</div>
+        <div className="muted">Ingen taler nå.</div>
       )}
     </div>
   );

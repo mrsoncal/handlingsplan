@@ -225,7 +225,7 @@ function AdminView({ state }) {
           Timer
         </a>
         <a className="btn ghost" href="#queue" target="talestolen-queue">
-          Queue
+          Taleliste
         </a>
       </nav>
 
@@ -401,8 +401,8 @@ function AdminView({ state }) {
                     </div>
                     <div className="muted">{cur.org || " "}</div>
                     <div className="muted">
-                      Type: <b>{labelFor(cur.type)}</b> • Base:{" "}
-                      {cur.baseDurationSec}s • {cur.paused ? "Paused" : "Running"}
+                      Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
+                      {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
                     </div>
                   </div>
                   <div className="badge">Tid igjen: {remain}</div>
@@ -466,10 +466,10 @@ function AdminView({ state }) {
           </div>
 
           <div className="card">
-            <div className="title">Kø</div>
+            <div className="title">Taleliste</div>
             <div className="list">
               {state.queue.length === 0 ? (
-                <div className="muted">Køen er tom.</div>
+                <div className="muted">Talelisten er tom.</div>
               ) : (
                 state.queue.map((q, i) => (
                   <div key={q.id} className="queue-item">
