@@ -338,7 +338,7 @@ function AdminView({ state }) {
             <div className="muted">
               Preview: <b>{previewName}</b>
               {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
-              <span className="badge">{labelFor(type)}</span>
+              <span className="pill">{labelFor(type)}</span>
             </div>
           </div>
 
@@ -405,7 +405,7 @@ function AdminView({ state }) {
                       {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
                     </div>
                   </div>
-                  <div className="badge">Tid igjen: {remain}</div>
+                  <div className="badge">{remain}</div>
                 </div>
               ) : (
                 <div className="muted">Ingen snakker nå.</div>

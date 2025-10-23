@@ -22,8 +22,8 @@
 
 /* White box with blue outline */
 .queue .queueRow {
-  background: transparent;
-  border: 2px solid #5A2E61;
+  background: #dcc3e0;
+  border: 2px solid #703f79;
   border-radius: 12px;
   color: #ededed;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);

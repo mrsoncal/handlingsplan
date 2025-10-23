@@ -41,13 +41,16 @@
       .list { display:flex; flex-direction:column; gap:8px; }
       .title { font-size: 24px; font-weight: 700; margin: 8px 0 8px; }
       .muted { opacity:.7; }
-      .badge { font-weight: bold; background:#ededed; color:#1b1b1b; margin-bottom: 8px; padding:16px; border-radius:16px; font-size:14px; }
+      .badge { font-weight: bold; background:#ededed; color:#1b1b1b; margin-bottom: 8px; padding:12px; border-radius:12px; font-size:20px; }
       .timer { font-size: clamp(48px, 12vw, 160px); font-weight: 800; line-height: 0.95; text-align:center; margin: 6vh 0; }
       .hint { text-align:center; opacity:.7; }
       .split { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
       @media (max-width: 900px){ .split { grid-template-columns: 1fr; } }
       .queue-item { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#dcc3e0; border:2px solid #5A2E61; border-radius:10px; }
-      .big { font-size: 36px; font-weight: 700; }
+      #queue {
+        .big {font-size: 36px; font-weight: 700;}
+      }
+      .big { font-size: 20px; font-weight: bold; }
       .next { color:#5A2E61; }
       .spacer { height:6px; }
       .row-center { display:flex; align-items:center; gap:8px; }
