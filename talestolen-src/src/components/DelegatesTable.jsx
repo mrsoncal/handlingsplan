@@ -26,21 +26,21 @@ export default function DelegatesTable({ state }){
 
   return (
     <div className="card" style={{marginTop:16}}>
-      <div className="title">Delegates</div>
-      <div className="muted">Imported delegates are saved locally in your browser and can be edited here.</div>
+      <div className="title">Delegater</div>
+      <div className="muted">Importerte delegater lagres lokalt i nettleseren din og kan redigeres her.</div>
       <div className="tableWrap">
         <table className="table">
           <thead>
             <tr>
               <th style={{width:110}}>Nr</th>
-              <th>Name</th>
+              <th>Navn</th>
               <th>Representerer</th>
-              <th style={{width:200}}>Actions</th>
+              <th style={{width:200}}>Handlinger</th>
             </tr>
           </thead>
           <tbody>
             {rows.length===0 ? (
-              <tr><td colSpan={4} className="muted">No delegates loaded yet.</td></tr>
+              <tr><td colSpan={4} className="muted">Ingen delegater lastet enda.</td></tr>
             ) : rows.map(row => (
               <tr key={row.number}>
                 <td>
@@ -62,7 +62,7 @@ export default function DelegatesTable({ state }){
                   {editing===row.number ? (
                     <div className="row" style={{gap:6}}>
                       <button className="btn" onClick={saveEdit}>Save</button>
-                      <button className="btn ghost" onClick={cancelEdit}>Cancel</button>
+                      <button className="btn" onClick={cancelEdit}>Cancel</button>
                     </div>
                   ) : (
                     <div className="row" style={{gap:6}}>
