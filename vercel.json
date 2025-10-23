@@ -1,0 +1,4 @@
+{
+  "buildCommand": "cd talestolen && npm ci && npm run build",
+  "outputDirectory": "."
+}
