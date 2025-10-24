@@ -97,56 +97,19 @@
 
 
 
-/* === FINAL QUEUE PAGE DESIGN === */
+/* === ADDITIVE OVERRIDES (preserve prior functionality) === */
 
-/* Prevent horizontal scrolling */
-#queue, #queue .queue { overflow-x: hidden; }
-
-/* Queue page layout */
-#queue.full {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end !important;   /* rows anchored to the right */
-  justify-content: flex-start !important;
-  text-align: left !important;
-}
-
-/* Container for all queue rows */
-#queue .queue {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;              /* align all rows to the right */
-  justify-content: flex-start;
-  width: 100%;
-  gap: 12px;
-  box-sizing: border-box;
-}
-
-/* Each queue row */
-#queue .queueRow {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;            /* text aligned left inside row */
-  justify-content: center;
-  margin: 0;
-  box-sizing: border-box;
-  width: 80% !important;              /* uniform row width */
-  border-radius: 12px;
-  background: #ededed;                /* default innlegg background */
-  color: #1b1b1b;
-  padding: 14px 16px;
-}
-
-/* Top (next) row wider */
-#queue .queueRow.queueNow + .queueRow,
-#queue .queueRow:has(> .big.next) {
-  width: 90% !important;
-}
-
-/* Remove pills */
+/* Hide pill ONLY on queue page */
 #queue .pill { display: none !important; }
 
-/* Full-background coloring by type */
+/* Uniform widths: all rows 80% */
+#queue .queueRow { width: 80% !important; }
+
+/* Top "next" row at 90% */
+#queue .queueRow.queueNow + .queueRow { width: 90% !important; }   /* when a current speaker exists */
+#queue .queueRow:has(> .big.next) { width: 90% !important; }       /* when marked Next in markup */
+
+/* Full-background colors by type (keep borders as-is) */
 #queue .queueRow[data-type="replikk"] {
   background: #009BC2 !important;
   color: #ffffff !important;
@@ -156,15 +119,15 @@
   color: #1b1b1b !important;
 }
 
-/* Keep text readable on colored backgrounds */
+/* Ensure inner text remains legible on colored backgrounds */
 #queue .queueRow[data-type="replikk"] .big,
 #queue .queueRow[data-type="replikk"] .muted,
-#queue .queueRow[data-type="replikk"] .desc {
-  color: #ffffff !important;
-}
+#queue .queueRow[data-type="replikk"] .desc { color: #ffffff !important; }
+
 #queue .queueRow[data-type="svar_replikk"] .big,
 #queue .queueRow[data-type="svar_replikk"] .muted,
-#queue .queueRow[data-type="svar_replikk"] .desc {
-  color: #1b1b1b !important;
-}
+#queue .queueRow[data-type="svar_replikk"] .desc { color: #1b1b1b !important; }
+
+/* Safeguards to prevent horizontal scroll on queue page */
+#queue, #queue .queue { overflow-x: hidden !important; }
 
