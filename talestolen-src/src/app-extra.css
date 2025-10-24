@@ -126,11 +126,11 @@
 /* Ensure inner text remains legible on colored backgrounds */
 #queue .queueRow[data-type="replikk"] .big,
 #queue .queueRow[data-type="replikk"] .muted,
-#queue .queueRow[data-type="replikk"] .desc { color: #ffffff !important; }
+#queue .queueRow[data-type="replikk"] .desc { color: #003644 !important; }
 
 #queue .queueRow[data-type="svar_replikk"] .big,
 #queue .queueRow[data-type="svar_replikk"] .muted,
-#queue .queueRow[data-type="svar_replikk"] .desc { color: #1b1b1b !important; }
+#queue .queueRow[data-type="svar_replikk"] .desc { color: #725b00 !important; }
 
 /* Safeguards to prevent horizontal scroll on queue page */
 #queue, #queue .queue { overflow-x: hidden !important; }
