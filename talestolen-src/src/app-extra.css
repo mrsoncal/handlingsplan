@@ -30,8 +30,10 @@
   margin: 10px auto;
   padding: 12px 16px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start !important; /* text inside rows aligns left */
+  justify-content: center;
+  text-align: left !important;
 }
 
 /* Center only the TIMER page */
@@ -63,20 +65,20 @@
   text-align: left;
 }
 
-/* Make the queue fill full width */
+/* === Alignment override: rows right, text left (additive) === */
 #queue .queue {
-  width: 100vw;           /* full viewport width */
-  margin: 0;              /* remove any side margins */
-  padding-right: 4vw;     /* small right padding for visual comfort */
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end !important;   /* rows sit on the right */
+  justify-content: flex-start;
 }
 
-/* Align all queue rows to the right */
-#queue .queueRow {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
+#queue .queueRow .big,
+#queue .queueRow .muted,
+#queue .queueRow .desc {
+  text-align: left !important;
 }
+
 
 /* Replikk width = 90%, svar-replikk = 80%, innlegg = 100% */
 #queue .queueRow .pill {
@@ -130,4 +132,6 @@
 
 /* Safeguards to prevent horizontal scroll on queue page */
 #queue, #queue .queue { overflow-x: hidden !important; }
+
+
 
