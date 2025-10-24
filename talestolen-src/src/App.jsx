@@ -562,7 +562,7 @@ function TimerFull({ state }) {
   const text = fmt(secs);
   const typeLabel = cur ? labelFor(cur.type) : "";
   return (
-    <div className="full">
+    <div id="timer" className="full">
       <div className="name">
         {cur
           ? `${cur.name} ${

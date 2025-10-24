@@ -64,7 +64,7 @@
       .spacer { height:6px; }
       .row-center { display:flex; align-items:center; gap:8px; }
       .nav { justify-content: center; background:transparent; display:flex; gap:8px; padding: 12px 0; text-decoration: none !important;}
-      .full { min-height: 100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 24px; }
+      .full { min-height: 100vh; display:flex; flex-direction:column; padding: 24px; }
       .name { font-size: clamp(32px, vw, 54px); opacity:.9; margin-bottom: 12px; }
       .status { font-size: clamp(14px, 2vw, 20px); opacity:.7; margin-top: 8px; }
       .queue { width: min(1100px, 95vw); display:flex; flex-direction:column; gap:10px; }
@@ -75,7 +75,8 @@
       .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
       @media (max-width: 700px){ .grid-3 { grid-template-columns: 1fr; } }
       .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-    </style>
+    #timer.full { align-items:center; justify-content:center; text-align:center; }
+</style>
   </head>
 
   <body>
