@@ -34,30 +34,27 @@
   justify-content: space-between;
 }
 
-/* Center EVERYTHING on the timer page, both axes */
+/* Center only the TIMER page */
 #timer.full {
   display: flex;
-  align-items: center;      /* horizontal in column flex */
-  justify-content: center;  /* vertical */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
-  min-height: 100vh;
 }
 
 .full {
   display: block;
 }
 
+
+
 .queue {
   margin-top: 0;
   padding-top: 0;
 }
-/* Queue page should not inherit timer centering */
-#queue.full {
-  display: flex;
-  align-items: stretch;       /* let inner container control it */
-  justify-content: flex-start;/* start at the top */
-  text-align: left;
-}
+
 
 /* ===== QUEUE PAGE STYLING ===== */
 #queue .big {
@@ -66,30 +63,63 @@
   text-align: left;
 }
 
-/* The queue container aligns rows to the right edge */
+/* Make the queue fill full width */
 #queue .queue {
+  width: 100vw;           /* full viewport width */
+  margin: 0;              /* remove any side margins */
+  padding-right: 4vw;     /* small right padding for visual comfort */
+  box-sizing: border-box;
+}
+
+/* Align all queue rows to the right */
+#queue .queueRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* Replikk width = 90%, svar-replikk = 80%, innlegg = 100% */
+#queue .queueRow .pill {
+  min-width: 8rem; /* keep label readable */
+  text-align: center;
+}
+
+/* Shrink rows depending on type */
+#queue .queueRow[data-type="replikk"] {
+  width: 90vw;
+}
+#queue .queueRow[data-type="svar_replikk"] {
+  width: 80vw;
+}
+#queue .queueRow[data-type="innlegg"] {
+  width: 100vw;
+}
+
+
+
+/* ==== FORCE queue page layout (defensive against global .full) ==== */
+#queue.full {
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+/* Make the queue container fill width and right-align rows */
+#queue .queue {
+  width: 100% !important;           /* override min(1100px,95vw) */
+  margin: 0 !important;
+  padding-right: 0 !important;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  align-items: flex-end;      /* push rows to the right edge */
-  width: 100%;
-  margin: 0;
-  padding-right: 0;
-  box-sizing: border-box;
+  align-items: flex-end !important; /* anchor rows to right */
 }
-/* Prevent horizontal scrolling on the queue page */
-#queue, #queue.full { overflow-x: hidden; }
 
-
-#queue .queueRow { box-sizing: border-box; }        /* keep widths honest */
-/* Ensure the text inside each row is left-aligned */
+/* Inside each row, keep text left-aligned */
 #queue .queueRow .big,
 #queue .queueRow .muted,
 #queue .queueRow .desc {
-  text-align: left;
-  margin-left: 0;
+  text-align: left !important;
 }
 
-#queue .queueRow[data-type="innlegg"]      { width: 95%; }
-#queue .queueRow[data-type="replikk"]      { width: 90%; }
-#queue .queueRow[data-type="svar_replikk"] { width: 80%; }
