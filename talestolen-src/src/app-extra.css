@@ -34,30 +34,27 @@
   justify-content: space-between;
 }
 
-/* Center EVERYTHING on the timer page, both axes */
+/* Center only the TIMER page */
 #timer.full {
   display: flex;
-  align-items: center;      /* horizontal in column flex */
-  justify-content: center;  /* vertical */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
-  min-height: 100vh;
 }
 
 .full {
   display: block;
 }
 
+
+
 .queue {
   margin-top: 0;
   padding-top: 0;
 }
-/* Queue page should not inherit timer centering */
-#queue.full {
-  display: flex;
-  align-items: stretch;       /* let inner container control it */
-  justify-content: flex-start;/* start at the top */
-  text-align: left;
-}
+
 
 /* ===== QUEUE PAGE STYLING ===== */
 #queue .big {
@@ -66,51 +63,108 @@
   text-align: left;
 }
 
-/* The queue container aligns rows to the right edge */
+/* Make the queue fill full width */
+#queue .queue {
+  width: 100vw;           /* full viewport width */
+  margin: 0;              /* remove any side margins */
+  padding-right: 4vw;     /* small right padding for visual comfort */
+  box-sizing: border-box;
+}
+
+/* Align all queue rows to the right */
+#queue .queueRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* Replikk width = 90%, svar-replikk = 80%, innlegg = 100% */
+#queue .queueRow .pill {
+  min-width: 8rem; /* keep label readable */
+  text-align: center;
+}
+
+/* Shrink rows depending on type */
+#queue .queueRow[data-type="replikk"] {
+  width: 90vw;
+}
+#queue .queueRow[data-type="svar_replikk"] {
+  width: 80vw;
+}
+#queue .queueRow[data-type="innlegg"] {
+  width: 100vw;
+}
+
+
+
+/* === FINAL QUEUE PAGE DESIGN === */
+
+/* Prevent horizontal scrolling */
+#queue, #queue .queue { overflow-x: hidden; }
+
+/* Queue page layout */
+#queue.full {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end !important;   /* rows anchored to the right */
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+/* Container for all queue rows */
 #queue .queue {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  align-items: flex-end;      /* push rows to the right edge */
+  align-items: flex-end;              /* align all rows to the right */
+  justify-content: flex-start;
   width: 100%;
-  margin: 0;
-  padding-right: 0;
+  gap: 12px;
   box-sizing: border-box;
 }
-/* Prevent horizontal scrolling on the queue page */
-#queue, #queue.full { overflow-x: hidden; }
 
-
-#queue .queueRow { box-sizing: border-box; }        /* keep widths honest */
-/* Ensure the text inside each row is left-aligned */
-#queue .queueRow .big,
-#queue .queueRow .muted,
-#queue .queueRow .desc {
-  text-align: left;
-  margin-left: 0;
+/* Each queue row */
+#queue .queueRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;            /* text aligned left inside row */
+  justify-content: center;
+  margin: 0;
+  box-sizing: border-box;
+  width: 80% !important;              /* uniform row width */
+  border-radius: 12px;
+  background: #ededed;                /* default innlegg background */
+  color: #1b1b1b;
+  padding: 14px 16px;
 }
 
-#queue .queueRow[data-type="innlegg"]      { width: 95%; }
-#queue .queueRow[data-type="replikk"]      { width: 90%; }
-#queue .queueRow[data-type="svar_replikk"] { width: 80%; }
+/* Top (next) row wider */
+#queue .queueRow.queueNow + .queueRow,
+#queue .queueRow:has(> .big.next) {
+  width: 90% !important;
+}
 
-
-/* === Queue page: uniform widths, colored borders, remove pill === */
-
-/* Hide type pill on the queue display page */
+/* Remove pills */
 #queue .pill { display: none !important; }
 
-/* Base width for all rows */
-#queue .queueRow { width: 80% !important; }
+/* Full-background coloring by type */
+#queue .queueRow[data-type="replikk"] {
+  background: #009BC2 !important;
+  color: #ffffff !important;
+}
+#queue .queueRow[data-type="svar_replikk"] {
+  background: #ffcc00 !important;
+  color: #1b1b1b !important;
+}
 
-/* Make the NEXT row wider (90%) */
-/* When there is a current speaker, the next row is right after .queueNow */
-#queue .queueRow.queueNow + .queueRow { width: 90% !important; }
-/* Or detect the 'Next' label inside the row */
-#queue .queueRow:has(> .big.next) { width: 90% !important; }
-
-/* Border colors by type */
-#queue .queueRow[data-type="replikk"]      { border-color: #009BC2 !important; }
-#queue .queueRow[data-type="svar_replikk"] { border-color: #ffcc00 !important; }
-/* (Innlegg keeps the default border color) */
+/* Keep text readable on colored backgrounds */
+#queue .queueRow[data-type="replikk"] .big,
+#queue .queueRow[data-type="replikk"] .muted,
+#queue .queueRow[data-type="replikk"] .desc {
+  color: #ffffff !important;
+}
+#queue .queueRow[data-type="svar_replikk"] .big,
+#queue .queueRow[data-type="svar_replikk"] .muted,
+#queue .queueRow[data-type="svar_replikk"] .desc {
+  color: #1b1b1b !important;
+}
 
