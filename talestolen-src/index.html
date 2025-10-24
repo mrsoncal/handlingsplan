@@ -24,7 +24,7 @@
       a { color: inherit; }
       .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
       .row { margin-top:14px; display:flex; gap:16px; flex-wrap: wrap; }
-      .col { margin-top:14px; display:flex; flex-direction: column; gap:6px; flex-wrap: wrap; }
+      .col { display:flex; flex-direction: column; gap:6px; flex-wrap: wrap; }
       .card { background:#703f79; border:none; border-radius:16px; padding:16px; padding-top: 8px !important; margin: 8px;}
       .card.main-card { background:#5A2E61 !important; border-radius: 6px !important; border: none !important; }
       .btn { border:0; border-radius:12px; padding:10px 14px; cursor:pointer; background:#5A2E61; color:#ededed; font-weight:600; }
@@ -39,6 +39,10 @@
         width: 60px;                                              /* pick your size */
         max-width: 100%;
       }
+      .card .list .queue-item:first-child {
+        border-color: #ffcc00 !important;
+      }
+
       .list { display:flex; flex-direction:column; gap:8px; }
       .title { font-size: 24px; font-weight: 700; margin: 8px 0 8px; }
       .muted { opacity:.7; }
