@@ -510,7 +510,7 @@ function AdminView({ state }) {
                 state.queue.map((q, i) => (
                   <div key={q.id} className="queue-item">
                     <div>
-                      <div className={"big queued" + (i === 0 ? "next" : "")}>
+                      <div className={"big queued"}>
                         {i === 0 ? "Neste: " : ""}
                         {q.name}{" "}
                         <span className="muted">
