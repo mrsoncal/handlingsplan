@@ -65,9 +65,9 @@
 
 /* Make the queue fill full width */
 #queue .queue {
-  width: 100vw;           /* full viewport width */
+  width: 100% !important;           /* full viewport width */
   margin: 0;              /* remove any side margins */
-  padding-right: 4vw;     /* small right padding for visual comfort */
+       /* small right padding for visual comfort */
   box-sizing: border-box;
 }
 
@@ -85,41 +85,17 @@
 }
 
 /* Shrink rows depending on type */
-#queue .queueRow[data-type="replikk"] {
-  width: 90vw;
-}
-#queue .queueRow[data-type="svar_replikk"] {
-  width: 80vw;
-}
-#queue .queueRow[data-type="innlegg"] {
-  width: 100vw;
-}
+#queue .queueRow[data-type="replikk"] { width: 90%; }
+#queue .queueRow[data-type="svar_replikk"] { width: 80%; }
+#queue .queueRow[data-type="innlegg"] { width: 95%; }
 
 
+#queue { overflow-x: hidden; }
 
-/* ==== FORCE queue page layout (defensive against global .full) ==== */
-#queue.full {
-  align-items: stretch !important;
-  justify-content: flex-start !important;
-  text-align: left !important;
-}
+#queue .queue { overflow-x: hidden; }
 
-/* Make the queue container fill width and right-align rows */
-#queue .queue {
-  width: 100% !important;           /* override min(1100px,95vw) */
-  margin: 0 !important;
-  padding-right: 0 !important;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: flex-end !important; /* anchor rows to right */
-}
+#queue .queue { box-sizing: border-box; }
 
-/* Inside each row, keep text left-aligned */
-#queue .queueRow .big,
-#queue .queueRow .muted,
-#queue .queueRow .desc {
-  text-align: left !important;
-}
+#queue .queueRow { box-sizing: border-box; }
 
+#queue .queueRow { margin-left: 0 !important; margin-right: 0 !important; }
