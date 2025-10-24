@@ -114,11 +114,13 @@
 /* Full-background colors by type (keep borders as-is) */
 #queue .queueRow[data-type="replikk"] {
   background: #009BC2 !important;
-  color: #ffffff !important;
+  color: #003644 !important;
+  border-color: #003644;
 }
 #queue .queueRow[data-type="svar_replikk"] {
   background: #ffcc00 !important;
-  color: #1b1b1b !important;
+  color: #725b00 !important;
+  border-color: #725b00;
 }
 
 /* Ensure inner text remains legible on colored backgrounds */
