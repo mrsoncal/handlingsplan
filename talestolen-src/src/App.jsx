@@ -522,7 +522,7 @@ function AdminView({ state }) {
                         Type: <b>{labelFor(q.type)}</b>
                       </div>
                     </div>
-                    <div className="row">
+                    <div className="col">
                       <button
                         className="btn secondary"
                         onClick={() => {
