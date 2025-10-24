@@ -32,7 +32,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start !important; /* text inside rows aligns left */
-  justify-content: center;
   text-align: left !important;
 }
 
