@@ -34,27 +34,30 @@
   justify-content: space-between;
 }
 
-/* Center only the TIMER page */
+/* Center EVERYTHING on the timer page, both axes */
 #timer.full {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  align-items: center;      /* horizontal in column flex */
+  justify-content: center;  /* vertical */
   text-align: center;
+  min-height: 100vh;
 }
 
 .full {
   display: block;
 }
 
-
-
 .queue {
   margin-top: 0;
   padding-top: 0;
 }
-
+/* Queue page should not inherit timer centering */
+#queue.full {
+  display: flex;
+  align-items: stretch;       /* let inner container control it */
+  justify-content: flex-start;/* start at the top */
+  text-align: left;
+}
 
 /* ===== QUEUE PAGE STYLING ===== */
 #queue .big {
@@ -63,10 +66,15 @@
   text-align: left;
 }
 
+/* The queue container aligns rows to the right edge */
 #queue .queue {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;      /* push rows to the right edge */
   width: 100%;
   margin: 0;
-  padding-right: 0; /* prevent overflow */
+  padding-right: 0;
   box-sizing: border-box;
 }
 /* Prevent horizontal scrolling on the queue page */
@@ -74,12 +82,14 @@
 
 
 #queue .queueRow { box-sizing: border-box; }        /* keep widths honest */
+/* Ensure the text inside each row is left-aligned */
 #queue .queueRow .big,
 #queue .queueRow .muted,
-#queue .queueRow .desc { text-align: left; }
+#queue .queueRow .desc {
+  text-align: left;
+  margin-left: 0;
+}
 
 #queue .queueRow[data-type="innlegg"]      { width: 95%; }
 #queue .queueRow[data-type="replikk"]      { width: 90%; }
 #queue .queueRow[data-type="svar_replikk"] { width: 80%; }
-
-
