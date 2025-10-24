@@ -34,27 +34,30 @@
   justify-content: space-between;
 }
 
-/* Center only the TIMER page */
+/* Center EVERYTHING on the timer page, both axes */
 #timer.full {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  align-items: center;      /* horizontal in column flex */
+  justify-content: center;  /* vertical */
   text-align: center;
+  min-height: 100vh;
 }
 
 .full {
   display: block;
 }
 
-
-
 .queue {
   margin-top: 0;
   padding-top: 0;
 }
-
+/* Queue page should not inherit timer centering */
+#queue.full {
+  display: flex;
+  align-items: stretch;       /* let inner container control it */
+  justify-content: flex-start;/* start at the top */
+  text-align: left;
+}
 
 /* ===== QUEUE PAGE STYLING ===== */
 #queue .big {
@@ -63,87 +66,51 @@
   text-align: left;
 }
 
-/* Make the queue fill full width */
-#queue .queue {
-  width: 100vw;           /* full viewport width */
-  margin: 0;              /* remove any side margins */
-  padding-right: 4vw;     /* small right padding for visual comfort */
-  box-sizing: border-box;
-}
-
-/* Align all queue rows to the right */
-#queue .queueRow {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-/* Replikk width = 90%, svar-replikk = 80%, innlegg = 100% */
-#queue .queueRow .pill {
-  min-width: 8rem; /* keep label readable */
-  text-align: center;
-}
-
-/* Shrink rows depending on type */
-#queue .queueRow[data-type="replikk"] {
-  width: 90vw;
-}
-#queue .queueRow[data-type="svar_replikk"] {
-  width: 80vw;
-}
-#queue .queueRow[data-type="innlegg"] {
-  width: 100vw;
-}
-
-
-
-/* === FINAL QUEUE LAYOUT FIX === */
-
-/* Queue page should not inherit center layout */
-#queue.full {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end !important;   /* rows anchored to the right */
-  justify-content: flex-start !important;
-  text-align: left !important;        /* overall text orientation */
-  overflow-x: hidden;
-}
-
-/* Container for all queue rows */
+/* The queue container aligns rows to the right edge */
 #queue .queue {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;              /* align all rows to the right */
-  justify-content: flex-start;
-  width: 100%;
   gap: 12px;
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
-
-/* Each row */
-#queue .queueRow {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;            /* text block aligned left */
-  justify-content: center;
+  align-items: flex-end;      /* push rows to the right edge */
+  width: 100%;
   margin: 0;
+  padding-right: 0;
   box-sizing: border-box;
 }
+/* Prevent horizontal scrolling on the queue page */
+#queue, #queue.full { overflow-x: hidden; }
 
-/* Text inside rows */
+
+#queue .queueRow { box-sizing: border-box; }        /* keep widths honest */
+/* Ensure the text inside each row is left-aligned */
 #queue .queueRow .big,
 #queue .queueRow .muted,
 #queue .queueRow .desc {
   text-align: left;
-  width: 100%;
+  margin-left: 0;
 }
 
-/* Row widths (percentages) */
 #queue .queueRow[data-type="innlegg"]      { width: 95%; }
 #queue .queueRow[data-type="replikk"]      { width: 90%; }
 #queue .queueRow[data-type="svar_replikk"] { width: 80%; }
 
-/* Prevent horizontal scroll globally */
-#queue, #queue .queue { overflow-x: hidden; }
+
+/* === Queue page: uniform widths, colored borders, remove pill === */
+
+/* Hide type pill on the queue display page */
+#queue .pill { display: none !important; }
+
+/* Base width for all rows */
+#queue .queueRow { width: 80% !important; }
+
+/* Make the NEXT row wider (90%) */
+/* When there is a current speaker, the next row is right after .queueNow */
+#queue .queueRow.queueNow + .queueRow { width: 90% !important; }
+/* Or detect the 'Next' label inside the row */
+#queue .queueRow:has(> .big.next) { width: 90% !important; }
+
+/* Border colors by type */
+#queue .queueRow[data-type="replikk"]      { border-color: #009BC2 !important; }
+#queue .queueRow[data-type="svar_replikk"] { border-color: #ffcc00 !important; }
+/* (Innlegg keeps the default border color) */
 
