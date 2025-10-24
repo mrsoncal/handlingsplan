@@ -65,9 +65,9 @@
 
 /* Make the queue fill full width */
 #queue .queue {
-  width: 100% !important;           /* full viewport width */
+  width: 100vw;           /* full viewport width */
   margin: 0;              /* remove any side margins */
-       /* small right padding for visual comfort */
+  padding-right: 4vw;     /* small right padding for visual comfort */
   box-sizing: border-box;
 }
 
@@ -85,17 +85,65 @@
 }
 
 /* Shrink rows depending on type */
-#queue .queueRow[data-type="replikk"] { width: 90%; }
+#queue .queueRow[data-type="replikk"] {
+  width: 90vw;
+}
+#queue .queueRow[data-type="svar_replikk"] {
+  width: 80vw;
+}
+#queue .queueRow[data-type="innlegg"] {
+  width: 100vw;
+}
+
+
+
+/* === FINAL QUEUE LAYOUT FIX === */
+
+/* Queue page should not inherit center layout */
+#queue.full {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end !important;   /* rows anchored to the right */
+  justify-content: flex-start !important;
+  text-align: left !important;        /* overall text orientation */
+  overflow-x: hidden;
+}
+
+/* Container for all queue rows */
+#queue .queue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;              /* align all rows to the right */
+  justify-content: flex-start;
+  width: 100%;
+  gap: 12px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Each row */
+#queue .queueRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;            /* text block aligned left */
+  justify-content: center;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Text inside rows */
+#queue .queueRow .big,
+#queue .queueRow .muted,
+#queue .queueRow .desc {
+  text-align: left;
+  width: 100%;
+}
+
+/* Row widths (percentages) */
+#queue .queueRow[data-type="innlegg"]      { width: 95%; }
+#queue .queueRow[data-type="replikk"]      { width: 90%; }
 #queue .queueRow[data-type="svar_replikk"] { width: 80%; }
-#queue .queueRow[data-type="innlegg"] { width: 95%; }
 
+/* Prevent horizontal scroll globally */
+#queue, #queue .queue { overflow-x: hidden; }
 
-#queue { overflow-x: hidden; }
-
-#queue .queue { overflow-x: hidden; }
-
-#queue .queue { box-sizing: border-box; }
-
-#queue .queueRow { box-sizing: border-box; }
-
-#queue .queueRow { margin-left: 0 !important; margin-right: 0 !important; }
