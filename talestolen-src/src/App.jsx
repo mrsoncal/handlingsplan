@@ -59,7 +59,6 @@ function useTimerRerender(enabled) {
 export default function App() {
   const state = useStore();
   const hash = useHash();
-  useTimerRerender(hash !== "#timer");
   useTimerRerender(hash !== "#queue");
 
   if (hash === "#timer") return <TimerFull state={state} />;
