@@ -36,7 +36,6 @@
         font-size: 1.0625rem;
         font-weight: 400;
         color: #1e1e1e;
-        text-align: left;
         background: transparent;
         border:none !important; 
       }
@@ -72,7 +71,15 @@
       .next { color:#5A2E61; }
       .spacer { height:6px; }
       .row-center { display:flex; align-items:center; gap:8px; }
-      .nav { justify-content: center; background:transparent; display:flex; gap:8px; padding: 12px 0; text-decoration: none !important;}
+      .nav { 
+        text-align: left;
+        max-width: 1100px;
+        background:transparent; 
+        display:flex; 
+        gap:30px; 
+        padding: 0 auto; 
+        text-decoration: none !important;
+      }
       .full { min-height: 100vh; display:flex; flex-direction:column; padding: 24px; }
       .name { font-size: clamp(32px, vw, 54px); opacity:.9; margin-bottom: 12px; }
       .status { font-size: clamp(14px, 2vw, 20px); opacity:.7; margin-top: 8px; }
