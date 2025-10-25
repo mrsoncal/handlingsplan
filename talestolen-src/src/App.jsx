@@ -237,10 +237,12 @@ function AdminView({ state }) {
           <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
           <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
         </nav>
+        <div className="header-space">
+          <div className="title">Talestolen · Admin</div>
+        </div>
       </header>
       <div className="container">
         <section className="card main-card">
-          <div className="title">Talestolen · Admin</div>
           <div className="spacer"></div>
 
           {/* Row: upload + type defaults */}

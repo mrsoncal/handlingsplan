@@ -22,7 +22,6 @@
       .header { 
         display: flex; 
         justify-content: center; 
-        background: #dad5af; 
         margin: 0 auto; 
         padding: 0 auto; 
         max-width: 100%; 
@@ -31,7 +30,7 @@
       :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial; }
       body { margin: 0; background:#ffffff; color:#1e1e1e; }
       a { color: inherit; }
-      .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+      .container { max-width: 1140px; margin: 0 auto; padding: 20px; }
       .row { margin-top:14px; display:flex; gap:16px; flex-wrap: wrap; }
       .col { display:flex; flex-direction: column; gap:6px; flex-wrap: wrap; }
       .card { background:#ceecf4; border:none; padding:16px; padding-top: 8px !important; margin: 8px;}
@@ -85,8 +84,9 @@
       .spacer { height:6px; }
       .row-center { display:flex; align-items:center; gap:8px; }
       .nav { 
+        background: #dad5af; 
         text-align: left;
-        max-width: 1100px;
+        max-width: 1140px;
         width: 100%;
         background: transparent; 
         display: flex; 
@@ -94,14 +94,18 @@
         padding: 4px; 
         text-decoration: none !important;
       }
+      .header-space { 
+        background: #ffffff;
+        border-bottom: 2px solid #dad5af;
+       }
       .full { min-height: 100vh; display:flex; flex-direction:column; padding: 24px; }
       .name { font-size: clamp(32px, vw, 54px); opacity:.9; margin-bottom: 12px; }
       .status { font-size: clamp(14px, 2vw, 20px); opacity:.7; margin-top: 8px; }
-      .queue { width: min(1100px, 95vw); display:flex; flex-direction:column; gap:10px; }
+      .queue { width: min(1140px, 95vw); display:flex; flex-direction:column; gap:10px; }
       .queueRow { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-radius:12px; background:#ededed; border:2px solid #009BC2; }
       .queueNow { background:#ededed; }
       .pill { border-radius:16px; padding:10px 10px; background:#ffcc00; color:#1b1b1b; }
-      .header- { width:min(1100px, 95vw); margin: 12px 0 16px; opacity:.85; }
+      .header- { width:min(1140px, 95vw); margin: 12px 0 16px; opacity:.85; }
       .grid-3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
       @media (max-width: 700px){ .grid-3 { grid-template-columns: 1fr; } }
       .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
