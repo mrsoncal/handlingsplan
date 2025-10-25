@@ -106,13 +106,13 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 /* Default queue row widths relative to container */
 #queue .queueRow {
   width: 100% !important;   /* no more vw */
-  margin: 6px 0;
+  margin: 2px 0;
   align-self: flex-end;    /* align to right inside centered queue */
   box-sizing: border-box;
 }
@@ -138,4 +138,38 @@
   width: 85% !important;
   margin-bottom: 4vh;
 }
+
+/* Type label styling */
+.label-pill {
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  margin-left: 16px;
+}
+
+/* Layout the row: text left + label right */
+.queueRow-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%; /* use full width of row */
+}
+
+/* Color variants based on type */
+#queue .queueRow[data-type="innlegg"] .label-pill {
+  background: #005260;
+  color: #ffffff;
+}
+#queue .queueRow[data-type="replikk"] .label-pill {
+  background: #009BC2;
+  color: #003644;
+}
+#queue .queueRow[data-type="svar_replikk"] .label-pill {
+  background: #ffcc00;
+  color: #725b00;
+}
+
 

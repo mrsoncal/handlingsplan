@@ -611,11 +611,17 @@ function QueueFull({ state }) {
               className="queueRow"
               data-type={normalizeType ? normalizeType(q.type) : q.type}
             >
-              <div className={"big " + (i === 0 ? "next" : "")}>
-                {i === 0 ? "Next: " : ""}
-                {q.name} {q.delegateNumber ? `(#${q.delegateNumber})` : ""}
-                <div className="muted">{q.org || " "}</div>
+              <div className="queueRow-content">
+                <div className={"big " + (i === 0 ? "next" : "")}>
+                  {i === 0 ? "Next: " : ""}
+                  {q.name} {q.delegateNumber ? `(#${q.delegateNumber})` : ""}
+                  <div className="muted">{q.org || " "}</div>
+                </div>
+
+                {/* NEW: Type label badge */}
+                <span className="label-pill">{labelFor(q.type)}</span>
               </div>
+
             </div>
           ))
         )}
