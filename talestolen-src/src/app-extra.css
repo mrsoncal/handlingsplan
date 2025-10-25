@@ -29,7 +29,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start !important; /* text inside rows aligns left */
-  text-align: left !important;
 }
 .queue .queueNow {
   background: #005260 !important;
@@ -80,13 +79,6 @@
   text-align: left !important;
 }
 
-
-/* Replikk width = 90%, svar-replikk = 80%, innlegg = 100% */
-#queue .queueRow .pill {
-  min-width: 8rem; /* keep label readable */
-  text-align: center;
-}
-
 /* Shrink rows depending on type */
 #queue .queueRow[data-type="replikk"] {
   width: 90vw;
@@ -101,16 +93,6 @@
 
 
 /* === ADDITIVE OVERRIDES (preserve prior functionality) === */
-
-/* Hide pill ONLY on queue page */
-#queue .pill { display: none !important; }
-
-/* Uniform widths: all rows 80% */
-#queue .queueRow { width: 80% !important; }
-
-/* Top "next" row at 90% */
-#queue .queueRow.queueNow + .queueRow { width: 90% !important; }   /* when a current speaker exists */
-#queue .queueRow:has(> .big.next) { width: 90% !important; }       /* when marked Next in markup */
 
 /* Full-background colors by type (keep borders as-is) */
 #queue .queueRow[data-type="replikk"] {
