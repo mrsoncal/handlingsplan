@@ -84,14 +84,14 @@
 }
 
 /* Shrink rows depending on type */
-#queue .queueRow {
-  width: 95vw;
+#queue .queueRow, .queueNow  {
+  width: 90vw;
 }
 #queue .queueRow[data-type="replikk"] {
-  width: 85vw !important;
+  width: 80vw !important;
 }
 #queue .queueRow[data-type="svar_replikk"] {
-  width: 80vw !important;
+  width: 75vw !important;
   margin-bottom: 4vh;
 }
 
