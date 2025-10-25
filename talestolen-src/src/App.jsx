@@ -238,11 +238,9 @@ function AdminView({ state }) {
               <a className="btn nav" href="#admin">Admin</a>
               <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
               <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
-            </nav>
-            <img className="brand" src="/TU-logov2.png" alt="TU" />
-            <nav className="nav-r">
               <a className="btn nav-r" href="#csv-verktøy">CSV Verktøy</a>
             </nav>
+            <img className="brand" src="/TU-logov2.png" alt="TU" />
           </div>          
         </div>
 
