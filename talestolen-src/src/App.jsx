@@ -59,6 +59,7 @@ function useTimerRerender(enabled) {
 export default function App() {
   const state = useStore();
   const hash = useHash();
+  useTimerRerender(hash !== "#queue");
 
   if (hash === "#timer") return <TimerFull state={state} />;
   if (hash === "#queue") return <QueueFull state={state} />;
@@ -589,8 +590,6 @@ function QueueFull({ state }) {
 
   return (
     <div id="queue" className="full queuePage" style={{ alignItems: 'stretch' }}>
-      <div className="header-">Taleliste</div>
-
       <div className="queue">
         {cur ? (
           <div className="queueRow queueNow">

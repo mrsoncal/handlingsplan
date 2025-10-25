@@ -34,6 +34,17 @@
   align-items: flex-start !important; /* text inside rows aligns left */
   text-align: left !important;
 }
+.queue .queueNow {
+  background: #005260;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin: 2px auto;
+  padding: 16px 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important; /* text inside rows aligns left */
+  text-align: left !important;
+}
 
 /* Center only the TIMER page */
 #timer.full {
