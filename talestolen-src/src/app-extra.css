@@ -71,7 +71,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end !important;   /* rows sit on the right */
-  justify-content: flex-end;
 }
 
 #queue .queueRow .big,
@@ -82,14 +81,14 @@
 
 /* Shrink rows depending on type */
 #queue .queueRow[data-type="replikk"] {
-  width: 90vw;
+  width: 90% !important;
 }
 #queue .queueRow[data-type="svar_replikk"] {
-  width: 80vw;
-  margin-bottom: 2vh;
+  width: 80% !important;
+  margin-bottom: 4vh;
 }
 #queue .queueRow[data-type="innlegg"] {
-  width: 100vw;
+  width: 100% !important;
 }
 
 
