@@ -243,7 +243,6 @@ function AdminView({ state }) {
       </header>
       <div className="container">
         <section className="card main-card">
-          <div className="spacer"></div>
 
           {/* Row: upload + type defaults */}
           <div className="split">
