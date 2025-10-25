@@ -230,326 +230,329 @@ function AdminView({ state }) {
   }
 
   return (
-    <div className="container">
-      <nav className="nav">
-        <a className="btn ghost" href="#admin">
-          Admin
-        </a>
-        <a className="btn ghost" href="#timer" target="talestolen-timer">
-          Timer
-        </a>
-        <a className="btn ghost" href="#queue" target="talestolen-queue">
-          Taleliste
-        </a>
-      </nav>
+    <body>
+      <header className="header">
+        <nav className="nav">
+          <a className="btn nav" href="#admin">
+            Admin
+          </a>
+          <a className="btn nav" href="#timer" target="talestolen-timer">
+            Timer
+          </a>
+          <a className="btn nav" href="#queue" target="talestolen-queue">
+            Taleliste
+          </a>
+        </nav>
+      </header>
+      <div className="container">
+        <section className="card main-card">
+          <div className="title">Talestolen · Admin</div>
+          <div className="spacer"></div>
 
-      <section className="card main-card">
-        <div className="title">Talestolen · Admin</div>
-        <div className="spacer"></div>
-
-        {/* Row: upload + type defaults */}
-        <div className="split">
-          <div className="card">
-            <div className="title">Last opp delegater (CSV)</div>
-            <input
-              className="input wide"
-              type="file"
-              accept=".csv"
-              onChange={handleCSV}
-            />
-            <div className="spacer"></div>
-              <div className="row">
-                <div className="muted">
-                  Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
-                </div>
-              </div>
-          </div>
-
-          <div className="card time-defaults">
-            <div className="title">Taletid (sekunder)</div>
-            <div className="grid-3">
-              <div>
-                <div className="muted">Innlegg</div>
-                <input
-                  className="input input-time"
-                  type="number"
-                  min="10"
-                  step="5"
-                  value={dInnlegg}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDInnlegg(val);
-                    setTypeDuration("innlegg", val);
-                    sendSync("timer:setDurations", { innlegg: val });
-                  }}
-                />
-              </div>
-              <div>
-                <div className="muted">Replikk</div>
-                <input
-                  className="input input-time"
-                  type="number"
-                  min="10"
-                  step="5"
-                  value={dReplikk}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDReplikk(val);
-                    setTypeDuration("replikk", val);
-                    sendSync("timer:setDurations", { replikk: val });
-                  }}
-                />
-              </div>
-              <div>
-                <div className="muted">Svar-replikk</div>
-                <input
-                  className="input input-time"
-                  type="number"
-                  min="10"
-                  step="5"
-                  value={dSvar}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDSvar(val);
-                    setTypeDuration("svar_replikk", val);
-                    sendSync("timer:setDurations", { svar_replikk: val });
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="spacer"></div>
-
-        {/* Row: add by number + manual add */}
-        <div className="split">
-          <div className="card">
-            <div className="title">Legg til i talelista</div>
-            <div className="row">
+          {/* Row: upload + type defaults */}
+          <div className="split">
+            <div className="card">
+              <div className="title">Last opp delegater (CSV)</div>
               <input
-                className="input"
-                placeholder="Delegatnummer"
-                value={num}
-                onChange={(e) => setNum(e.target.value)}
+                className="input wide"
+                type="file"
+                accept=".csv"
+                onChange={handleCSV}
               />
-              <select
-                className="input"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              >
-                <option value="innlegg">Innlegg</option>
-                <option value="replikk">Replikk</option>
-              </select>
-              <button
-                className="btn"
-                onClick={handleAddByNum}
-                disabled={!num.trim()}
-              >
-                Legg til
-              </button>
-            </div>
-            <div className="spacer"></div>
-            <div className="muted">
-              Preview: <b>{previewName}</b>
-              {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
-              <span className="preview">{labelFor(type)}</span>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="title">Legg til manuelt</div>
-            <div className="row">
-              <input
-                className="input"
-                placeholder="Navn"
-                value={manualName}
-                onChange={(e) => setManualName(e.target.value)}
-              />
-              <input
-                className="input"
-                placeholder="Organisasjon"
-                value={manualOrg}
-                onChange={(e) => setManualOrg(e.target.value)}
-              />
-              <select
-                className="input"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              >
-                <option value="innlegg">Innlegg</option>
-                <option value="replikk">Replikk</option>
-              </select>
-              <button
-                className="btn"
-                onClick={handleAddManual}
-                disabled={!manualName.trim()}
-              >
-                Legg til
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="spacer"></div>
-
-        {/* Row: current speaker + queue */}
-        <div className="split">
-          <div className="card">
-            <div className="title">Snakker Nå</div>
-            <div className="list">
-              {cur ? (
-                <div
-                  className="row"
-                  style={{
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div>
-                    <div className="big">
-                      {cur.name}{" "}
-                      <span className="muted">
-                        ({cur.delegateNumber ? `#${cur.delegateNumber}` : "–"})
-                      </span>
-                    </div>
-                    <div className="muted">{cur.org || " "}</div>
-                    <div className="muted">
-                      Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
-                      {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
-                    </div>
+              <div className="spacer"></div>
+                <div className="row">
+                  <div className="muted">
+                    Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
                   </div>
-                  <div className="badge">{remain}</div>
                 </div>
-              ) : (
-                <div className="muted">Ingen snakker nå.</div>
-              )}
             </div>
-            <div className="row">
-              <button
-                className="btn"
-                onClick={() => {
-                  startNext();
-                  sendSync("timer:startNext");
-                }}
-                disabled={!!state.currentSpeaker || state.queue.length === 0}
-              >
-                Start neste
-              </button>
-              <button
-                className="btn secondary"
-                onClick={() => {
-                  pauseTimer();
-                  sendSync("timer:pause");
-                }}
-                disabled={!cur || cur.paused}
-              >
-                Pause
-              </button>
-              <button
-                className="btn secondary"
-                onClick={() => {
-                  resumeTimer();
-                  sendSync("timer:resume");
-                }}
-                disabled={!cur || !cur.paused}
-              >
-                Fortsett
-              </button>
-              <button
-                className="btn danger"
-                onClick={() => {
-                  skipCurrent();
-                  sendSync("timer:reset");
-                }}
-                disabled={!cur}
-              >
-                Skip
-              </button>
-              <button
-                className="btn ghost"
-                onClick={() => {
-                  resetTimer();
-                  sendSync("timer:reset");
-                }}
-                disabled={!cur}
-              >
-                Reset
-              </button>
-              {cur && (normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk' && lastInnlegg ? (
+
+            <div className="card time-defaults">
+              <div className="title">Taletid (sekunder)</div>
+              <div className="grid-3">
+                <div>
+                  <div className="muted">Innlegg</div>
+                  <input
+                    className="input input-time"
+                    type="number"
+                    min="10"
+                    step="5"
+                    value={dInnlegg}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDInnlegg(val);
+                      setTypeDuration("innlegg", val);
+                      sendSync("timer:setDurations", { innlegg: val });
+                    }}
+                  />
+                </div>
+                <div>
+                  <div className="muted">Replikk</div>
+                  <input
+                    className="input input-time"
+                    type="number"
+                    min="10"
+                    step="5"
+                    value={dReplikk}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDReplikk(val);
+                      setTypeDuration("replikk", val);
+                      sendSync("timer:setDurations", { replikk: val });
+                    }}
+                  />
+                </div>
+                <div>
+                  <div className="muted">Svar-replikk</div>
+                  <input
+                    className="input input-time"
+                    type="number"
+                    min="10"
+                    step="5"
+                    value={dSvar}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDSvar(val);
+                      setTypeDuration("svar_replikk", val);
+                      sendSync("timer:setDurations", { svar_replikk: val });
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="spacer"></div>
+
+          {/* Row: add by number + manual add */}
+          <div className="split">
+            <div className="card">
+              <div className="title">Legg til i talelista</div>
+              <div className="row">
+                <input
+                  className="input"
+                  placeholder="Delegatnummer"
+                  value={num}
+                  onChange={(e) => setNum(e.target.value)}
+                />
+                <select
+                  className="input"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  <option value="innlegg">Innlegg</option>
+                  <option value="replikk">Replikk</option>
+                </select>
+                <button
+                  className="btn"
+                  onClick={handleAddByNum}
+                  disabled={!num.trim()}
+                >
+                  Legg til
+                </button>
+              </div>
+              <div className="spacer"></div>
+              <div className="muted">
+                Preview: <b>{previewName}</b>
+                {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
+                <span className="preview">{labelFor(type)}</span>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="title">Legg til manuelt</div>
+              <div className="row">
+                <input
+                  className="input"
+                  placeholder="Navn"
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                />
+                <input
+                  className="input"
+                  placeholder="Organisasjon"
+                  value={manualOrg}
+                  onChange={(e) => setManualOrg(e.target.value)}
+                />
+                <select
+                  className="input"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  <option value="innlegg">Innlegg</option>
+                  <option value="replikk">Replikk</option>
+                </select>
+                <button
+                  className="btn"
+                  onClick={handleAddManual}
+                  disabled={!manualName.trim()}
+                >
+                  Legg til
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="spacer"></div>
+
+          {/* Row: current speaker + queue */}
+          <div className="split">
+            <div className="card">
+              <div className="title">Snakker Nå</div>
+              <div className="list">
+                {cur ? (
+                  <div
+                    className="row"
+                    style={{
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div className="big">
+                        {cur.name}{" "}
+                        <span className="muted">
+                          ({cur.delegateNumber ? `#${cur.delegateNumber}` : "–"})
+                        </span>
+                      </div>
+                      <div className="muted">{cur.org || " "}</div>
+                      <div className="muted">
+                        Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
+                        {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
+                      </div>
+                    </div>
+                    <div className="badge">{remain}</div>
+                  </div>
+                ) : (
+                  <div className="muted">Ingen snakker nå.</div>
+                )}
+              </div>
+              <div className="row">
                 <button
                   className="btn"
                   onClick={() => {
-                    if (lastInnlegg.delegateNumber) {
-                      addToQueueByDelegate({
-                        delegateNumber: String(lastInnlegg.delegateNumber),
-                        type: 'svar_replikk',
-                      });
-                    } else {
-                      addToQueueDirect({
-                        name: lastInnlegg.name || '',
-                        org: lastInnlegg.org || '',
-                        type: 'svar_replikk',
-                      });
-                    }
+                    startNext();
+                    sendSync("timer:startNext");
                   }}
-                  title={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                  disabled={!!state.currentSpeaker || state.queue.length === 0}
                 >
-                Svar-replikk → {lastInnlegg.name || 'innlegg-holder'}
-              </button>
-              ) : null}
+                  Start neste
+                </button>
+                <button
+                  className="btn secondary"
+                  onClick={() => {
+                    pauseTimer();
+                    sendSync("timer:pause");
+                  }}
+                  disabled={!cur || cur.paused}
+                >
+                  Pause
+                </button>
+                <button
+                  className="btn secondary"
+                  onClick={() => {
+                    resumeTimer();
+                    sendSync("timer:resume");
+                  }}
+                  disabled={!cur || !cur.paused}
+                >
+                  Fortsett
+                </button>
+                <button
+                  className="btn danger"
+                  onClick={() => {
+                    skipCurrent();
+                    sendSync("timer:reset");
+                  }}
+                  disabled={!cur}
+                >
+                  Skip
+                </button>
+                <button
+                  className="btn ghost"
+                  onClick={() => {
+                    resetTimer();
+                    sendSync("timer:reset");
+                  }}
+                  disabled={!cur}
+                >
+                  Reset
+                </button>
+                {cur && (normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk' && lastInnlegg ? (
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      if (lastInnlegg.delegateNumber) {
+                        addToQueueByDelegate({
+                          delegateNumber: String(lastInnlegg.delegateNumber),
+                          type: 'svar_replikk',
+                        });
+                      } else {
+                        addToQueueDirect({
+                          name: lastInnlegg.name || '',
+                          org: lastInnlegg.org || '',
+                          type: 'svar_replikk',
+                        });
+                      }
+                    }}
+                    title={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                  >
+                  Svar-replikk → {lastInnlegg.name || 'innlegg-holder'}
+                </button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="title">Taleliste</div>
+              <div className="list">
+                {state.queue.length === 0 ? (
+                  <div className="muted">Talelisten er tom.</div>
+                ) : (
+                  state.queue.map((q, i) => (
+                    <div key={q.id} className="queue-item">
+                      <div>
+                        <div className={"big queued"}>
+                          {i === 0 ? "Neste: " : ""}
+                          {q.name}{" "}
+                          <span className="muted">
+                            ({q.delegateNumber ? `#${q.delegateNumber}` : "–"})
+                          </span>
+                        </div>
+                        <div className="desc">{q.org || " "}</div>
+                        <div className="desc">
+                          Type: <b>{labelFor(q.type)}</b>
+                        </div>
+                      </div>
+                      <div className="col">
+                        <button
+                          className="btn secondary"
+                          onClick={() => {
+                            startSpecific(q.id);
+                            sendSync("timer:startSpecific", { id: q.id });
+                          }}
+                        >
+                          Start
+                        </button>
+                        <button
+                          className="btn danger"
+                          onClick={() => removeFromQueue(q.id)}
+                        >
+                          Fjern
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="card">
-            <div className="title">Taleliste</div>
-            <div className="list">
-              {state.queue.length === 0 ? (
-                <div className="muted">Talelisten er tom.</div>
-              ) : (
-                state.queue.map((q, i) => (
-                  <div key={q.id} className="queue-item">
-                    <div>
-                      <div className={"big queued"}>
-                        {i === 0 ? "Neste: " : ""}
-                        {q.name}{" "}
-                        <span className="muted">
-                          ({q.delegateNumber ? `#${q.delegateNumber}` : "–"})
-                        </span>
-                      </div>
-                      <div className="desc">{q.org || " "}</div>
-                      <div className="desc">
-                        Type: <b>{labelFor(q.type)}</b>
-                      </div>
-                    </div>
-                    <div className="col">
-                      <button
-                        className="btn secondary"
-                        onClick={() => {
-                          startSpecific(q.id);
-                          sendSync("timer:startSpecific", { id: q.id });
-                        }}
-                      >
-                        Start
-                      </button>
-                      <button
-                        className="btn danger"
-                        onClick={() => removeFromQueue(q.id)}
-                      >
-                        Fjern
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Single, real delegates table at the very end */}
-        <DelegatesTable state={state} />
-      </section>
-    </div>
+          {/* Single, real delegates table at the very end */}
+          <DelegatesTable state={state} />
+        </section>
+      </div>
+    </body>
   );
 }
 
