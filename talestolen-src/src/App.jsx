@@ -230,18 +230,12 @@ function AdminView({ state }) {
   }
 
   return (
-    <body>
+    <div className="page">
       <header className="header">
         <nav className="nav">
-          <a className="btn nav" href="#admin">
-            Admin
-          </a>
-          <a className="btn nav" href="#timer" target="talestolen-timer">
-            Timer
-          </a>
-          <a className="btn nav" href="#queue" target="talestolen-queue">
-            Taleliste
-          </a>
+          <a className="btn nav" href="#admin">Admin</a>
+          <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
+          <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
         </nav>
       </header>
       <div className="container">
@@ -552,7 +546,7 @@ function AdminView({ state }) {
           <DelegatesTable state={state} />
         </section>
       </div>
-    </body>
+    </div>
   );
 }
 
