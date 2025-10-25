@@ -346,7 +346,7 @@ function AdminView({ state }) {
                 </button>
               </div>
               <div className="spacer"></div>
-              <div className="muted">
+              <div className="preview-row">
                 Preview: <b>{previewName}</b>
                 {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
                 <span className="preview">{labelFor(type)}</span>
