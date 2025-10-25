@@ -65,7 +65,7 @@ export default function App() {
 
   if (hash === "#timer") return <TimerFull state={state} />;
   if (hash === "#queue") return <QueueFull state={state} />;
-  if (hash === "#csv-verktøy") return <CsvTool />;
+  if (hash === "#csv-verktoy") return <CsvTool />;
   return <AdminView state={state} />;
 }
 
@@ -243,7 +243,7 @@ function AdminView({ state }) {
               <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
             </nav>
             <nav className="nav-r">
-              <a className="btn nav-r" href="#csv-verktøy" target="talestolen-csv">CSV Verktøy</a>
+              <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">CSV Verktøy</a>
             </nav>
           </div>     
             <img className="brand" src="/TU-logov2.png" alt="TU" />     
@@ -268,7 +268,7 @@ function AdminView({ state }) {
                   {Object.keys(state.delegates).length === 0 && (
                     <div className="csv-helper">
                       Trenger du hjelp med CSV?{' '}
-                      <a href="#csv-verktøy" target="talestolen-csv" className="csv-link">Åpne CSV-Verktøy</a>
+                      <a href="#csv-verktoy" target="talestolen-csv" className="csv-link">Åpne CSV-Verktøy</a>
                     </div>
                   )}
 
