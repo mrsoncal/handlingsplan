@@ -239,6 +239,11 @@ function AdminView({ state }) {
             <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
           </nav>
         </div>
+
+        <div className="header-logo">
+          <img src="/TU-logo.png" alt="TU" />
+        </div>
+
         <div className="header-space-container">
           <div className="header-space">
             <div className="title">Talestolen · Admin</div>
