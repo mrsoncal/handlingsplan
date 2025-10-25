@@ -243,7 +243,7 @@ function AdminView({ state }) {
               <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
             </nav>
             <nav className="nav-r">
-              <a className="btn nav-r" href="#csv-verktøy">CSV Verktøy</a>
+              <a className="btn nav-r" href="#csv-verktøy" target="talestolen-csv">CSV Verktøy</a>
             </nav>
           </div>     
             <img className="brand" src="/TU-logov2.png" alt="TU" />     
@@ -261,46 +261,31 @@ function AdminView({ state }) {
           <div className="split">
 
             <div className="card">
-              <div className="title">Last opp delegater (CSV)</div>
-              {/* CSV card */}
               <div className={`card ${Object.keys(state.delegates).length === 0 ? 'csv-alert' : ''}`}>
                 <div className="title">Last opp delegater (CSV)</div>
 
-                {/* Show helper only when no delegates are loaded */}
-                {Object.keys(state.delegates).length === 0 && (
-                  <div className="csv-helper">
-                    Trenger du hjelp med CSV?{' '}
-                    <a href="#csv-verktøy" className="csv-link">Åpne CSV-verktøy</a>
-                  </div>
-                )}
+                  {/* Show helper only when no delegates are loaded */}
+                  {Object.keys(state.delegates).length === 0 && (
+                    <div className="csv-helper">
+                      Trenger du hjelp med CSV?{' '}
+                      <a href="#csv-verktøy" className="csv-link">Åpne CSV-verktøy</a>
+                    </div>
+                  )}
 
-                <input
-                  className="input wide"
-                  type="file"
-                  accept=".csv"
-                  onChange={handleCSV}
-                />
-                <div className="spacer"></div>
-                <div className="row">
-                  <div className="muted">
-                    Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
+                  <input
+                    className="input wide"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSV}
+                  />
+                  <div className="spacer"></div>
+                  <div className="row">
+                    <div className="muted">
+                      Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <input
-                className="input wide"
-                type="file"
-                accept=".csv"
-                onChange={handleCSV}
-              />
-              <div className="spacer"></div>
-                <div className="row">
-                  <div className="muted">
-                    Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
-                  </div>
-                </div>
-            </div>
 
             <div className="card time-defaults">
               <div className="title">Taletid (sekunder)</div>
