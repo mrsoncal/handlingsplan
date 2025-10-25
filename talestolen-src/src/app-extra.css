@@ -165,4 +165,21 @@
   color: #725b00;
 }
 
+/* Admin CSV helper state */
+.card.csv-alert {
+  border: 2px solid #ffcc00 !important;
+}
+
+.csv-helper {
+  margin: 6px 0 10px;
+  font-weight: 600;
+  color: #725b00;
+}
+
+.csv-link {
+  color: #005260;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.csv-link:hover { opacity: .8; }
 

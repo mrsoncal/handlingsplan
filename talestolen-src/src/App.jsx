@@ -22,6 +22,8 @@ import {
 
 import DelegatesTable from "./components/DelegatesTable.jsx";
 import "./app-extra.css";
+import CsvTool from "./components/CsvTool.jsx";
+
 
 /* ============================
    Store / hash / timer helpers
@@ -63,6 +65,7 @@ export default function App() {
 
   if (hash === "#timer") return <TimerFull state={state} />;
   if (hash === "#queue") return <QueueFull state={state} />;
+  if (hash === "#csv-verktøy") return <CsvTool />;
   return <AdminView state={state} />;
 }
 
@@ -256,8 +259,35 @@ function AdminView({ state }) {
 
           {/* Row: upload + type defaults */}
           <div className="split">
+
             <div className="card">
               <div className="title">Last opp delegater (CSV)</div>
+              {/* CSV card */}
+              <div className={`card ${Object.keys(state.delegates).length === 0 ? 'csv-alert' : ''}`}>
+                <div className="title">Last opp delegater (CSV)</div>
+
+                {/* Show helper only when no delegates are loaded */}
+                {Object.keys(state.delegates).length === 0 && (
+                  <div className="csv-helper">
+                    Trenger du hjelp med CSV?{' '}
+                    <a href="#csv-verktøy" className="csv-link">Åpne CSV-verktøy</a>
+                  </div>
+                )}
+
+                <input
+                  className="input wide"
+                  type="file"
+                  accept=".csv"
+                  onChange={handleCSV}
+                />
+                <div className="spacer"></div>
+                <div className="row">
+                  <div className="muted">
+                    Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
+                  </div>
+                </div>
+              </div>
+
               <input
                 className="input wide"
                 type="file"
