@@ -99,13 +99,27 @@
       .next { color:#1e1e1e; }
       .spacer { height:6px; }
       .row-center { display:flex; align-items:center; gap:8px; }
+
       .nav-container {
+        position: relative; 
         display: flex;
         align-items: center;
         justify-content: center;
         background: #dad5af; 
         max-width: 100vw;
         width: 100%;
+      }
+      /* Float the logo on the seam between the two bars */
+      .nav-container .brand {
+        position: absolute;
+        left: 50%;
+        bottom: -24px;                      /* half the logo height protrudes downward */
+        transform: translateX(-50%);
+        height: 48px;                       /* adjust as desired */
+        width: auto;
+        z-index: 10;                        /* keep above borders */
+        pointer-events: auto;               /* clickable if wrapped in a link */
+        background: transparent;
       }
       .nav { 
         text-align: left;
@@ -117,6 +131,7 @@
         text-decoration: none !important;
       }
       .header-space-container {
+        padding-top: 32px;     
         display: flex;
         align-items: center;
         justify-content: center;
