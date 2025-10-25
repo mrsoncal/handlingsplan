@@ -584,7 +584,7 @@ function QueueFull({ state }) {
 
   return (
     <div id="queue" className="full queuePage" style={{ alignItems: 'stretch' }}>
-      <div className="header">Taleliste</div>
+      <div className="header-">Taleliste</div>
 
       <div className="queue">
         {cur ? (
