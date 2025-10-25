@@ -268,7 +268,7 @@ function AdminView({ state }) {
                   {Object.keys(state.delegates).length === 0 && (
                     <div className="csv-helper">
                       Trenger du hjelp med CSV?{' '}
-                      <a href="#csv-verktøy" className="csv-link">Åpne CSV-verktøy</a>
+                      <a href="#csv-verktøy" target="talestolen-csv" className="csv-link">Åpne CSV-Verktøy</a>
                     </div>
                   )}
 
