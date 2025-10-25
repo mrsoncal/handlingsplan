@@ -166,7 +166,7 @@
 }
 
 /* Admin CSV helper state */
-.card.csv-alert .input-wide{
+.card.csv-alert .input.wide{
   border: 2px solid #ffcc00 !important;
 }
 
