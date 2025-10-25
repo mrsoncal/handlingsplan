@@ -239,6 +239,9 @@ function AdminView({ state }) {
             <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
           </nav>
           <img className="brand" src="/TU-logov2.png" alt="TU" />
+          <nav>
+            <a className="btn nav-r" href="#csv-verktøy">CSV Verktøy</a>
+          </nav>
         </div>
 
         <div className="header-space-container">
