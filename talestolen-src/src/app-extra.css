@@ -32,8 +32,8 @@
   justify-content: center;
   background: #005260 !important;
   color: #ffffff !important;
-  height: 16vh !important;
-  width: 100vw !important;
+  height: 120px !important;
+  width: 100% !important;
 }
 
 /* Center only the TIMER page */
@@ -116,11 +116,6 @@
   margin: 2px 0;
   align-self: flex-end;    /* align to right inside centered queue */
   box-sizing: border-box;
-}
-
-/* Top "current speaker" row full width of container */
-#queue .queueRow.queueNow {
-  width: 100% !important;
 }
 
 /* Next-up row slightly larger */

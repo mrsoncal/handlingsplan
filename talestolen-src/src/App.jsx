@@ -613,7 +613,7 @@ function QueueFull({ state }) {
             >
               <div className="queueRow-content">
                 <div className={"big " + (i === 0 ? "next" : "")}>
-                  {i === 0 ? "Next: " : ""}
+                  {i === 0 ? "Neste: " : ""}
                   {q.name} {q.delegateNumber ? `(#${q.delegateNumber})` : ""}
                   <div className="muted">{q.org || " "}</div>
                 </div>
