@@ -29,6 +29,7 @@
   flex-direction: column;
 }
 .queue .queueNow {
+  justify-content: center;
   background: #005260 !important;
   color: #ffffff !important;
   height: 16vh !important;
