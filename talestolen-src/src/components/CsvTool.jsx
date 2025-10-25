@@ -103,6 +103,10 @@ export default function CsvTool() {
     <div className="container">
       <section className="card main-card">
         <div className="title">CSV verktøy</div>
+        <p>Hvordan det fungerer: </p>
+        <p>1. Last opp deltakerlista</p>
+        <p>2. Klikk på lag csv</p>
+        <p>3. Klikk på bruk csv</p>
 
         <div className="row">
           <input className="input" type="file" accept=".csv,.tsv,.xlsx,.xls" onChange={handleFile} />
