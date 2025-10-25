@@ -233,15 +233,17 @@ function AdminView({ state }) {
     <div className="page">
       <header className="header">
         <div className="nav-container">
-          <nav className="nav">
-            <a className="btn nav" href="#admin">Admin</a>
-            <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
-            <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
-          </nav>
-          <img className="brand" src="/TU-logov2.png" alt="TU" />
-          <nav className="nav-r">
-            <a className="btn nav-r" href="#csv-verktøy">CSV Verktøy</a>
-          </nav>
+          <div className="navigation-bar">
+            <nav className="nav">
+              <a className="btn nav" href="#admin">Admin</a>
+              <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
+              <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
+            </nav>
+            <img className="brand" src="/TU-logov2.png" alt="TU" />
+            <nav className="nav-r">
+              <a className="btn nav-r" href="#csv-verktøy">CSV Verktøy</a>
+            </nav>
+          </div>          
         </div>
 
         <div className="header-space-container">
