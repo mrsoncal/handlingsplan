@@ -22,11 +22,8 @@
 
 /* White box with blue outline */
 .queue .queueRow {
-  background: #703f79;
-  border: 2px solid #29142c;
-  border-radius: 12px;
-  color: #29142c;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #ceecf4;
+  color: #1e1e1e;
   margin: 2px auto;
   padding: 16px 32px;
   display: flex;
@@ -35,15 +32,9 @@
   text-align: left !important;
 }
 .queue .queueNow {
-  background: #005260;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin: 2px auto;
-  padding: 16px 46px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start !important; /* text inside rows aligns left */
-  text-align: left !important;
+  background: #005260 !important;
+  color: #ffffff !important;
+  padding: 16px 48px;
 }
 
 /* Center only the TIMER page */
