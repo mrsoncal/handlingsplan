@@ -597,7 +597,6 @@ function QueueFull({ state }) {
               Nå: {cur.name}{" "}
               {cur.delegateNumber ? `(#${cur.delegateNumber})` : ""}
             </div>
-            <span className="pill">{labelFor(cur.type)}</span>
           </div>
         ) : null}
 
@@ -617,7 +616,6 @@ function QueueFull({ state }) {
                 {q.name} {q.delegateNumber ? `(#${q.delegateNumber})` : ""}
                 <div className="muted">{q.org || " "}</div>
               </div>
-              <span className="pill">{labelFor(q.type)}</span>
             </div>
           ))
         )}
