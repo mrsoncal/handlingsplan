@@ -34,7 +34,7 @@
 .queue .queueNow {
   background: #005260 !important;
   color: #ffffff !important;
-  padding: 16px 48px;
+  height: 10vh !important;
 }
 
 /* Center only the TIMER page */
