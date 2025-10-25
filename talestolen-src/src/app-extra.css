@@ -165,9 +165,26 @@
   color: #725b00;
 }
 
-/* Admin CSV helper state */
-.card.csv-alert .input.wide{
+/* Make the yellow outline show on the actual file input */
+.card.csv-alert .input.wide[type="file"] {
+  -webkit-appearance: none;
+  appearance: none;
   border: 2px solid #ffcc00 !important;
+  border-radius: 12px;
+  padding: 10px 12px;          /* keep touch target comfortable */
+  background: #fff8cc;         /* subtle hint that it's required */
+  box-sizing: border-box;
+}
+
+/* Optional: style the file button for visual consistency */
+.card.csv-alert .input.wide[type="file"]::file-selector-button {
+  border: 0;
+  border-radius: 9999px;
+  padding: 8px 12px;
+  background: #005260;
+  color: #ffffff;
+  cursor: pointer;
+  margin-right: 8px;
 }
 
 .csv-helper {
@@ -176,10 +193,12 @@
   color: #1e1e1e;
 }
 
-.csv-link {
-  color: #ffcc00;
+/* Ensure the helper link is yellow even if a { color: inherit } exists */
+.card.csv-alert .csv-helper .csv-link {
+  color: #ffcc00 !important;
   font-weight: 700;
   text-decoration: underline;
 }
-.csv-link:hover { opacity: .8; }
-
+.card.csv-alert .csv-helper .csv-link:hover {
+  opacity: .8;
+}
