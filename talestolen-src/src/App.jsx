@@ -232,13 +232,17 @@ function AdminView({ state }) {
   return (
     <div className="page">
       <header className="header">
-        <nav className="nav">
-          <a className="btn nav" href="#admin">Admin</a>
-          <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
-          <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
-        </nav>
-        <div className="header-space">
-          <div className="title">Talestolen · Admin</div>
+        <div className="nav-container">
+          <nav className="nav">
+            <a className="btn nav" href="#admin">Admin</a>
+            <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
+            <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
+          </nav>
+        </div>
+        <div className="header-space-container">
+          <div className="header-space">
+            <div className="title">Talestolen · Admin</div>
+          </div>
         </div>
       </header>
       <div className="container">

@@ -84,8 +84,10 @@
       .next { color:#1e1e1e; }
       .spacer { height:6px; }
       .row-center { display:flex; align-items:center; gap:8px; }
-      .nav { 
+      .nav-contianer {
         background: #dad5af; 
+      }
+      .nav { 
         text-align: left;
         max-width: 1140px;
         width: 100%;
@@ -94,12 +96,14 @@
         padding: 4px; 
         text-decoration: none !important;
       }
+      .header-space-container {
+        background: #ffffff;
+        border-bottom: 2px solid #dad5af;
+      }
       .header-space { 
         max-width: 1140px;
         width: 100%;
         padding: 22px;
-        background: #ffffff;
-        border-bottom: 2px solid #dad5af;
        }
       .full { min-height: 100vh; display:flex; flex-direction:column; padding: 24px; }
       .name { font-size: clamp(32px, vw, 54px); opacity:.9; margin-bottom: 12px; }
