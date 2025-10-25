@@ -243,7 +243,6 @@ function AdminView({ state }) {
 
         <div className="header-space-container">
           <div className="header-space">
-            <div className="title">Talestolen · Admin</div>
           </div>
         </div>
       </header>
