@@ -170,9 +170,8 @@
   -webkit-appearance: none;
   appearance: none;
   border: 2px solid #ffcc00 !important;
-  border-radius: 12px;
+  border-radius: 9999px;
   padding: 10px 12px;          /* keep touch target comfortable */
-  background: #fff8cc;         /* subtle hint that it's required */
   box-sizing: border-box;
 }
 
