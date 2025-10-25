@@ -83,20 +83,6 @@
   align-self: flex-end;  /* Align rows to right *within* the centered queue */
 }
 
-/* Shrink rows depending on type */
-#queue .queueRow, .queueNow  {
-  width: 90vw;
-}
-#queue .queueRow[data-type="replikk"] {
-  width: 80vw !important;
-}
-#queue .queueRow[data-type="svar_replikk"] {
-  width: 75vw !important;
-  margin-bottom: 4vh;
-}
-
-
-
 /* === ADDITIVE OVERRIDES (preserve prior functionality) === */
 
 /* Full-background colors by type (keep borders as-is) */
@@ -110,4 +96,46 @@
 #queue .queueRow[data-type="svar_replikk"] .desc { color: #725b00 !important; }
 
 
+/* ==========================================
+   Queue row sizing and alignment fix (final)
+   ========================================== */
+
+/* Queue container centered */
+#queue .queue {
+  width: min(1140px, 95vw);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Default queue row widths relative to container */
+#queue .queueRow {
+  width: 100% !important;   /* no more vw */
+  margin: 6px 0;
+  align-self: flex-end;    /* align to right inside centered queue */
+  box-sizing: border-box;
+}
+
+/* Top "current speaker" row full width of container */
+#queue .queueRow.queueNow {
+  width: 100% !important;
+}
+
+/* Next-up row slightly larger */
+#queue .queueRow .next,
+#queue .queueRow[data-type="innlegg"] {
+  width: 100% !important;
+}
+
+/* Replikk slightly smaller */
+#queue .queueRow[data-type="replikk"] {
+  width: 90% !important;
+}
+
+/* Svar-replikk smallest */
+#queue .queueRow[data-type="svar_replikk"] {
+  width: 85% !important;
+  margin-bottom: 4vh;
+}
 
