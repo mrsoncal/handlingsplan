@@ -149,7 +149,7 @@ export default function CsvTool() {
     const headers = [
       "delegatnummer",
       "fullt navn",
-      "råd/elevråd/organisasjon",
+      "representerer",
     ];
 
     const escapeVal = (v) => {
@@ -187,124 +187,156 @@ export default function CsvTool() {
     URL.revokeObjectURL(url);
   };
 
-  return (
-    <div className="container">
-      <section className="card main-card">
-        <div className="title">CSV-verktøy for delegatliste</div>
-        <p style={{ marginBottom: 8 }}>
-          Fyll inn deltakerne under, så lager vi en CSV-fil som kan lastes opp i Talestolen.
-        </p>
-        <p className="muted" style={{ marginBottom: 16 }}>
-          Kolonnene er <b>delegatnummer</b>, <b>fullt navn</b> og{" "}
-          <b>råd/elevråd/organisasjon</b>.
-        </p>
-
-        <div className="row" style={{ marginBottom: 12, gap: 8 }}>
-          <button className="btn" type="button" onClick={() => addRows(1)}>
-            + Legg til rad
-          </button>
-          <button className="btn" type="button" onClick={() => addRows(10)}>
-            + Legg til 10 rader
-          </button>
-          <button className="btn alternatives-btn" type="button" onClick={renumber}>
-            Renummerer automatisk
-          </button>
-          <button className="btn alternatives-btn" type="button" onClick={clearAll}>
-            Tøm hele listen
-          </button>
-        </div>
-
-        {globalError && (
-          <div style={{ color: "#B7173D", marginBottom: 10 }}>
-            {globalError}
+    return (
+    <div className="page">
+      <header className="header">
+        <div className="nav-container">
+          <div className="navigation-bar">
+            <nav className="nav">
+              <a className="btn nav" href="#admin">Admin</a>
+              <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
+              <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
+            </nav>
+            <nav className="nav-r">
+              <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">
+                CSV Verktøy
+              </a>
+            </nav>
           </div>
-        )}
-
-        <div className="tableWrap">
-          <table className="table csv-table">
-            <thead>
-              <tr>
-                <th style={{ width: "120px" }}>delegatnummer</th>
-                <th>fullt navn</th>
-                <th>råd/elevråd/organisasjon</th>
-                <th style={{ width: "60px" }}>Slett</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const errors = rowErrors.get(r.id) || [];
-                const hasError = errors.length > 0;
-                return (
-                  <tr
-                    key={r.id}
-                    className={hasError ? "csv-row-error" : undefined}
-                  >
-                    <td>
-                      <input
-                        className="input input-delegatnummer"
-                        type="text"
-                        value={r.delegatnummer}
-                        onChange={(e) =>
-                          updateCell(r.id, "delegatnummer", e.target.value)
-                        }
-                        placeholder="1"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input input-fullname"
-                        type="text"
-                        value={r.fullName}
-                        onChange={(e) =>
-                          updateCell(r.id, "fullName", e.target.value)
-                        }
-                        placeholder="Fornavn Etternavn"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="input input-org"
-                        type="text"
-                        value={r.org}
-                        onChange={(e) =>
-                          updateCell(r.id, "org", e.target.value)
-                        }
-                        placeholder="F.eks. Telemark ungdomsråd"
-                      />
-                    </td>
-                    <td>
-                      <button
-                        className="btn delete-btn"
-                        type="button"
-                        onClick={() => deleteRow(r.id)}
-                      >
-                        ✕
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <img className="brand" src="/TU-logov2.png" alt="TU" />
         </div>
 
-        <div
-          style={{
-            marginTop: 12,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <button className="btn primary" type="button" onClick={handleDownload}>
-            Last ned CSV-fil
-          </button>
-          <span className="muted">
-            Filen får navn <code>delegater-talestolen.csv</code>.
-          </span>
+        <div className="header-space-container">
+          <div className="header-space" />
         </div>
-      </section>
+      </header>
+
+      <div className="container">
+        <section className="card main-card">
+          <div className="title">CSV-verktøy for delegatliste</div>
+          <p style={{ marginBottom: 8 }}>
+            Fyll inn deltakerne under, så lager vi en CSV-fil som kan lastes opp i Talestolen.
+          </p>
+          <p className="muted" style={{ marginBottom: 16 }}>
+            Kolonnene er <b>delegatnummer</b>, <b>fullt navn</b> og{" "}
+            <b>råd/elevråd/organisasjon</b>.
+          </p>
+
+          <div className="row" style={{ marginBottom: 12, gap: 8 }}>
+            <button className="btn" type="button" onClick={() => addRows(1)}>
+              + Legg til rad
+            </button>
+            <button className="btn" type="button" onClick={() => addRows(10)}>
+              + Legg til 10 rader
+            </button>
+            <button
+              className="btn alternatives-btn"
+              type="button"
+              onClick={renumber}
+            >
+              Renummerer automatisk
+            </button>
+            <button
+              className="btn alternatives-btn"
+              type="button"
+              onClick={clearAll}
+            >
+              Tøm hele listen
+            </button>
+          </div>
+
+          {globalError && (
+            <div style={{ color: "#B7173D", marginBottom: 10 }}>
+              {globalError}
+            </div>
+          )}
+
+          <div className="tableWrap">
+            <table className="table csv-table">
+              <thead>
+                <tr>
+                  <th style={{ width: "120px" }}>delegatnummer</th>
+                  <th>fullt navn</th>
+                  <th>råd/elevråd/organisasjon</th>
+                  <th style={{ width: "60px" }}>Slett</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const errors = rowErrors.get(r.id) || [];
+                  const hasError = errors.length > 0;
+                  return (
+                    <tr
+                      key={r.id}
+                      className={hasError ? "csv-row-error" : undefined}
+                    >
+                      <td>
+                        <input
+                          className="input input-delegatnummer"
+                          type="text"
+                          value={r.delegatnummer}
+                          onChange={(e) =>
+                            updateCell(r.id, "delegatnummer", e.target.value)
+                          }
+                          placeholder="1"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="input input-fullname"
+                          type="text"
+                          value={r.fullName}
+                          onChange={(e) =>
+                            updateCell(r.id, "fullName", e.target.value)
+                          }
+                          placeholder="Fornavn Etternavn"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="input input-org"
+                          type="text"
+                          value={r.org}
+                          onChange={(e) =>
+                            updateCell(r.id, "org", e.target.value)
+                          }
+                          placeholder="F.eks. Telemark ungdomsråd"
+                        />
+                      </td>
+                      <td>
+                        <button
+                          className="btn delete-btn"
+                          type="button"
+                          onClick={() => deleteRow(r.id)}
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <button className="btn primary" type="button" onClick={handleDownload}>
+              Last ned CSV-fil
+            </button>
+            <span className="muted">
+              Filen får navn <code>delegater-talestolen.csv</code>.
+            </span>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
