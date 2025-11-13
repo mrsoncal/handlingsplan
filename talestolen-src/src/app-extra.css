@@ -253,3 +253,12 @@
   padding: 6px 18px !important;
   border-radius: 999px;
 }
+
+footer {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.8;
+      padding: 18px 12px 22px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      background: #ffffff;
+    }
