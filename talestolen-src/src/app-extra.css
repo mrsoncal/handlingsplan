@@ -214,11 +214,11 @@
 
 /* === CSV Tool layout tweaks === */
 .csv-table tbody {
-  background: #ceecf4;
+  background: #ceecf4 !important;
 }
 
 .csv-table tbody td {
-  padding: 10px 14px;
+  padding: 14px;
 }
 
 .input-delegatnummer {
@@ -244,5 +244,12 @@
 }
 
 .btn.delete-btn:hover {
-  opacity: 0.9;
+  background: #91112f !important;
+}
+
+.btn.alternatives-btn {
+  background: #ffcc00 !important;
+  color: #1a1a1a !important;
+  padding: 6px 18px !important;
+  border-radius: 999px;
 }

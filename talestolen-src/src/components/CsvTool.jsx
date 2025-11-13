@@ -206,10 +206,10 @@ export default function CsvTool() {
           <button className="btn" type="button" onClick={() => addRows(10)}>
             + Legg til 10 rader
           </button>
-          <button className="btn delete-btn" type="button" onClick={renumber}>
+          <button className="btn alternatives-btn" type="button" onClick={renumber}>
             Renummerer automatisk
           </button>
-          <button className="btn delete-btn" type="button" onClick={clearAll}>
+          <button className="btn alternatives-btn" type="button" onClick={clearAll}>
             Tøm hele listen
           </button>
         </div>
