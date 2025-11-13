@@ -149,7 +149,7 @@ export default function CsvTool() {
     const headers = [
       "delegatnummer",
       "fullt navn",
-      "representerer",
+      "råd/elevråd/organisasjon",
     ];
 
     const escapeVal = (v) => {
@@ -187,15 +187,9 @@ export default function CsvTool() {
     URL.revokeObjectURL(url);
   };
 
-return (
-  <div className="container">
-    <div className="csv-nav">
-      <a href="#admin" className="btn nav-btn">Admin</a>
-      <a href="#queue" className="btn nav-btn">Kø</a>
-      <a href="#timer" className="btn nav-btn">Timer</a>
-      <a href="#csv-verktoy" className="btn nav-btn nav-btn-active">CSV</a>
-    </div>
-    <section className="card main-card">
+  return (
+    <div className="container">
+      <section className="card main-card">
         <div className="title">CSV-verktøy for delegatliste</div>
         <p style={{ marginBottom: 8 }}>
           Fyll inn deltakerne under, så lager vi en CSV-fil som kan lastes opp i Talestolen.
@@ -212,10 +206,10 @@ return (
           <button className="btn" type="button" onClick={() => addRows(10)}>
             + Legg til 10 rader
           </button>
-          <button className="btn ghost" type="button" onClick={renumber}>
+          <button className="btn alternatives-btn" type="button" onClick={renumber}>
             Renummerer automatisk
           </button>
-          <button className="btn ghost" type="button" onClick={clearAll}>
+          <button className="btn alternatives-btn" type="button" onClick={clearAll}>
             Tøm hele listen
           </button>
         </div>
@@ -247,7 +241,7 @@ return (
                   >
                     <td>
                       <input
-                        className="input"
+                        className="input input-delegatnummer"
                         type="text"
                         value={r.delegatnummer}
                         onChange={(e) =>
@@ -258,7 +252,7 @@ return (
                     </td>
                     <td>
                       <input
-                        className="input"
+                        className="input input-fullname"
                         type="text"
                         value={r.fullName}
                         onChange={(e) =>
@@ -269,7 +263,7 @@ return (
                     </td>
                     <td>
                       <input
-                        className="input"
+                        className="input input-org"
                         type="text"
                         value={r.org}
                         onChange={(e) =>
@@ -280,7 +274,7 @@ return (
                     </td>
                     <td>
                       <button
-                        className="btn ghost"
+                        className="btn delete-btn"
                         type="button"
                         onClick={() => deleteRow(r.id)}
                       >

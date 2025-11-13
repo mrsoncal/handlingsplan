@@ -205,30 +205,51 @@
 
 /* CSV Tool specific styling */
 .csv-table .csv-row-error {
-  background: rgba(183, 23, 61, 0.12);
+  background: #efc0ca;
 }
 
 .csv-table .csv-row-error .input {
   border-color: #b7173d;
 }
 
-/* CSV Tool nav bar to mimic main navigation */
-.csv-nav {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+/* === CSV Tool layout tweaks === */
+.csv-table tbody {
+  background: #ceecf4 !important;
 }
 
-.csv-nav .nav-btn {
-  text-decoration: none;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-weight: 600;
-  font-size: 14px;
+.csv-table tbody td {
+  padding: 10px 14px;
 }
 
-.csv-nav .nav-btn.nav-btn-active {
+.input-delegatnummer {
+  width: 50px;
+  max-width: 60px;
+}
+
+.input-fullname {
+  width: 240px;
+  max-width: 280px;
+}
+
+.input-org {
+  width: 320px;
+  max-width: 380px;
+}
+
+.btn.delete-btn {
   background: #b7173d !important;
   color: #ffffff !important;
+  padding: 6px 18px !important;
+  border-radius: 6px;
+}
+
+.btn.delete-btn:hover {
+  background: #91112f !important;
+}
+
+.btn.alternatives-btn {
+  background: #ffcc00 !important;
+  color: #1a1a1a !important;
+  padding: 6px 18px !important;
+  border-radius: 999px;
 }
