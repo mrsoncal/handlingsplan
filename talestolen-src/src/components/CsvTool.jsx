@@ -84,7 +84,7 @@ export default function CsvTool() {
       const errs = [];
       if (!r.delegatnummer) errs.push("Mangler delegatnummer");
       if (!r.fullName) errs.push("Mangler fullt navn");
-      if (!r.org) errs.push("Mangler råd/eleråd/organisasjon");
+      if (!r.org) errs.push("Mangler råd/elevråd/organisasjon");
 
       const num = parseInt(r.delegatnummer, 10);
       if (r.delegatnummer && Number.isNaN(num)) {
@@ -148,8 +148,8 @@ export default function CsvTool() {
 
     const headers = [
       "delegatnummer",
-      "Fullt Navn",
-      "råd/eleråd/organisasjon",
+      "fullt navn",
+      "råd/elevråd/organisasjon",
     ];
 
     const escapeVal = (v) => {
@@ -195,8 +195,8 @@ export default function CsvTool() {
           Fyll inn deltakerne under, så lager vi en CSV-fil som kan lastes opp i Talestolen.
         </p>
         <p className="muted" style={{ marginBottom: 16 }}>
-          Kolonnene er <b>delegatnummer</b>, <b>Fullt Navn</b> og{" "}
-          <b>råd/eleråd/organisasjon</b>.
+          Kolonnene er <b>delegatnummer</b>, <b>fullt navn</b> og{" "}
+          <b>råd/elevråd/organisasjon</b>.
         </p>
 
         <div className="row" style={{ marginBottom: 12, gap: 8 }}>
@@ -206,10 +206,10 @@ export default function CsvTool() {
           <button className="btn" type="button" onClick={() => addRows(10)}>
             + Legg til 10 rader
           </button>
-          <button className="btn ghost" type="button" onClick={renumber}>
+          <button className="btn delete-btn" type="button" onClick={renumber}>
             Renummerer automatisk
           </button>
-          <button className="btn ghost" type="button" onClick={clearAll}>
+          <button className="btn delete-btn" type="button" onClick={clearAll}>
             Tøm hele listen
           </button>
         </div>
@@ -224,9 +224,9 @@ export default function CsvTool() {
           <table className="table csv-table">
             <thead>
               <tr>
-                <th style={{ width: "120px" }}>Delegatnummer</th>
-                <th>Fullt Navn</th>
-                <th>Råd/eleråd/organisasjon</th>
+                <th style={{ width: "120px" }}>delegatnummer</th>
+                <th>fullt navn</th>
+                <th>råd/elevråd/organisasjon</th>
                 <th style={{ width: "60px" }}>Slett</th>
               </tr>
             </thead>
@@ -241,7 +241,7 @@ export default function CsvTool() {
                   >
                     <td>
                       <input
-                        className="input"
+                        className="input input-delegatnummer"
                         type="text"
                         value={r.delegatnummer}
                         onChange={(e) =>
@@ -252,7 +252,7 @@ export default function CsvTool() {
                     </td>
                     <td>
                       <input
-                        className="input"
+                        className="input input-fullname"
                         type="text"
                         value={r.fullName}
                         onChange={(e) =>
@@ -263,7 +263,7 @@ export default function CsvTool() {
                     </td>
                     <td>
                       <input
-                        className="input"
+                        className="input input-org"
                         type="text"
                         value={r.org}
                         onChange={(e) =>
@@ -274,7 +274,7 @@ export default function CsvTool() {
                     </td>
                     <td>
                       <button
-                        className="btn ghost"
+                        className="btn delete-btn"
                         type="button"
                         onClick={() => deleteRow(r.id)}
                       >

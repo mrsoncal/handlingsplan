@@ -169,7 +169,7 @@
 .card.csv-alert .input.wide[type="file"] {
   -webkit-appearance: none;
   appearance: none;
-  border: 2px solid #ffcc00 !important;
+  border: 2px solid #b7173d !important;
   border-radius: 9999px;
   padding: 10px 12px;          /* keep touch target comfortable */
   box-sizing: border-box;
@@ -194,7 +194,7 @@
 
 /* Ensure the helper link is yellow even if a { color: inherit } exists */
 .card.csv-alert .csv-helper .csv-link {
-  color: #ffcc00 !important;
+  color: #b7173d !important;
   font-weight: 700;
   text-decoration: underline;
 }
@@ -210,4 +210,39 @@
 
 .csv-table .csv-row-error .input {
   border-color: #b7173d;
+}
+
+/* === CSV Tool layout tweaks === */
+.csv-table tbody {
+  background: #ceecf4;
+}
+
+.csv-table tbody td {
+  padding: 10px 14px;
+}
+
+.input-delegatnummer {
+  width: 80px;
+  max-width: 90px;
+}
+
+.input-fullname {
+  width: 240px;
+  max-width: 280px;
+}
+
+.input-org {
+  width: 320px;
+  max-width: 380px;
+}
+
+.btn.delete-btn {
+  background: #b7173d !important;
+  color: #ffffff !important;
+  padding: 6px 18px !important;
+  border-radius: 6px;
+}
+
+.btn.delete-btn:hover {
+  opacity: 0.9;
 }
