@@ -205,7 +205,7 @@
 
 /* CSV Tool specific styling */
 .csv-table .csv-row-error {
-  background: #eda2b2;
+  background: #efc0ca;
 }
 
 .csv-table .csv-row-error .input {
