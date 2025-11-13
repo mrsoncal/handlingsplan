@@ -337,6 +337,7 @@ export default function CsvTool() {
           </div>
         </section>
       </div>
+      <footer>© Sondre Callaerts — Frigitt til fri bruk</footer>
     </div>
   );
 }

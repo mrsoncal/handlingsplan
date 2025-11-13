@@ -587,6 +587,7 @@ function AdminView({ state }) {
           <DelegatesTable state={state} />
         </section>
       </div>
+      <footer>© Sondre Callaerts — Frigitt til fri bruk</footer>
     </div>
   );
 }
