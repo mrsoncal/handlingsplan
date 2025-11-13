@@ -831,3 +831,80 @@ object-fit: contain;
 
 }
 
+
+
+/* --- Handlingsplan forms page helpers --- */
+.hp-fieldset {
+  border: 1px solid #d0d4dd;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem 0.6rem;
+  margin-top: 1rem;
+}
+.hp-fieldset legend {
+  font-weight: 600;
+  padding: 0 0.3rem;
+  font-size: 0.95rem;
+}
+.hp-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+}
+.hp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 1rem;
+}
+.hp-field label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.hp-field input,
+.hp-field select,
+.hp-field textarea {
+  border-radius: 8px;
+  border: 1px solid #ccd1dd;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+}
+.hp-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+.hp-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+.hp-info {
+  font-size: 0.9rem;
+  background: #eef2ff;
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #c3d0ff;
+  margin-top: 1rem;
+}
+.hp-actions {
+  margin-top: 1.2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+.hp-submit {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.55rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #0055ff;
+  color: #fff;
+  opacity: 1;
+  transition: opacity 0.12s ease, transform 0.05s ease;
+}
+.hp-submit[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}

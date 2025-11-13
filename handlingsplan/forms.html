@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Innspill til Handlingsplan 2026</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1>Innspill til Handlingsplan 2026</h1>
+    </div>
+  </header>
+
+  <div class="top-buttons">
+    <a class="plan-button" href="index.html">Tilbake til oversikten</a>
+  </div>
+
+  <main>
+    <div class="container">
+      <section class="card">
+        <h2>Send inn forslag</h2>
+        <p class="section-subtitle">
+          Fyll ut skjemaet under. Feltene endrer seg basert på hva du vil gjøre med punktet.
+        </p>
+
+        <form id="hp-form">
+          <!-- 1. Hva vil du gjøre? -->
+          <fieldset class="hp-fieldset">
+            <legend>1. Hva vil du gjøre?</legend>
+            <label class="hp-radio">
+              <input type="radio" name="actionType" value="add" />
+              <span>Legge til punkt</span>
+            </label>
+            <label class="hp-radio">
+              <input type="radio" name="actionType" value="change" />
+              <span>Endre punkt</span>
+            </label>
+            <label class="hp-radio">
+              <input type="radio" name="actionType" value="remove" />
+              <span>Fjerne punkt</span>
+            </label>
+          </fieldset>
+
+          <!-- 2. Velg et tema -->
+          <div class="hp-field">
+            <label for="tema">2. Velg et tema</label>
+            <select id="tema" name="tema" required>
+              <option value="">Velg tema…</option>
+              <option value="Ungdomsdemokrati og Medvirkning">Ungdomsdemokrati og Medvirkning</option>
+              <option value="Samferdsel">Samferdsel</option>
+              <option value="Utdanning og Kompetanse">Utdanning og Kompetanse</option>
+              <option value="Folkehelse">Folkehelse</option>
+              <option value="Klima og Miljø">Klima og Miljø</option>
+              <option value="Kultur">Kultur</option>
+            </select>
+          </div>
+
+          <!-- 3. Punktnummer og underpunkt -->
+          <div class="hp-field hp-inline">
+            <div>
+              <label for="punktNr">3. Skriv punktnummer</label>
+              <input
+                id="punktNr"
+                name="punktNr"
+                type="number"
+                min="1"
+                step="1"
+                required
+              />
+              <small class="hp-hint">Må være et heltall.</small>
+            </div>
+
+            <div>
+              <label for="underpunktNr">3.1 (valgfritt) Skriv underpunktnummer</label>
+              <input
+                id="underpunktNr"
+                name="underpunktNr"
+                type="number"
+                min="1"
+                step="1"
+              />
+              <small class="hp-hint">Må være et heltall hvis du fyller inn.</small>
+            </div>
+          </div>
+
+          <!-- 4A. Legge til punkt -->
+          <div class="hp-field" id="section-add" style="display: none;">
+            <label for="nyttPunkt">4. Formuler punktet</label>
+            <textarea
+              id="nyttPunkt"
+              name="nyttPunkt"
+              rows="4"
+              placeholder="Skriv inn selve forslaget til nytt punkt…"
+            ></textarea>
+          </div>
+
+          <!-- 4B. Endre punkt -->
+          <div id="section-change" style="display: none;">
+            <div class="hp-field">
+              <label for="endreFra">4.1 Endre fra</label>
+              <textarea
+                id="endreFra"
+                name="endreFra"
+                rows="3"
+                placeholder="Skriv dagens tekst på punktet…"
+              ></textarea>
+            </div>
+
+            <div class="hp-field">
+              <label for="endreTil">4.2 Endre til</label>
+              <textarea
+                id="endreTil"
+                name="endreTil"
+                rows="3"
+                placeholder="Skriv forslag til ny tekst…"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Info for fjerne punkt -->
+          <div class="hp-info" id="section-remove" style="display: none;">
+            Du har valgt <strong>«Fjerne punkt»</strong>.
+            Vi bruker tema, punktnummer og eventuelt underpunkt for å finne punktet som foreslås fjernet.
+          </div>
+
+          <!-- Submit -->
+          <div class="hp-actions">
+            <button id="submitBtn" type="submit" class="hp-submit" disabled>
+              Send innspill
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <img alt="Telemark Ungdomsråd logo" class="footer-logo" src="TU-logo.png" />
+    </div>
+  </footer>
+
+  <script src="forms.js" defer></script>
+</body>
+</html>
