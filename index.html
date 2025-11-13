@@ -1,43 +1,265 @@
 <!doctype html>
-<html lang="en">
+<html lang="no">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ungdomstinget – Apper</title>
+  <title>Ungdomstinget – Verktøy</title>
   <style>
-    :root { --bg:#29142c; --card:#5A2E61; --accent:#ffcc00; --text:#eef2f7; }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
-    body { display: grid; place-items: center; background: var(--bg); color: var(--text); font-family: system-ui, Arial, sans-serif; }
-    .wrap { width: min(1100px, 92vw); padding: 32px; }
-    h1 { margin: 0 0 22px; font-size: clamp(24px, 4vw, 40px); }
-    p.lead { opacity: .85; margin: 0 0 26px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-    .card { background: var(--card); border-radius: 18px; padding: 22px; border: 2px solid transparent; transition: transform .15s ease, border-color .15s ease; }
-    .card:hover { transform: translateY(-2px); border-color: var(--accent); }
-    .title { font-size: 20px; margin: 0 0 8px; }
-    .desc { opacity: .9; font-size: 15px; line-height: 1.4; }
-    .cta { display: inline-block; margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: var(--accent); color: #111; font-weight: 600; text-decoration: none; }
-    footer { margin-top: 28px; opacity: .7; font-size: 13px; }
+    :root {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #ffffff;
+      color: #1e1e1e;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #ceecf4;
+    }
+
+    /* Header / nav copied from Talestolen admin */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 auto;
+      max-width: 100%;
+      width: 100vw;
+    }
+
+    .nav-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #dad5af;
+      max-width: 100vw;
+      width: 100%;
+    }
+
+    .navigation-bar {
+      display: flex;
+      flex-direction: row;
+      max-width: 1140px;
+      width: 100%;
+      min-height: 54px;
+    }
+
+    /* Floating TU logo */
+    .nav-container .brand {
+      position: absolute;
+      left: 50%;
+      bottom: -6.5vh;
+      transform: translateX(-50%);
+      height: 10vh;
+      max-height: 80px;
+    }
+
+    .header-space-container {
+      padding-top: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border-bottom: 2px solid #dad5af;
+    }
+
+    .header-space {
+      flex: 1;
+      max-width: 1140px;
+      width: 100%;
+      min-height: 32px;
+    }
+
+    /* Main layout */
+    .container {
+      max-width: 1140px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 16px 40px;
+      flex: 1;
+      display: flex;
+    }
+
+    .card {
+      background: #ceecf4;
+      border-radius: 18px;
+      border: none;
+      padding: 20px 22px;
+      margin: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+    }
+
+    .card.main-card {
+      background: #ffffff;
+      border: none;
+      margin-top: 32px;
+      width: 100%;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 4vw, 34px);
+    }
+
+    p.lead {
+      margin: 0 0 20px;
+      opacity: 0.85;
+      font-size: 15px;
+    }
+
+    .row {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .app-card {
+      flex: 1 1 260px;
+      background: #ceecf4;
+      border-radius: 18px;
+      padding: 16px 18px;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .app-title {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .app-desc {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+
+    .app-actions {
+      margin-top: 14px;
+    }
+
+    .btn {
+      display: inline-block;
+      border: 0;
+      border-radius: 9999px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      background: #005260;
+      color: #ffffff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+      background: #006778;
+    }
+
+    .btn.secondary {
+      background: #ffcc00;
+      color: #111111;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .btn.secondary:hover {
+      background: #ffd93b;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+    }
+
+    footer {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.8;
+      padding: 18px 12px 22px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      background: #ffffff;
+    }
+
+    @media (max-width: 700px) {
+      .nav-container .brand {
+        height: 9vh;
+        max-height: 64px;
+        bottom: -5.5vh;
+      }
+
+      .container {
+        padding-top: 24px;
+      }
+
+      .card.main-card {
+        margin-top: 24px;
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>Ungdomstinget – Verktøy</h1>
-    <p class="lead">Velg appen du vil åpne.</p>
-    <section class="grid">
-      <article class="card">
-        <h2 class="title">Handlingsplan</h2>
-        <p class="desc">Forslagsinnsamling, visning og administrasjon av vedtaksstatus i sanntid.</p>
-        <a class="cta" href="./handlingsplan/">Åpne Handlingsplan</a>
-      </article>
-      <article class="card">
-        <h2 class="title">Talestolen</h2>
-        <p class="desc">Taleliste og timer for møter og debatter.</p>
-        <a class="cta" href="./talestolen/">Åpne Talestolen</a>
-      </article>
-    </section>
+  <div class="page">
+    <header class="header">
+      <div class="nav-container">
+        <div class="navigation-bar">
+          <!-- Nav buttons intentionally hidden on landing; only logo is shown -->
+        </div>
+        <img class="brand" src="./handlingsplan/TU-logo.png" alt="Telemark Ungdomsråd" />
+      </div>
+      <div class="header-space-container">
+        <div class="header-space"></div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card main-card">
+        <h1>Ungdomstinget – verktøy</h1>
+        <p class="lead">Velg løsningen du vil åpne under. Begge appene er laget for Telemark ungdomsråd.</p>
+
+        <div class="row">
+          <article class="app-card">
+            <div>
+              <h2 class="app-title">Handlingsplan</h2>
+              <p class="app-desc">
+                Forslagsinnsamling, visning og administrasjon av vedtaksstatus i sanntid.
+              </p>
+            </div>
+            <div class="app-actions">
+              <a class="btn secondary" href="./handlingsplan/">Åpne Handlingsplan</a>
+            </div>
+          </article>
+
+          <article class="app-card">
+            <div>
+              <h2 class="app-title">Talestolen</h2>
+              <p class="app-desc">
+                Taleliste og taletid for møter og debatter – med visning til storskjerm.
+              </p>
+            </div>
+            <div class="app-actions">
+              <a class="btn" href="./talestolen/">Åpne Talestolen</a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
     <footer>© Telemark Ungdomsråd • Samlet nettløsning</footer>
-  </main>
+  </div>
 </body>
 </html>
