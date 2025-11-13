@@ -1,144 +1,309 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 
-/** Detect delimiter by frequency */
-function detectDelimiter(line = "") {
-  const counts = { ",": (line.match(/,/g) || []).length,
-                   ";": (line.match(/;/g) || []).length,
-                   "\t": (line.match(/\t/g) || []).length };
-  return Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0] || ",";
-}
-
-/** Normalize headers and rows to {nr, navn, representerer} */
-function normalizeRows(rows) {
-  if (!rows || rows.length === 0) return [];
-  const header = rows[0].map(h => String(h || "").trim().toLowerCase());
-  const findIdx = (cands) => header.findIndex(h => cands.includes(h));
-  const iNr  = findIdx(["nr", "number", "delegatenummer", "delegate number", "delegatenr", "id"]);
-  const iNavn = findIdx(["navn", "name"]);
-  const iOrg = findIdx(["representerer", "org", "organisasjon", "kommune", "hvem du representerer", "representant", "org.", "organisation", "organization"]);
-
-  const body = rows.slice(1);
-  return body.map(r => ({
-    nr:  (r[iNr]  ?? "").toString().trim(),
-    navn:(r[iNavn]?? "").toString().trim(),
-    representerer:(r[iOrg] ?? "").toString().trim()
-  })).filter(r => r.nr || r.navn || r.representerer);
-}
-
-/** Build CSV text from normalized rows */
-function toCSV(rows) {
-  const esc = (v) => {
-    const s = String(v ?? "");
-    return /[",\n;]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
-  };
-  const head = ["nr","navn","representerer"];
-  const lines = [head, ...rows.map(r => [r.nr, r.navn, r.representerer])];
-  return lines.map(r => r.map(esc).join(",")).join("\n");
+function createRow(id, delegatnummer = "", fullName = "", org = "") {
+  return { id, delegatnummer, fullName, org };
 }
 
 export default function CsvTool() {
-  const [data, setData] = useState([]);       // normalized rows
-  const [error, setError] = useState("");
+  const [rows, setRows] = useState(() => {
+    // Start with 5 empty rows, auto-numbered 1–5
+    return Array.from({ length: 5 }, (_, i) =>
+      createRow(i + 1, String(i + 1), "", "")
+    );
+  });
+  const [globalError, setGlobalError] = useState("");
+  const nextIdRef = useRef(6);
 
-  async function handleFile(e) {
-    setError("");
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const addRows = (count = 1) => {
+    setRows((prev) => {
+      const maxExisting = prev
+        .map((r) => parseInt(r.delegatnummer, 10))
+        .filter((n) => !Number.isNaN(n))
+        .reduce((a, b) => Math.max(a, b), 0);
+      const start = maxExisting || 0;
+      const extra = Array.from({ length: count }, (_, idx) => {
+        const rowNumber = start + idx + 1;
+        const row = createRow(nextIdRef.current, String(rowNumber), "", "");
+        nextIdRef.current += 1;
+        return row;
+      });
+      return [...prev, ...extra];
+    });
+  };
 
-    const ext = file.name.toLowerCase().split(".").pop();
+  const clearAll = () => {
+    if (!window.confirm("Vil du slette hele listen?")) return;
+    setRows([createRow(1, "1", "", "")]);
+    nextIdRef.current = 2;
+  };
 
-    try {
-      if (ext === "csv" || ext === "tsv") {
-        // Parse CSV/TSV in-browser
-        const text = await file.text();
-        const firstLine = text.split(/\r?\n/).find(Boolean) || "";
-        const delim = ext === "tsv" ? "\t" : detectDelimiter(firstLine);
-        const rows = text.split(/\r?\n/).filter(Boolean).map(line => {
-          const parts = [];
-          let cur = "", q = false;
-          for (let i=0;i<line.length;i++){
-            const ch = line[i];
-            if (ch === '"') {
-              if (q && line[i+1] === '"') { cur += '"'; i++; } else q = !q;
-            } else if (ch === delim && !q) { parts.push(cur); cur=""; }
-            else { cur += ch; }
-          }
-          parts.push(cur);
-          return parts;
-        });
-        setData(normalizeRows(rows));
-      } else if (ext === "xlsx" || ext === "xls") {
-        // Lightweight XLSX support via CDN ESM import (no bundler change needed)
-        const XLSX = await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
-        const buf = await file.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        setData(normalizeRows(rows));
-      } else {
-        setError("Ukjent filtype. Last opp CSV, TSV, XLSX eller XLS.");
+  const renumber = () => {
+    setRows((prev) => {
+      let counter = 1;
+      return prev.map((r) => {
+        const hasAny =
+          (r.delegatnummer && String(r.delegatnummer).trim() !== "") ||
+          (r.fullName && String(r.fullName).trim() !== "") ||
+          (r.org && String(r.org).trim() !== "");
+        if (!hasAny) {
+          return { ...r, delegatnummer: "" };
+        }
+        const updated = { ...r, delegatnummer: String(counter) };
+        counter += 1;
+        return updated;
+      });
+    });
+  };
+
+  const updateCell = (id, field, value) => {
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const deleteRow = (id) => {
+    setRows((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const { displayRows, rowErrors, hasAnyErrors } = useMemo(() => {
+    const trimmed = rows.map((r) => ({
+      ...r,
+      delegatnummer: String(r.delegatnummer ?? "").trim(),
+      fullName: String(r.fullName ?? "").trim(),
+      org: String(r.org ?? "").trim(),
+    }));
+
+    const active = trimmed.filter(
+      (r) => r.delegatnummer || r.fullName || r.org
+    );
+
+    const errorsById = new Map();
+    const numberCounts = new Map();
+
+    for (const r of active) {
+      const errs = [];
+      if (!r.delegatnummer) errs.push("Mangler delegatnummer");
+      if (!r.fullName) errs.push("Mangler fullt navn");
+      if (!r.org) errs.push("Mangler råd/eleråd/organisasjon");
+
+      const num = parseInt(r.delegatnummer, 10);
+      if (r.delegatnummer && Number.isNaN(num)) {
+        errs.push("Delegatnummer må være et heltall");
       }
-    } catch (err) {
-      console.error(err);
-      setError("Kunne ikke lese filen. Sjekk formatet og prøv igjen.");
-    }
-  }
 
-  function downloadCSV() {
-    const csv = toCSV(data);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      errorsById.set(r.id, errs);
+
+      if (r.delegatnummer && !Number.isNaN(num)) {
+        const key = String(num);
+        numberCounts.set(key, (numberCounts.get(key) || 0) + 1);
+      }
+    }
+
+    const duplicates = new Set(
+      Array.from(numberCounts.entries())
+        .filter(([, count]) => count > 1)
+        .map(([num]) => num)
+    );
+
+    for (const r of active) {
+      const errs = errorsById.get(r.id) || [];
+      if (
+        r.delegatnummer &&
+        duplicates.has(String(parseInt(r.delegatnummer, 10)))
+      ) {
+        errs.push("Delegatnummer er duplisert");
+      }
+      errorsById.set(r.id, errs);
+    }
+
+    const anyErrors = Array.from(errorsById.values()).some(
+      (list) => list.length > 0
+    );
+
+    return {
+      displayRows: trimmed,
+      rowErrors: errorsById,
+      hasAnyErrors: anyErrors,
+    };
+  }, [rows]);
+
+  const handleDownload = () => {
+    setGlobalError("");
+
+    const active = displayRows.filter(
+      (r) => r.delegatnummer || r.fullName || r.org
+    );
+
+    if (active.length === 0) {
+      setGlobalError("Legg til minst én delegat før du laster ned.");
+      return;
+    }
+
+    if (hasAnyErrors) {
+      setGlobalError(
+        "Noen rader har feil. Rett opp markerte rader før du laster ned."
+      );
+      return;
+    }
+
+    const headers = [
+      "delegatnummer",
+      "Fullt Navn",
+      "råd/eleråd/organisasjon",
+    ];
+
+    const escapeVal = (v) => {
+      const s = String(v ?? "");
+      if (
+        s.includes('"') ||
+        s.includes(";") ||
+        s.includes(",") ||
+        s.includes("\n")
+      ) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    };
+
+    const lines = [];
+    lines.push(headers.join(";"));
+    for (const r of active) {
+      const rowVals = [r.delegatnummer, r.fullName, r.org];
+      lines.push(rowVals.map(escapeVal).join(";"));
+    }
+
+    const csvContent = lines.join("\n");
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "delegater.csv";
+    a.download = "delegater-talestolen.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  }
-
-  const ready = data.length > 0;
+  };
 
   return (
     <div className="container">
       <section className="card main-card">
-        <div className="title">CSV verktøy</div>
-        <p>Hvordan det fungerer: </p>
-        <p>1. Last opp deltakerlista</p>
-        <p>2. Klikk på lag csv</p>
-        <p>3. Klikk på bruk csv</p>
+        <div className="title">CSV-verktøy for delegatliste</div>
+        <p style={{ marginBottom: 8 }}>
+          Fyll inn deltakerne under, så lager vi en CSV-fil som kan lastes opp i Talestolen.
+        </p>
+        <p className="muted" style={{ marginBottom: 16 }}>
+          Kolonnene er <b>delegatnummer</b>, <b>Fullt Navn</b> og{" "}
+          <b>råd/eleråd/organisasjon</b>.
+        </p>
 
-        <div className="row">
-          <input className="input" type="file" accept=".csv,.tsv,.xlsx,.xls" onChange={handleFile} />
-          <button className="btn" onClick={downloadCSV} disabled={!ready}>
-            Eksporter som CSV
+        <div className="row" style={{ marginBottom: 12, gap: 8 }}>
+          <button className="btn" type="button" onClick={() => addRows(1)}>
+            + Legg til rad
+          </button>
+          <button className="btn" type="button" onClick={() => addRows(10)}>
+            + Legg til 10 rader
+          </button>
+          <button className="btn ghost" type="button" onClick={renumber}>
+            Renummerer automatisk
+          </button>
+          <button className="btn ghost" type="button" onClick={clearAll}>
+            Tøm hele listen
           </button>
         </div>
 
-        {error ? <div className="muted" style={{color:"#B7173D", marginTop:8}}>{error}</div> : null}
-
-        {!ready ? (
-          <div className="muted" style={{ marginTop: 10 }}>
-            Last opp et regneark (CSV/TSV/XLSX/XLS). Verktøyet normaliserer til kolonnene <b>nr</b>, <b>navn</b>, <b>representerer</b>.
-          </div>
-        ) : (
-          <div className="tableWrap" style={{ marginTop: 12 }}>
-            <table className="table">
-              <thead>
-                <tr><th>nr</th><th>navn</th><th>representerer</th></tr>
-              </thead>
-              <tbody>
-                {data.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.nr}</td>
-                    <td>{r.navn}</td>
-                    <td>{r.representerer}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {globalError && (
+          <div style={{ color: "#B7173D", marginBottom: 10 }}>
+            {globalError}
           </div>
         )}
+
+        <div className="tableWrap">
+          <table className="table csv-table">
+            <thead>
+              <tr>
+                <th style={{ width: "120px" }}>Delegatnummer</th>
+                <th>Fullt Navn</th>
+                <th>Råd/eleråd/organisasjon</th>
+                <th style={{ width: "60px" }}>Slett</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const errors = rowErrors.get(r.id) || [];
+                const hasError = errors.length > 0;
+                return (
+                  <tr
+                    key={r.id}
+                    className={hasError ? "csv-row-error" : undefined}
+                  >
+                    <td>
+                      <input
+                        className="input"
+                        type="text"
+                        value={r.delegatnummer}
+                        onChange={(e) =>
+                          updateCell(r.id, "delegatnummer", e.target.value)
+                        }
+                        placeholder="1"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input"
+                        type="text"
+                        value={r.fullName}
+                        onChange={(e) =>
+                          updateCell(r.id, "fullName", e.target.value)
+                        }
+                        placeholder="Fornavn Etternavn"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="input"
+                        type="text"
+                        value={r.org}
+                        onChange={(e) =>
+                          updateCell(r.id, "org", e.target.value)
+                        }
+                        placeholder="F.eks. Telemark ungdomsråd"
+                      />
+                    </td>
+                    <td>
+                      <button
+                        className="btn ghost"
+                        type="button"
+                        onClick={() => deleteRow(r.id)}
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          style={{
+            marginTop: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <button className="btn primary" type="button" onClick={handleDownload}>
+            Last ned CSV-fil
+          </button>
+          <span className="muted">
+            Filen får navn <code>delegater-talestolen.csv</code>.
+          </span>
+        </div>
       </section>
     </div>
   );

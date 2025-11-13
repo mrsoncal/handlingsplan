@@ -201,3 +201,13 @@
 .card.csv-alert .csv-helper .csv-link:hover {
   opacity: .8;
 }
+
+
+/* CSV Tool specific styling */
+.csv-table .csv-row-error {
+  background: rgba(183, 23, 61, 0.12);
+}
+
+.csv-table .csv-row-error .input {
+  border-color: #b7173d;
+}

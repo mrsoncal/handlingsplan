@@ -146,12 +146,27 @@ function normalizeRow(row) {
     "number",
     "nr",
     "delegatenummer",
+    "delegatnummer",
+    "Delegatnummer",
     "delegate number",
     "delegatenr",
     "id",
   ]);
-  r.name = get(["name", "navn"]);
-  r.org = get(["org", "organisasjon", "kommune", "representerer", "org."]);
+  r.name = get([
+    "name",
+    "navn",
+    "Fullt Navn",
+    "fullt navn",
+  ]);
+  r.org = get([
+    "org",
+    "organisasjon",
+    "kommune",
+    "representerer",
+    "org.",
+    "råd/eleråd/organisasjon",
+    "Råd/eleråd/organisasjon",
+  ]);
   return r;
 }
 
