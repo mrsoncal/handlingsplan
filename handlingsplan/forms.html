@@ -7,9 +7,15 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="page-header">
-    <div class="container">
-      <h1>Innspill til Handlingsplan 2026</h1>
+  <header class="header">
+    <div class="nav-container">
+      <div class="navigation-bar">
+        <!-- Nav buttons intentionally hidden on landing; only logo is shown -->
+      </div>
+      <img class="brand" src="./TU-logov2.png" alt="Telemark Ungdomsråd" />
+    </div>
+    <div class="header-space-container">
+      <div class="header-space"></div>
     </div>
   </header>
 
@@ -26,9 +32,9 @@
         </p>
 
         <form id="hp-form" class="hp-form">
-          <!-- 1. Hva vil du gjøre? -->
+          <!-- Hva vil du gjøre? -->
           <fieldset class="hp-fieldset">
-            <legend>1. Hva vil du gjøre?</legend>
+            <legend>Hva vil du gjøre?</legend>
             <label class="hp-radio">
               <input type="radio" name="actionType" value="add" />
               <span>Legge til punkt</span>
@@ -43,9 +49,9 @@
             </label>
           </fieldset>
 
-          <!-- 2. Velg et tema -->
+          <!-- Velg et tema -->
           <div class="hp-field">
-            <label for="tema">2. Velg et tema</label>
+            <label for="tema">Velg et tema</label>
             <select id="tema" name="tema" required>
               <option value="">Velg tema…</option>
               <option value="Ungdomsdemokrati og Medvirkning">Ungdomsdemokrati og Medvirkning</option>
@@ -57,7 +63,7 @@
             </select>
           </div>
 
-          <!-- 3. Punktnummer og underpunkt -->
+          <!-- Punktnummer og underpunkt -->
           <div class="hp-field hp-inline">
             <div>
               <label for="punktNr">Skriv punktnummer</label>
@@ -83,7 +89,7 @@
             </div>
           </div>
 
-          <!-- 4A. Legge til punkt -->
+          <!-- Legge til punkt -->
           <div class="hp-field" id="section-add" style="display: none;">
             <label for="nyttPunkt">Formuler punktet</label>
             <textarea
@@ -94,7 +100,7 @@
             ></textarea>
           </div>
 
-          <!-- 4B. Endre punkt -->
+          <!-- Endre punkt -->
           <div id="section-change" style="display: none;">
             <div class="hp-field">
               <label for="endreFra">Endre fra</label>
