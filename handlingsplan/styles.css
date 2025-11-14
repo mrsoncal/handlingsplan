@@ -423,7 +423,7 @@ background-color: #a69939;
 }
 
 .footer-logo {
-height: 60px;
+height: 9wh;
 max-width: 100px;
 object-fit: contain;
 }
@@ -1014,5 +1014,5 @@ object-fit: contain;
 .copyright {
   margin-top: 1rem;
   font-size: 0.85rem;
-  color: #666;
+  color: #000000;
 }
