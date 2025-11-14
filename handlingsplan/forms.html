@@ -18,14 +18,14 @@
   </div>
 
   <main>
-    <div class="container">
-      <section class="card">
+    <div class="container forms-container">
+      <section class="card forms-card">
         <h2>Send inn forslag</h2>
         <p class="section-subtitle">
-          Fyll ut skjemaet under. Feltene endrer seg basert på hva du vil gjøre med punktet.
+          Fyll ut skjemaet under. Feltene endrer seg automatisk basert på hva du vil gjøre med punktet.
         </p>
 
-        <form id="hp-form">
+        <form id="hp-form" class="hp-form">
           <!-- 1. Hva vil du gjøre? -->
           <fieldset class="hp-fieldset">
             <legend>1. Hva vil du gjøre?</legend>
@@ -60,7 +60,7 @@
           <!-- 3. Punktnummer og underpunkt -->
           <div class="hp-field hp-inline">
             <div>
-              <label for="punktNr">3. Skriv punktnummer</label>
+              <label for="punktNr">Skriv punktnummer</label>
               <input
                 id="punktNr"
                 name="punktNr"
@@ -69,11 +69,10 @@
                 step="1"
                 required
               />
-              <small class="hp-hint">Må være et heltall.</small>
             </div>
 
             <div>
-              <label for="underpunktNr">3.1 (valgfritt) Skriv underpunktnummer</label>
+              <label for="underpunktNr">(valgfritt) Skriv underpunkt nummer</label>
               <input
                 id="underpunktNr"
                 name="underpunktNr"
@@ -81,40 +80,39 @@
                 min="1"
                 step="1"
               />
-              <small class="hp-hint">Må være et heltall hvis du fyller inn.</small>
             </div>
           </div>
 
           <!-- 4A. Legge til punkt -->
           <div class="hp-field" id="section-add" style="display: none;">
-            <label for="nyttPunkt">4. Formuler punktet</label>
+            <label for="nyttPunkt">Formuler punktet</label>
             <textarea
               id="nyttPunkt"
               name="nyttPunkt"
               rows="4"
-              placeholder="Skriv inn selve forslaget til nytt punkt…"
+              placeholder="Formuler punktet…"
             ></textarea>
           </div>
 
           <!-- 4B. Endre punkt -->
           <div id="section-change" style="display: none;">
             <div class="hp-field">
-              <label for="endreFra">4.1 Endre fra</label>
+              <label for="endreFra">Endre fra</label>
               <textarea
                 id="endreFra"
                 name="endreFra"
                 rows="3"
-                placeholder="Skriv dagens tekst på punktet…"
+                placeholder="Endre fra…"
               ></textarea>
             </div>
 
             <div class="hp-field">
-              <label for="endreTil">4.2 Endre til</label>
+              <label for="endreTil">Endre til</label>
               <textarea
                 id="endreTil"
                 name="endreTil"
                 rows="3"
-                placeholder="Skriv forslag til ny tekst…"
+                placeholder="Endre til…"
               ></textarea>
             </div>
           </div>

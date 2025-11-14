@@ -1,4 +1,4 @@
-// Simple client-side logic for the Handlingsplan innspill-skjema
+// Handlingsplan: dynamic logic for forms.html
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("hp-form");
   const actionRadios = Array.from(document.querySelectorAll('input[name="actionType"]'));
@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // For remove we don't need extra fields
     submitBtn.disabled = false;
   }
 
@@ -104,11 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("[Handlingsplan innspill] payload:", payload);
     alert("Innspill sendt! (demo)\n\nDenne siden kan senere kobles direkte til backend.");
 
-    // Reset form
     form.reset();
     updateVisibilityAndValidity();
   });
 
-  // Initial state
   updateVisibilityAndValidity();
 });
