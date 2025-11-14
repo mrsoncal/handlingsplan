@@ -261,7 +261,7 @@ function AdminView({ state }) {
               <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">CSV Verktøy</a>
             </nav>
           </div>     
-            <img className="brand" src="/TU-logov2.png" alt="TU" />     
+            <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />    
         </div>
 
         <div className="header-space-container">
