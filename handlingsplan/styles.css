@@ -423,7 +423,7 @@ background-color: #a69939;
 }
 
 .footer-logo {
-height: 8wh;
+height: 2wh;
 max-width: 100px;
 }
 
@@ -863,7 +863,7 @@ object-fit: contain;
 .nav-container .brand {
   position: absolute;
   left: 50%;
-  bottom: -6.5vh;
+  bottom: -8.5vh;
   transform: translateX(-50%);
   height: 18vh;
 }
