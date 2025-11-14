@@ -262,6 +262,14 @@ footer {
       background: #ffffff;
     }
 
+.site-footer {
+  position: relative;          /* anchor floating social icons */
+  margin-top: 4rem;
+  width: 100%;
+  background-color: #a69939;
+  color: #000;
+}
+
 /* === Telemark-style combined footer === */
 .footer-social {
   position: absolute;
