@@ -423,7 +423,7 @@ background-color: #a69939;
 }
 
 .footer-logo {
-height: 5wh;
+height: 2wh;
 max-width: 100px;
 object-fit: contain;
 }
@@ -866,7 +866,7 @@ object-fit: contain;
   left: 50%;
   bottom: -6.5vh;
   transform: translateX(-50%);
-  height: 10vh;
+  height: 4vh;
 }
 
 .header-space-container {
