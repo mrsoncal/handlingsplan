@@ -181,14 +181,194 @@
       background: #ffd93b;
     }
 
-    footer {
-      text-align: center;
-      font-size: 13px;
-      opacity: 0.8;
-      padding: 18px 12px 22px;
-      border-top: 1px solid rgba(0, 0, 0, 0.06);
-      background: #ffffff;
+    .site-footer {
+      position: relative;          /* anchor floating social icons */
+      margin-top: 4rem;
+      width: 100%;
+      background-color: #a69939;
+      color: #000;
     }
+
+    .footer-logo {
+      height: 40px;
+      max-width: 75px;
+      object-fit: contain;
+      }
+
+    /* === Telemark-style combined footer === */
+    .footer-social {
+      position: absolute;
+      top: -20px;            /* float between content and footer */
+      left: 0;
+      width: 100%;
+      background: transparent;
+      padding: 0;
+      pointer-events: auto;
+    }
+
+    .footer-social-row {
+      display: flex;
+      justify-content: flex-start;   /* align to left like Telemark site */
+      gap: 0.75rem;
+    }
+
+    .footer-social-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: hsl(53, 48%, 44%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 
+        0 4px 10px rgba(0, 0, 0, 0.020),
+        0 2px 4px rgba(0, 0, 0, 0.18);
+    }
+
+    .footer-social-btn:hover {
+      background: hsl(53, 48%, 34%);
+      transform: translateY(-1px);
+    }
+
+    /* Wrapper stays centered inside the button */
+    .footer-social-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Actual icon image: perfectly centered and sized */
+    .footer-social-img {
+        width: 50%;
+        height: 50%;
+        object-fit: contain;
+        display: block;        /* removes baseline alignment issues */
+    }
+
+    .footer-main {
+      padding: 3rem 0 2rem;   /* extra space so floating icons don't overlap text */
+    }
+
+    .footer-main-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    .footer-col p {
+      margin: 0 0 0.4rem;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+
+    .footer-col a {
+      color: inherit;
+    }
+
+    .footer-col a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-decoration {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+
+    .footer-decoration svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-logo-block {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .footer-logo {
+      height: auto;
+      width: 14vw;
+      object-fit: contain;
+    }
+
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.5rem 1rem;
+    }
+
+    .footer-links li a {
+      font-size: 0.9rem;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .footer-links li a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links-badge img {
+      height: 32px;
+      width: auto;
+    }
+
+    .footer-copy {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .footer-copy .copyright {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #000;
+    }
+
+    @media (max-width: 991px) {
+      .footer-main-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .footer-decoration {
+        justify-content: flex-start;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .footer-links {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .footer-main-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .footer-social-row {
+        justify-content: flex-start;
+      }
+    }
+
 
     @media (max-width: 700px) {
       .nav-container .brand {
