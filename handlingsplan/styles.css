@@ -409,21 +409,22 @@ padding: 0 1rem;
 }
 
 /* Make header and footer stretch full width */
-.page-header,
-.site-footer {
+.page-header {
 width: 100%;
-background-color: #cbe2e7; /* already used for footer */
+background-color: #cbe2e7;
 }
 
 .site-footer {
 padding: 2rem 0;
 margin-top: 4rem;
 text-align: center;
+width: 100%;
+background-color: #a69939;
 }
 
 .footer-logo {
-height: 80px;
-max-width: 150px;
+height: 60px;
+max-width: 100px;
 object-fit: contain;
 }
 
@@ -866,7 +867,6 @@ object-fit: contain;
   bottom: -6.5vh;
   transform: translateX(-50%);
   height: 10vh;
-  max-height: 80px;
 }
 
 .header-space-container {
