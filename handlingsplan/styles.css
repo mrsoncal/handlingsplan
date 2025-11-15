@@ -69,21 +69,22 @@ flex: 1; /* fills available space between header and footer */
 
 .forms-button,
 .plan-button {
-padding: 0.6rem 1.25rem;
-font-size: 1rem;
-font-weight: bold;
-color: white;
-background-color: #3f3f3f;
-border: none;
-border-radius: 5px;
-text-decoration: none;
-cursor: pointer;
-display: inline-block;
+  margin-top: 1rem;
+  padding: 0.6rem 1.25rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: rgb(255, 255, 255);
+  background-color: #00525f;
+  border: none;
+  border-radius: 9999px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
 }
 
 .forms-button:hover,
 .plan-button:hover {
-background-color: #007aa3;
+background-color: #004a56;
 }
 
 .carousel-slide h2 {
@@ -727,13 +728,6 @@ td.button-cell {
     display: none;
 }
 
-.forms-button,
-.plan-button {
-    top: 20% !important;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-}
-
 .carousel-wrapper {
     text-align: center;
 }
@@ -863,7 +857,42 @@ object-fit: contain;
   height: 16vh;
 }
 
+.btn.nav, .btn.nav-r { 
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: #1e1e1e;
+  background: transparent;
+  border:none !important; 
+  max-width: fit-content;
+  padding: auto;
+  padding-bottom: .625rem !important;
+  padding-top: .625rem !important;
+}
+
+.nav { 
+  display: flex; 
+  text-align: left;
+  max-width: 1140px;
+  width: 100%;
+  gap: 30px; 
+  padding: 4px; 
+  text-decoration: none !important;
+  align-items: center;
+}
+.nav-r { 
+  display: flex; 
+  text-align: right;
+  justify-content: right;
+  max-width: 1140px;
+  width: 100%;
+  gap: 30px; 
+  padding: 4px; 
+  text-decoration: none !important;
+  align-items: center;
+}
+
 .header-space-container {
+  margin-bottom: 2rem;
   padding-top: 32px;
   max-width: 100vw;
   width: 100%;
@@ -879,130 +908,6 @@ object-fit: contain;
   max-width: 1140px;
   width: 100%;
   min-height: 10vh;
-}
-
-/* === Handlingsplan Forms page (styled to match landing + Talestolen) === */
-.forms-container {
-  max-width: 900px;
-  margin: 0 auto 3rem auto;
-}
-
-.forms-card {
-  margin-top: 1.5rem;
-  padding: 1.5rem 1.5rem 1.75rem;
-}
-
-.hp-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-
-.hp-fieldset {
-  border: 1px solid #d0d4dd;
-  border-radius: 12px;
-  padding: 0.9rem 1rem 0.7rem;
-  background: #f7f7f9;
-}
-
-.hp-fieldset legend {
-  font-weight: 600;
-  padding: 0 0.4rem;
-  font-size: 0.95rem;
-}
-
-.hp-radio {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.4rem;
-  font-size: 0.95rem;
-}
-
-.hp-radio input[type="radio"] {
-  accent-color: #007aa3;
-}
-
-.hp-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.hp-field label {
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.hp-field input,
-.hp-field select,
-.hp-field textarea {
-  border-radius: 8px;
-  border: 1px solid #ccd1dd;
-  padding: 0.45rem 0.6rem;
-  font: inherit;
-  background: #ffffff;
-}
-
-.hp-field textarea {
-  resize: vertical;
-  min-height: 90px;
-}
-
-.hp-inline {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.hp-hint {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.hp-info {
-  font-size: 0.9rem;
-  background: #eef2ff;
-  border-radius: 8px;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid #c3d0ff;
-  margin-top: 0.5rem;
-}
-
-.hp-actions {
-  margin-top: 1.2rem;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.hp-submit {
-  border: none;
-  border-radius: 999px;
-  padding: 0.55rem 1.6rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: #3f3f3f;
-  color: #fff;
-  opacity: 1;
-  transition: background 0.15s ease, opacity 0.12s ease, transform 0.05s ease;
-  font-size: 0.95rem;
-}
-
-.hp-submit:hover:not([disabled]) {
-  background: #007aa3;
-}
-
-.hp-submit[disabled] {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
-@media (max-width: 640px) {
-  .forms-card {
-    padding: 1.2rem 1rem 1.4rem;
-  }
 }
 
 /* === Telemark-style combined footer === */
@@ -1176,5 +1081,245 @@ object-fit: contain;
 
   .footer-social-row {
     justify-content: flex-start;
+  }
+}
+
+/* === Handlingsplan – forms page styling (Talestolen-ish) === */
+
+/* Subtitle under "Send inn forslag" */
+.section-subtitle {
+  margin: 0.25rem 0 1.2rem;
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Layout for the form card */
+.forms-container {
+  max-width: 900px;
+  margin: 0 auto 3rem auto;
+  padding: 0 0.75rem;
+}
+
+/* Actual card */
+.card.forms-card {
+  margin-top: 1.5rem;
+  padding: 1.6rem 1.6rem 1.9rem;
+  background: #ceecf4;
+}
+
+/* Title inside the card */
+.card.forms-card h2 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Main form layout */
+.hp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+/* --- Fieldset: "Hva vil du gjøre?" --- */
+
+.hp-fieldset {
+  border: none;
+  padding: 0.9rem 1rem 0.8rem;
+  background: #f8fafc;
+}
+
+.hp-fieldset legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Radio options */
+.hp-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.hp-radio input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #005260;
+}
+
+/* --- Generic form fields --- */
+
+.hp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hp-field label {
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Inputs, selects, textareas inside hp-field */
+.hp-field input,
+.hp-field select {
+  margin-top: 0.4rem;
+  border-radius: 9999px;
+  border: none;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.hp-field textarea {
+  margin-top: 0.4rem;
+  border: none;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease;
+  min-height: 8vh;
+  min-width: 50vw;
+  resize: vertical;
+}
+
+.hp-field input {
+  height: 2.8rem;       /* consistent height for inputs */
+  line-height: 1.5rem;  /* vertical alignment */
+  width: 4.8rem;
+}
+
+/* Slightly softer background for selects */
+.hp-field select {
+  background-color: #ffffff;
+}
+
+/* Focus state, similar feel to Talestolen controls */
+.hp-field input:focus,
+.hp-field select:focus,
+.hp-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+  background-color: #f9fbff;
+}
+
+/* Placeholder color */
+.hp-field ::placeholder {
+  color: #9ca3af;
+}
+
+/* Punkt-tekstfeltene */
+.punktInput {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Punktnummer felt – litt smalere */
+.punktNr {
+  max-width: 140px;
+}
+
+/* Inline layout for punktNr / underpunktNr */
+.hp-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Info/hint text blocks */
+.hp-info,
+.hp-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-top: 0.15rem;
+}
+
+.hp-info strong {
+  font-weight: 600;
+}
+
+/* --- Submit area & button --- */
+
+.hp-actions {
+  margin-top: 1.4rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hp-submit {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ffcc00;   /* same as .plan-button */
+  color: #000000;
+  opacity: 1;
+  transition:
+    background 0.15s ease,
+    opacity 0.12s ease,
+    transform 0.05s ease;
+  font-size: 0.95rem;
+}
+
+.hp-submit:hover:not([disabled]) {
+  background: #007aa3;
+}
+
+.hp-submit:active:not([disabled]) {
+  transform: translateY(1px);
+  opacity: 0.92;
+}
+
+.hp-submit[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.labelDo {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #000000;
+  margin-bottom: -0.5rem;
+}
+
+/* --- Responsive tweaks --- */
+@media (max-width: 640px) {
+  .card.forms-card {
+    padding: 1.3rem 1.1rem 1.5rem;
+    border-radius: 14px;
+  }
+
+  .card.forms-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.9rem;
   }
 }

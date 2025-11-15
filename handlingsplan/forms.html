@@ -10,7 +10,14 @@
   <header class="header">
     <div class="nav-container">
       <div class="navigation-bar">
-        <!-- Nav buttons intentionally hidden on landing; only logo is shown -->
+        <nav class="nav">
+          <a class="btn nav" href="index.html">Tilbake</a>
+        </nav>
+        <nav class="nav-r">
+          <a class="btn nav-r" href="#csv-verktoy" target="talestolen-csv">
+            Admin
+          </a>
+        </nav>
       </div>
       <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />
     </div>
@@ -18,10 +25,6 @@
       <div class="header-space"></div>
     </div>
   </header>
-
-  <div class="top-buttons">
-    <a class="plan-button" href="index.html">Tilbake til oversikten</a>
-  </div>
 
   <main>
     <div class="container forms-container">
@@ -33,8 +36,8 @@
 
         <form id="hp-form" class="hp-form">
           <!-- Hva vil du gjøre? -->
+          <label class="labelDo">Hva vil du gjøre?</label>
           <fieldset class="hp-fieldset">
-            <legend>Hva vil du gjøre?</legend>
             <label class="hp-radio">
               <input type="radio" name="actionType" value="add" />
               <span>Legge til punkt</span>
@@ -52,7 +55,7 @@
           <!-- Velg et tema -->
           <div class="hp-field">
             <label for="tema">Velg et tema</label>
-            <select id="tema" name="tema" required>
+            <select class="selectTema" id="tema" name="tema" required>
               <option value="">Velg tema…</option>
               <option value="Ungdomsdemokrati og Medvirkning">Ungdomsdemokrati og Medvirkning</option>
               <option value="Samferdsel">Samferdsel</option>
@@ -66,8 +69,9 @@
           <!-- Punktnummer og underpunkt -->
           <div class="hp-field hp-inline">
             <div>
-              <label for="punktNr">Skriv punktnummer</label>
+              <label for="punktNr">Skriv punktnummer<br></label>
               <input
+                class="punktNr"
                 id="punktNr"
                 name="punktNr"
                 type="number"
@@ -78,8 +82,9 @@
             </div>
 
             <div>
-              <label for="underpunktNr">(valgfritt) Skriv underpunkt nummer</label>
+              <label for="underpunktNr">Skriv underpunkt nummer (valgfritt)<br></label>
               <input
+                class="punktNr"
                 id="underpunktNr"
                 name="underpunktNr"
                 type="number"
@@ -91,8 +96,9 @@
 
           <!-- Legge til punkt -->
           <div class="hp-field" id="section-add" style="display: none;">
-            <label for="nyttPunkt">Formuler punktet</label>
+            <label for="nyttPunkt">Formuler punktet<br></label>
             <textarea
+              class="punktInput"
               id="nyttPunkt"
               name="nyttPunkt"
               rows="4"
@@ -103,8 +109,9 @@
           <!-- Endre punkt -->
           <div id="section-change" style="display: none;">
             <div class="hp-field">
-              <label for="endreFra">Endre fra</label>
+              <label for="endreFra">Endre fra<br></label>
               <textarea
+                class="punktInput"
                 id="endreFra"
                 name="endreFra"
                 rows="3"
@@ -113,8 +120,9 @@
             </div>
 
             <div class="hp-field">
-              <label for="endreTil">Endre til</label>
+              <label for="endreTil">Endre til<br></label>
               <textarea
+                class="punktInput"
                 id="endreTil"
                 name="endreTil"
                 rows="3"
