@@ -6,6 +6,7 @@ box-sizing: border-box;
 }
 
 html, body {
+min-height: 70rem;
 height: 100%;
 width: 100%;
 margin: 0;
@@ -14,7 +15,7 @@ flex-direction: column;
 }
 
 body {
-background-color: #ffffff;
+background: #ffffff;
 font-family: sans-serif;
 margin: 0;
 padding: 0;
@@ -26,6 +27,7 @@ animation: fadeInPage 0.6s ease-out;
 main {
 flex: 1; /* fills available space between header and footer */
 }
+
 
 .page-header {
   position: relative;
