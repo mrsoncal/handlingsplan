@@ -867,6 +867,11 @@ object-fit: contain;
   padding: auto;
   padding-bottom: .625rem !important;
   padding-top: .625rem !important;
+  cursor: pointer;
+}
+
+.btn.nav:hover { 
+  color: #a69939;
 }
 
 .nav { 
