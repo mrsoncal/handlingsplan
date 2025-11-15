@@ -1,3 +1,5 @@
+// handlingsplan/raad.js
+
 const API_BASE = window.HP_API_BASE || "";
 const COUNCILS_URL = `${API_BASE}/api/ungdomsrad`;
 
@@ -8,7 +10,9 @@ function getCouncilIdFromUrl() {
 
 async function fetchCouncil(id) {
   const res = await fetch(`${COUNCILS_URL}/${encodeURIComponent(id)}`);
-  if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd");
+  if (!res.ok) {
+    throw new Error("Kunne ikke hente ungdomsråd");
+  }
   return await res.json();
 }
 
@@ -21,7 +25,7 @@ async function init() {
     if (heading) heading.textContent = "Ingen ungdomsråd valgt";
     if (container) {
       container.innerHTML =
-        "<p>Ingen ungdomsråd er valgt. Gå tilbake og velg et ungdomsråd.</p>";
+        '<p>Ingen ungdomsråd er valgt. Gå tilbake til oversikten.</p>';
     }
     return;
   }
@@ -29,13 +33,25 @@ async function init() {
   try {
     const council = await fetchCouncil(id);
 
-    if (heading) {
-      const name = council.display_name || council.name || "Ukjent ungdomsråd";
-      heading.textContent = `Handlingsplan – ${name}`;
+    // Sett tittel/heading
+    const title = council.display_name || council.name;
+    if (heading) heading.textContent = `Handlingsplan – ${title}`;
+    document.title = `Handlingsplan – ${title}`;
+
+    // Foreløpig holder vi innholdet tomt, men vi kan vise litt basic info:
+    if (container) {
+      container.innerHTML = `
+        <section class="card">
+          <h2>${title}</h2>
+          <p>Her kommer innholdet for dette ungdomsrådet etter hvert.</p>
+          <p><small>ID: ${council.id}${
+        council.year ? ` • År/periode: ${council.year}` : ""
+      }</small></p>
+        </section>
+      `;
     }
 
-    // Beholder resten av siden tom foreløpig – her kan vi senere
-    // sette inn tabell-karusell, forms osv. basert på council.id.
+    // Fremtidig: her kan du montere tabell-karusell, forms osv.
   } catch (err) {
     console.error(err);
     if (heading) heading.textContent = "Feil ved henting av ungdomsråd";

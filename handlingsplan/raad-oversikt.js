@@ -1,7 +1,15 @@
+// handlingsplan/raad-oversikt.js
+
 // Base-URL til API-et ditt.
-// Hvis du kjører API på samme domenet som statisk side, kan du la denne være tom streng.
-const API_BASE = window.HP_API_BASE || ""; // du kan sette window.HP_API_BASE i en liten <script> hvis du vil
+// Kan overskrives i HTML via window.HP_API_BASE.
+const API_BASE = window.HP_API_BASE || "";
 const COUNCILS_URL = `${API_BASE}/api/ungdomsrad`;
+
+// Naviger til individuell side for et ungdomsråd
+function goToCouncil(council) {
+  // raad.html?id=123
+  window.location.href = `raad.html?id=${encodeURIComponent(council.id)}`;
+}
 
 async function fetchCouncils() {
   const listEl = document.getElementById("councilList");
@@ -14,7 +22,7 @@ async function fetchCouncils() {
 
     listEl.innerHTML = "";
 
-    if (!councils || councils.length === 0) {
+    if (!councils.length) {
       if (emptyEl) emptyEl.style.display = "block";
       return;
     }
@@ -25,72 +33,61 @@ async function fetchCouncils() {
       const li = document.createElement("li");
       li.className = "council-list-item";
 
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "btn council-btn";
-      btn.textContent = council.display_name || council.name;
-      btn.addEventListener("click", () => {
-        goToCouncil(council);
-      });
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn council-btn";
+      button.textContent = council.display_name || council.name;
+      button.addEventListener("click", () => goToCouncil(council));
 
-      li.appendChild(btn);
+      li.appendChild(button);
       listEl.appendChild(li);
     });
   } catch (err) {
     console.error(err);
     if (emptyEl) {
       emptyEl.style.display = "block";
-      emptyEl.textContent = "Feil ved henting av ungdomsråd.";
+      emptyEl.textContent =
+        "Det oppstod en feil ved henting av ungdomsråd. Prøv å laste siden på nytt.";
     }
   }
-}
-
-function goToCouncil(council) {
-  // Id-basert for nå; senere kan vi bruke slug i URL
-  window.location.href = `raad.html?id=${encodeURIComponent(council.id)}`;
 }
 
 async function handleNewCouncil(event) {
   event.preventDefault();
+  const form = event.currentTarget;
 
-  const nameInput = document.getElementById("councilName");
-  const yearInput = document.getElementById("councilYear");
+  const nameInput = form.querySelector("#councilName");
+  const yearInput = form.querySelector("#councilYear");
 
-  const name = nameInput.value.trim();
-  const year = yearInput.value.trim();
+  const name = nameInput?.value.trim();
+  const year = yearInput?.value.trim() || null;
 
   if (!name) {
-    alert("Skriv inn et navn på ungdomsrådet.");
+    alert("Skriv inn navn på ungdomsråd.");
     return;
   }
-
-  const payload = { name };
-  if (year) payload.year = year;
 
   try {
     const res = await fetch(COUNCILS_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, year }),
     });
 
     if (!res.ok) {
-      let msg = "Kunne ikke opprette ungdomsråd.";
-      try {
-        const errorBody = await res.json();
-        if (errorBody && errorBody.error) {
-          msg += `\n\nDetaljer: ${errorBody.error}`;
-        }
-      } catch (_) {
-        // ignore JSON parse errors
-      }
-      alert(msg);
-      return;
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || "Kunne ikke opprette ungdomsråd.");
     }
 
     const created = await res.json();
 
-    // Naviger direkte til den nye siden for dette rådet
+    // Rensk form og oppdater liste
+    if (nameInput) nameInput.value = "";
+    if (yearInput) yearInput.value = "";
+
+    // Naviger direkte til nytt ungdomsråd
     goToCouncil(created);
   } catch (err) {
     console.error(err);

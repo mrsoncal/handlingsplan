@@ -1,3 +1,4 @@
+// handlingsplan-api/db.js
 const { Pool } = require("pg");
 const dotenv = require("dotenv");
 
@@ -11,66 +12,59 @@ if (!connectionString) {
   );
 }
 
+// Render Postgres usually needs SSL, local often doesn't.
+// This tries to "do the right thing" in both cases.
+const useSSL =
+  process.env.PGSSL === "true" ||
+  (!!process.env.RENDER && process.env.PGSSL !== "false");
+
 const pool = new Pool({
   connectionString,
-  // Render Postgres usually requires SSL; local often doesn't.
-  ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : false,
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
-// Run migrations (create tables) on startup
 async function init() {
-  const client = await pool.connect();
-  try {
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS councils (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        year TEXT,
-        slug TEXT UNIQUE,
-        created_at TIMESTAMPTZ DEFAULT NOW()
-      );
-    `);
-    console.log("[db] Councils table ensured.");
-  } finally {
-    client.release();
-  }
-}
-
-function makeSlug(name) {
-  return (
-    name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-") +
-    "-" +
-    Math.random().toString(36).slice(2, 7)
-  );
+  // Create table for ungdomsråd / councils if it doesn't exist
+  const sql = `
+    CREATE TABLE IF NOT EXISTS councils (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      year TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+  await pool.query(sql);
+  console.log("[db] ensured councils table exists");
 }
 
 async function getCouncils() {
   const result = await pool.query(
-    `SELECT id, name, year, slug, created_at
-     FROM councils
-     ORDER BY created_at DESC`
+    `
+      SELECT id, name, year, created_at
+      FROM councils
+      ORDER BY created_at ASC, id ASC
+    `
   );
 
-  return result.rows.map((r) => ({
-    ...r,
-    display_name: r.year ? `${r.name} (${r.year})` : r.name,
+  // Add display_name helper for frontend
+  return result.rows.map((row) => ({
+    ...row,
+    display_name: row.year ? `${row.name} (${row.year})` : row.name,
   }));
 }
 
 async function createCouncil({ name, year }) {
-  const cleanName = name.trim();
-  const slug = makeSlug(cleanName);
+  if (!name || !name.trim()) {
+    throw new Error("Name is required");
+  }
 
   const result = await pool.query(
-    `INSERT INTO councils (name, year, slug)
-     VALUES ($1, $2, $3)
-     RETURNING id, name, year, slug, created_at`,
-    [cleanName, year || null, slug]
+    `
+      INSERT INTO councils (name, year)
+      VALUES ($1, $2)
+      RETURNING id, name, year, created_at
+    `,
+    [name.trim(), year || null]
   );
 
   const row = result.rows[0];
@@ -82,9 +76,11 @@ async function createCouncil({ name, year }) {
 
 async function getCouncilById(id) {
   const result = await pool.query(
-    `SELECT id, name, year, slug, created_at
-     FROM councils
-     WHERE id = $1`,
+    `
+      SELECT id, name, year, created_at
+      FROM councils
+      WHERE id = $1
+    `,
     [id]
   );
 
