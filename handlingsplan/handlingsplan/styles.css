@@ -1,0 +1,1330 @@
+
+*,
+*::before,
+*::after {
+box-sizing: border-box;
+}
+
+html, body {
+height: 100%;
+width: 100%;
+margin: 0;
+display: flex;
+flex-direction: column;
+}
+
+body {
+background-color: #ffffff;
+font-family: sans-serif;
+margin: 0;
+padding: 0;
+overflow-x: hidden;
+position: relative;
+animation: fadeInPage 0.6s ease-out;
+}
+
+main {
+flex: 1; /* fills available space between header and footer */
+}
+
+.page-header {
+  position: relative;
+  width: 100%;
+  background-color: #cbe2e7;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.page-header h1 {
+  margin: 0;
+  padding-top: 0.4rem; /* pushes it down slightly to align with button */
+  font-size: 1.5rem;
+  font-weight: bolder;
+  color: #1a1a1a;
+}
+
+
+/* Top-left fixed login/logout buttons */
+.login-out-button {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  padding: 0.6rem 1.25rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  background-color: #3f3f3f;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 10;
+}
+
+.login-out-button:hover {
+  background-color: #007aa3;
+}
+
+.forms-button,
+.plan-button {
+  margin-top: 1rem;
+  padding: 0.6rem 1.25rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: rgb(255, 255, 255);
+  background-color: #00525f;
+  border: none;
+  border-radius: 9999px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.forms-button:hover,
+.plan-button:hover {
+background-color: #004a56;
+}
+
+.carousel-slide h2 {
+font-size: 1.25rem;
+font-weight: bold;             /* heavier weight */
+color: #3f3f3f;        
+margin-bottom: 1rem;         /* adds vertical space below the title */
+margin-top: 5rem;            /* optional: adds space above the title */
+text-align: left;            /* or center if you prefer */
+}
+
+html.initial-boot .carousel-slide {
+  animation: slideIn 0.5s ease-in-out;
+}
+
+@keyframes slideIn {
+0% { opacity: 0; transform: translateY(30px); }
+100% { opacity: 1; transform: translateX(0); }
+}
+
+table {
+border-collapse: collapse;
+border-spacing: 0 0.5rem; /* Adds vertical space between rows */
+width: 100%;
+margin-top: 1rem;
+border: none;
+}
+
+html.initial-boot table {
+  animation: fadeIn 0.4s ease-in;
+}
+
+th, td {
+border: none;
+padding: 1rem 1rem; /* More padding all around */
+text-align: left;
+transition: background-color 0.3s ease;
+}
+
+.carousel {
+overflow: hidden;
+position: relative;
+}
+
+.carousel-track {
+display: flex;
+transition: transform 0.5s ease-in-out;
+width: 100%;
+}
+
+.carousel-slide {
+min-width: 100%;
+box-sizing: border-box;
+padding: 0 1rem;
+}
+
+.carousel-wrapper {
+max-width: 1000px;
+margin: 0 auto;
+position: relative;
+}
+
+/* Set the accent (once per slide) */
+.carousel-slide { 
+--accent: #888;  /* fallback; JS sets real color per tema */
+padding: 1rem;
+}
+
+.carousel-nav {
+position: fixed;
+top: 50%;                           /* center vertically */
+transform: translateY(-50%);       /* align to vertical center */
+background-color: #1a1a1a;
+color: white;
+border: none;
+border-radius: 50%;
+width: 40px;
+height: 40px;
+font-size: 1.5rem;
+line-height: 40px;
+text-align: center;
+cursor: pointer;
+z-index: 1000;
+transition: background-color 0.3s ease;
+}
+
+.carousel-nav:hover {
+background-color: #007aa3; /* slightly darker */
+}
+
+.carousel-nav.left {
+left: 1rem;
+}
+
+.carousel-nav.right {
+right: 1rem;
+}
+
+th.id-col, td.id-col { display: none; }
+
+td:first-child {
+padding-left: 1.5rem; /* extra space before the tag label */
+}
+
+td.button-cell {
+background: none;
+padding-right: 1.5rem; /* space on the action button */
+text-align: right;
+border: none;
+}
+
+th.button-header { display: none; }
+.vedtatt td:not(.button-cell) { background-color: #d4edda !important; }
+.vedtatt td.button-cell { background-color: white !important; }
+
+.vedta-button {
+display: none;
+padding: 0.5rem 1rem;
+margin-left: 0.75rem;
+margin-right: 0.75rem;
+background: #e2e2e2;
+color: rgb(27, 27, 27);
+border: none;
+border-radius: 6px;
+cursor: pointer;
+transition: background 0.3s ease;
+font-size: 12px;
+}
+
+body.logged-in .vedta-button {
+  display: inline-block;
+}
+
+.vedta-button:hover {
+background: #b9b9b9;
+}
+
+.vedtatt .vedta-button {
+background: #28a745 !important;
+color: white;
+}
+
+.vedtatt .vedta-button:hover {
+  background-color: #218838;
+}
+
+.vedtatt-label {
+  display: inline-block;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.filler-row td {
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+}
+
+/* ---- TOP (unchanged except more robust) ---- */
+.table-wrapper table thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+/* Round the true last header cell (public: last is data; admin: action column) */
+.table-wrapper table thead tr:first-child > th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* ---- BOTTOM ---- */
+
+/* Align action column without killing its backgrounds */
+thead tr th.button-header {
+  text-align: right;
+  border: 0;
+  padding-right: 1.5rem;
+}
+tbody tr td.button-cell {
+  text-align: right;
+  border: 0;
+  padding-right: 1.5rem;
+}
+
+/* When admin is logged in, show a narrow header to align the column */
+body.logged-in th.button-header {
+  display: table-cell;
+  width: 110px;             /* tweak if you want a thinner/wider action column */
+  text-align: right;
+  padding-right: 1.5rem;
+}
+
+/* Filler row: full-width colored bar */
+.table-wrapper table tbody tr.filler-row td {
+  background: var(--accent);  /* your colors */
+  height: 12px;
+  padding: 0;
+  border: 0;
+}
+
+/* Ensure the action column cell on this row also stays filled */
+.table-wrapper table tbody tr.filler-row td.button-cell {
+  background: var(--accent);
+}
+
+/* Rounded bottom corners (left & right) */
+.table-wrapper table tbody tr.filler-row td:first-child {
+  border-bottom-left-radius: 12px;
+}
+.table-wrapper table tbody tr.filler-row td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.table-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
+  background-color: #f0f0f0;
+}
+
+tbody tr.vedtatt:nth-child(even):not(.filler-row) td:not(.button-cell) {
+  background-color: #c1dfc5 !important;
+}
+
+/* NEW: mirror those backgrounds for the action cell */
+tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td.button-cell { background-color: #f0f0f0; }
+tbody tr:nth-child(odd):not(.vedtatt):not(.filler-row)  td.button-cell { background-color: #ffffff; }
+tr:hover:not(.vedtatt):not(.filler-row) td.button-cell                 { background-color: #dfdfdf !important; }
+tbody tr.vedtatt td.button-cell                                        { background-color: #d4edda !important; }
+
+tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
+  background-color: #dfdfdf !important;
+}
+
+tbody tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
+  background-color: #afd3b4 !important;
+}
+
+/* Vedtatt: make the action column match the row */
+tbody tr.vedtatt:not(.filler-row) td.button-cell {
+  background-color: #d4edda !important;   /* base green */
+}
+
+tbody tr.vedtatt:nth-child(even):not(.filler-row) td.button-cell {
+  background-color: #c1dfc5 !important;   /* even-row green */
+}
+
+tbody tr.vedtatt:hover:not(.filler-row) td.button-cell {
+  background-color: #afd3b4 !important;   /* hover green */
+}
+
+
+.carousel-slide table th {
+  background: var(--accent);
+  color: #fff;
+  padding: 1rem;
+}
+
+tr, td {
+transition: background-color 0.3s ease;
+}
+
+.Legge-til-et-punkt td:first-child,
+.Endre-et-punkt td:first-child,
+.Fjerne-et-punkt td:first-child {
+position: relative;
+}
+
+/* Basic tag layout */
+td:first-child .tag-label {
+display: inline-block;
+padding: 0.6rem;
+border-radius: 12px;
+font-size: 0.85rem;
+font-weight: bold;
+white-space: nowrap;
+max-width: 100%;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+/* Color for each action type */
+.Legge-til-et-punkt td:first-child .tag-label {
+background-color: #cbe2e7;
+color: #009BC2;
+}
+
+.Endre-et-punkt td:first-child .tag-label {
+background-color: #bdbdbd;
+color: #3b3b3b;
+}
+
+.Fjerne-et-punkt td:first-child .tag-label {
+background-color: #e3c8e7;
+color: #5A2E61;
+}
+
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(10px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+0% { transform: scale(0.9); opacity: 0; }
+100% { transform: scale(1); opacity: 1; }
+}
+
+.container {
+position: relative;
+max-width: 1000px;
+margin: 0 auto;
+padding: 0 1rem;
+}
+
+/* Make header and footer stretch full width */
+.page-header {
+width: 100%;
+background-color: #cbe2e7;
+}
+
+.site-footer {
+  position: relative;          /* anchor floating social icons */
+  margin-top: 4rem;
+  width: 100%;
+  background-color: #a69939;
+  color: #000;
+}
+
+.top-buttons {
+display: flex;
+justify-content: center;
+gap: 1rem;
+padding: 1rem 0;
+margin: 0 auto;
+flex-wrap: wrap;
+}
+
+.top-buttons a {
+text-align: center;
+}
+
+.mobile-hide {
+display: block;
+}
+
+.login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: fadeIn 0.4s ease;
+}
+
+.login-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.25);
+  width: 90%;
+  max-width: 400px;
+  animation: popIn 0.3s ease;
+}
+
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+#login-form h2 {
+  margin: 2rem;
+  text-align: center;
+}
+
+#login-form input[type="password"] {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+#login-form button[type="submit"] {
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #3f3f3f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#login-form button[type="submit"]:hover {
+  background-color: #007aa3;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.password-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Button itself: no border, no background, no effects */
+#togglePassword {
+  all: unset; /* removes all default button styling */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#togglePasswordIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Remove focus/hover outlines */
+#togglePassword:focus,
+#togglePassword:active {
+  outline: none;
+  box-shadow: none;
+}
+
+#togglePassword:hover {
+  background: transparent;
+}
+
+.password-toggle input[type="password"],
+.password-toggle input[type="text"] {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc !important;
+  border-radius: 6px !important;
+  width: 100%;
+  box-sizing: border-box;
+  height: 2.5rem;        /* ✅ force consistent height */
+  line-height: 1.5rem;   /* ✅ normalize vertical alignment */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* Global kill switch for background updates */
+html.silent-update *, html.silent-update *::before, html.silent-update *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Scoped refresh mute (prevents flicker on table + carousel) */
+html.is-refreshing .carousel-track { transition: none !important; }
+html.is-refreshing tr,
+html.is-refreshing td { transition: none !important; }
+
+
+/* Animate rows ONLY on the very first boot */
+html.initial-boot .table-wrapper tr { animation: fadeIn .4s ease-in; }
+
+/* Disable transitions when .updating is present */
+#suggestions tr.updating, #suggestions tr.updating * {
+transition: none !important;
+}
+
+/* Status colors driven by data-status (no JS class juggling) */
+#suggestions tr[data-status="vedtatt"] { background: #e6ffed; }
+#suggestions tr[data-status="ny"] { background: #fff; }
+#suggestions tr[data-status="avvist"] { background: #ffecec; }
+
+/* Make text smaller for long-text columns */
+.carousel-slide table th:nth-child(3),
+.carousel-slide table td:nth-child(3),
+.carousel-slide table th:nth-child(4),
+.carousel-slide table td:nth-child(4),
+.carousel-slide table th:nth-child(5),
+.carousel-slide table td:nth-child(5) {
+  width: 25.3%;
+}
+
+.carousel-slide table td:nth-child(3),
+.carousel-slide table td:nth-child(4),
+.carousel-slide table td:nth-child(5) {
+  font-size: 0.8rem;    /* slightly smaller text */
+  line-height: 1.15rem;  /* balanced spacing */
+  vertical-align: top;  /* keeps multi-line text aligned neatly */
+}
+
+  
+
+/* Make the 'Punkt (nr)' column narrower */
+.carousel-slide table th:nth-child(2),
+.carousel-slide table td:nth-child(2) {
+  width: 8%;   /* narrow column since it’s just digits */
+  text-align: center;
+}
+
+/* Make first column (Hva vil du gjøre?) just wide enough for the tag */
+.carousel-slide table th:nth-child(1),
+.carousel-slide table td:nth-child(1) {
+  width: 18%;          /* adjust as needed — 15–20% usually fits well */
+  white-space: nowrap; /* prevent wrapping */
+  text-align: left;
+  padding-left: 1rem;  /* matches your tag’s spacing */
+}
+
+/* Make the action column (Vedta button) compact and aligned */
+body.logged-in .carousel-slide table th:last-child,
+body.logged-in .carousel-slide table td:last-child {
+  width: 10%;           /* narrow column — enough for one button */
+  text-align: right;    /* button aligns cleanly to the edge */
+  padding-right: 1rem;  /* same right spacing as other cells */
+  white-space: nowrap;  /* prevents wrapping of the button text */
+}
+
+
+/* === Responsive table width on desktop === */
+@media (min-width: 801px) {
+  .carousel-wrapper {
+    width: 80vw;        /* flexible width: 80% of viewport */
+    max-width: 1250px;  /* never exceed this size */
+    margin: 0 auto;     /* keep centered */
+  }
+
+  .container {
+    width: 80vw;
+    max-width: 1250px;  /* match header/footer alignment */
+    margin: 0 auto;
+  }
+
+  .table-wrapper table {
+    width: 100%;        /* fill available space */
+    max-width: 100%;
+    table-layout: fixed;
+  }
+}
+
+
+@media (max-width: 600px) {
+.page-header h1 {
+    font-size: 1.25rem;
+    padding: 0.5rem 0;
+}
+
+.page-header {
+    overflow-x: visible;
+}
+
+.login-out-button {
+    display: none !important;
+}
+
+.filler-row td {
+  height: 0.5rem !important;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+table {
+    font-size: 0.4rem;
+}
+
+th, td {
+    font-size: 0.4rem;
+    padding: 0.5rem 0.25rem;
+}
+
+td:first-child {
+    padding-left: 0.5rem;
+}
+
+td.button-cell {
+    padding-right: 0.5rem;
+}
+
+.Legge-til-et-punkt td:first-child .tag-label,
+.Endre-et-punkt td:first-child .tag-label,
+.Fjerne-et-punkt td:first-child .tag-label {
+    font-size: 0.3rem !important; /* override any inherited larger size */
+    padding: 0.075rem 0.2rem !important;
+}
+
+.carousel-slide table th:nth-child(1),
+.carousel-slide table td:nth-child(1) {
+    width: 18.2%;
+}
+
+.carousel-slide table th:nth-child(2),
+.carousel-slide table td:nth-child(2) {
+    width: 9.1%;
+}
+
+.carousel-slide table th:nth-child(3),
+.carousel-slide table td:nth-child(3),
+.carousel-slide table th:nth-child(4),
+.carousel-slide table td:nth-child(4),
+.carousel-slide table th:nth-child(5),
+.carousel-slide table td:nth-child(5) {
+    width: 24.2%;
+}
+
+.tag-label {
+    font-size: 0.4rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.mobile-hide {
+    display: none;
+}
+
+.carousel-wrapper {
+    text-align: center;
+}
+
+.carousel-nav {
+    position: static;
+    transform: none;
+    margin: 1rem 0;
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+    display: inline-block;
+}
+
+.carousel-nav.left,
+.carousel-nav.right {
+    display: inline-block;
+    margin: 0 0.5rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.table-wrapper table {
+    width: 100% !important;
+    max-width: 100%;
+    min-width: unset !important;
+    table-layout: fixed !important;
+}
+
+.carousel-nav {
+    display: none !important;
+}
+
+.carousel-track.stacked {
+    display: block !important;
+}
+
+.carousel-slide {
+    display: block !important;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.carousel-slide:last-child {
+    border-bottom: none; /* prevent double line at the end */
+}
+
+.carousel-slide table th {
+    padding: 0.25rem 0.25rem !important;
+}
+
+.carousel-slide h2 {
+    font-size: 1rem;
+}
+
+.carousel-slide,
+.carousel-track,
+.table-wrapper,
+.carousel {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.carousel-slide h2 {
+    font-size: 1rem;
+}
+
+.table-wrapper td,
+.table-wrapper th {
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.footer-logo {
+height: 40px;
+max-width: 75px;
+object-fit: contain;
+}
+
+
+.vedtatt-label {
+    display: none;
+  }
+
+}
+
+/* Header / nav copied from Talestolen admin */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  max-width: 100%;
+  width: 100vw;
+}
+
+.nav-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dad5af;
+  max-width: 100vw;
+  width: 100%;
+}
+
+.navigation-bar {
+  display: flex;
+  flex-direction: row;
+  max-width: 1140px;
+  width: 100%;
+  min-height: 54px;
+}
+
+/* Floating TU logo */
+.nav-container .brand {
+  position: absolute;
+  left: 50%;
+  bottom: -11vh;
+  transform: translateX(-50%);
+  height: 16vh;
+}
+
+.btn.nav, .btn.nav-r { 
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: #1e1e1e;
+  background: transparent;
+  border:none !important; 
+  max-width: fit-content;
+  padding: auto;
+  padding-bottom: .625rem !important;
+  padding-top: .625rem !important;
+  cursor: pointer;
+}
+
+.btn.nav:hover { 
+  color: #a69939;
+}
+
+.nav { 
+  display: flex; 
+  text-align: left;
+  max-width: 1140px;
+  width: 100%;
+  gap: 30px; 
+  padding: 4px; 
+  text-decoration: none !important;
+  align-items: center;
+}
+.nav-r { 
+  display: flex; 
+  text-align: right;
+  justify-content: right;
+  max-width: 1140px;
+  width: 100%;
+  gap: 30px; 
+  padding: 4px; 
+  text-decoration: none !important;
+  align-items: center;
+}
+
+.header-space-container {
+  margin-bottom: 2rem;
+  padding-top: 32px;
+  max-width: 100vw;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-bottom: 2px solid #dad5af;
+}
+
+.header-space {
+  flex: 1;
+  max-width: 1140px;
+  width: 100%;
+  min-height: 10vh;
+}
+
+/* === Telemark-style combined footer === */
+.footer-social {
+  position: absolute;
+  top: -20px;            /* float between content and footer */
+  left: 0;
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.footer-social-row {
+  display: flex;
+  justify-content: flex-start;   /* align to left like Telemark site */
+  gap: 0.75rem;
+}
+
+.footer-social-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: hsl(53, 48%, 44%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.020),
+    0 2px 4px rgba(0, 0, 0, 0.18);
+}
+
+.footer-social-btn:hover {
+  background: hsl(53, 48%, 34%);
+  transform: translateY(-1px);
+}
+
+/* Wrapper stays centered inside the button */
+.footer-social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Actual icon image: perfectly centered and sized */
+.footer-social-img {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+    display: block;        /* removes baseline alignment issues */
+}
+
+.footer-main {
+  padding: 3rem 0 2rem;   /* extra space so floating icons don't overlap text */
+}
+
+.footer-main-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.footer-col p {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.footer-col a {
+  color: inherit;
+}
+
+.footer-col a:hover {
+  text-decoration: underline;
+}
+
+.footer-decoration {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.footer-decoration svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.footer-logo-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-logo {
+  height: auto;
+  width: 14vw;
+  object-fit: contain;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.footer-links li a {
+  font-size: 0.9rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.footer-links li a:hover {
+  text-decoration: underline;
+}
+
+.footer-links-badge img {
+  height: 32px;
+  width: auto;
+}
+
+.footer-copy {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.footer-copy .copyright {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #000;
+}
+
+@media (max-width: 991px) {
+  .footer-main-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-decoration {
+    justify-content: flex-start;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-links {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-main-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footer-social-row {
+    justify-content: flex-start;
+  }
+}
+
+/* === Handlingsplan – forms page styling (Talestolen-ish) === */
+
+/* Subtitle under "Send inn forslag" */
+.section-subtitle {
+  margin: 0.25rem 0 1.2rem;
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* Layout for the form card */
+.forms-container {
+  max-width: 900px;
+  margin: 0 auto 3rem auto;
+  padding: 0 0.75rem;
+}
+
+/* Actual card */
+.card.forms-card {
+  margin-top: 1.5rem;
+  padding: 1.6rem 1.6rem 1.9rem;
+  background: #ceecf4;
+}
+
+/* Title inside the card */
+.card.forms-card h2 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Main form layout */
+.hp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+/* --- Fieldset: "Hva vil du gjøre?" --- */
+
+.hp-fieldset {
+  border: none;
+  padding: 0.9rem 1rem 0.8rem;
+  background: #f8fafc;
+}
+
+.hp-fieldset legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Radio options */
+.hp-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.hp-radio input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #005260;
+}
+
+/* --- Generic form fields --- */
+
+.hp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hp-field label {
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Inputs, selects, textareas inside hp-field */
+.hp-field input,
+.hp-field select {
+  margin-top: 0.4rem;
+  border-radius: 9999px;
+  border: none;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease;
+}
+
+.hp-field textarea {
+  margin-top: 0.4rem;
+  border: none;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  transition:
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease;
+  min-height: 8vh;
+  min-width: 50vw;
+  resize: vertical;
+}
+
+.hp-field input {
+  height: 2.8rem;       /* consistent height for inputs */
+  line-height: 1.5rem;  /* vertical alignment */
+  width: 4.8rem;
+}
+
+/* Slightly softer background for selects */
+.hp-field select {
+  background-color: #ffffff;
+}
+
+/* Focus state, similar feel to Talestolen controls */
+.hp-field input:focus,
+.hp-field select:focus,
+.hp-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+  background-color: #f9fbff;
+}
+
+/* Placeholder color */
+.hp-field ::placeholder {
+  color: #9ca3af;
+}
+
+/* Punkt-tekstfeltene */
+.punktInput {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* Punktnummer felt – litt smalere */
+.punktNr {
+  max-width: 140px;
+}
+
+/* Inline layout for punktNr / underpunktNr */
+.hp-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+/* Info/hint text blocks */
+.hp-info,
+.hp-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-top: 0.15rem;
+}
+
+.hp-info strong {
+  font-weight: 600;
+}
+
+/* --- Submit area & button --- */
+
+.hp-actions {
+  margin-top: 1.4rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hp-submit {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ffcc00;   /* same as .plan-button */
+  color: #000000;
+  opacity: 1;
+  transition:
+    background 0.15s ease,
+    opacity 0.12s ease,
+    transform 0.05s ease;
+  font-size: 0.95rem;
+}
+
+.hp-submit:hover:not([disabled]) {
+  background: #007aa3;
+}
+
+.hp-submit:active:not([disabled]) {
+  transform: translateY(1px);
+  opacity: 0.92;
+}
+
+.hp-submit[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.labelDo {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #000000;
+  margin-bottom: -0.5rem;
+}
+
+/* --- Responsive tweaks --- */
+@media (max-width: 640px) {
+  .card.forms-card {
+    padding: 1.3rem 1.1rem 1.5rem;
+    border-radius: 14px;
+  }
+
+  .card.forms-card h2 {
+    font-size: 1.3rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.9rem;
+  }
+}
