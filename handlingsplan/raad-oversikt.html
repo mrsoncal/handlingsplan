@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Handlingsplan – velg ungdomsråd</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <!-- Reuse same header style as before -->
+    <header class="header">
+      <div class="nav-container">
+        <div class="navigation-bar">
+          <nav class="nav">
+            <a class="btn nav" href="../index.html">Tilbake til verktøy</a>
+            <a class="btn nav"
+               href="../docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf"
+               target="_blank">
+              Handlingsplan 2025
+            </a>
+          </nav>
+          <nav class="nav-r">
+            <!-- Plass til Admin senere om ønskelig -->
+          </nav>
+        </div>
+        <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />
+      </div>
+      <div class="header-space-container">
+        <div class="header-space"></div>
+      </div>
+      <h1>Handlingsplan – velg ungdomsråd</h1>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Opprett nytt ungdomsråd</h2>
+        <form id="newCouncilForm" class="council-form">
+          <div class="form-row">
+            <label for="councilName">
+              Navn på ungdomsråd
+              <input
+                id="councilName"
+                name="name"
+                type="text"
+                placeholder="f.eks. Telemark Ungdomsråd 2026"
+                required
+              />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label for="councilYear">
+              År / periode (valgfritt)
+              <input
+                id="councilYear"
+                name="year"
+                type="text"
+                placeholder="f.eks. 2026–2027"
+              />
+            </label>
+          </div>
+
+          <button type="submit" class="btn primary">
+            Opprett og åpne
+          </button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Eksisterende ungdomsråd</h2>
+        <p id="councilListEmpty" class="muted">
+          Ingen ungdomsråd er opprettet ennå.
+        </p>
+        <ul id="councilList" class="council-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="raad-oversikt.js" type="module"></script>
+</body>
+</html>
