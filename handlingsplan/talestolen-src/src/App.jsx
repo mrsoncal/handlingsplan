@@ -1,0 +1,753 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  subscribe,
+  getState,
+  remainingSeconds,
+  addToQueueByDelegate,
+  addToQueueDirect,
+  removeFromQueue,
+  setTypeDuration,
+  loadDelegates,
+  updateDelegate,
+  deleteDelegate,
+  saveDelegatesToLocalStorageRaw,
+  startNext,
+  startSpecific,
+  pauseTimer,
+  resumeTimer,
+  skipCurrent,
+  resetTimer,
+  normalizeType,
+} from "./store/bus.js";
+
+import DelegatesTable from "./components/DelegatesTable.jsx";
+import "./app-extra.css";
+import CsvTool from "./components/CsvTool.jsx";
+
+
+/* ============================
+   Store / hash / timer helpers
+   ============================ */
+function useStore() {
+  const [, setTick] = useState(0);
+  useEffect(() => subscribe(() => setTick((t) => t + 1)), []);
+  return getState();
+}
+function useHash() {
+  const get = () => {
+    const h = (location.hash || "").toLowerCase();
+    return h && h !== "#" ? h : "#admin";
+  };
+  const [hash, setHash] = useState(get);
+  useEffect(() => {
+    const on = () => setHash(get());
+    window.addEventListener("hashchange", on);
+    return () => window.removeEventListener("hashchange", on);
+  }, []);
+  return hash;
+}
+function useTimerRerender(enabled) {
+  const [, setBeat] = useState(0);
+  useEffect(() => {
+    if (!enabled) return;
+    const id = setInterval(() => setBeat((b) => b + 1), 200);
+    return () => clearInterval(id);
+  }, [enabled]);
+}
+
+/* ============================
+   App (routes)
+   ============================ */
+export default function App() {
+  const state = useStore();
+  const hash = useHash();
+  useTimerRerender(hash !== "#queue");
+
+  if (hash === "#timer") return <TimerFull state={state} />;
+  if (hash === "#queue") return <QueueFull state={state} />;
+  if (hash === "#csv-verktoy") return <CsvTool />;
+  return <AdminView state={state} />;
+}
+
+/* ============================
+   CSV utils
+   ============================ */
+function parseCSV(text) {
+  if (!text) return [];
+  let s = String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
+  const lines = s.split("\n").filter(Boolean);
+  if (!lines.length) return [];
+
+  const delim = detectDelimiter(lines[0]);
+  const split = (line) => splitRow(line, delim);
+  const sample = lines[0];
+  const hasHeader =
+    /[A-Za-z]/.test(sample.split(delim)[0]) && /[A-Za-z]/.test(sample);
+
+  let rows = [];
+  if (hasHeader) {
+    const headers = split(lines[0]).map((h) => h.trim().toLowerCase());
+    for (let i = 1; i < lines.length; i++) {
+      const cells = split(lines[i]);
+      const row = {};
+      headers.forEach((h, idx) => (row[h] = (cells[idx] ?? "").trim()));
+      rows.push(normalizeRow(row));
+    }
+  } else {
+    for (const line of lines) {
+      const [number = "", name = "", org = ""] = split(line).map((x) =>
+        (x ?? "").trim()
+      );
+      rows.push({ number, name, org });
+    }
+  }
+  return rows.filter((r) => String(r.number || "").trim() !== "");
+}
+function detectDelimiter(line) {
+  const counts = {
+    ",": (line.match(/,/g) || []).length,
+    ";": (line.match(/;/g) || []).length,
+    "\t": (line.match(/\t/g) || []).length,
+  };
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] || ",";
+}
+function splitRow(line, delim) {
+  const out = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else inQuotes = !inQuotes;
+    } else if (ch === delim && !inQuotes) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+function normalizeRow(row) {
+  const r = {};
+  const get = (keys) => {
+    for (const k of keys) {
+      const v = row[k];
+      if (v != null && String(v).trim() !== "") return String(v).trim();
+    }
+    return "";
+  };
+  r.number = get([
+    "number",
+    "nr",
+    "delegatenummer",
+    "delegatnummer",
+    "Delegatnummer",
+    "delegate number",
+    "delegatenr",
+    "id",
+  ]);
+  r.name = get([
+    "name",
+    "navn",
+    "Fullt Navn",
+    "fullt navn",
+  ]);
+  r.org = get([
+    "org",
+    "organisasjon",
+    "kommune",
+    "representerer",
+    "org.",
+    "råd/eleråd/organisasjon",
+    "Råd/eleråd/organisasjon",
+  ]);
+  return r;
+}
+
+/* ============================
+   Admin
+   ============================ */
+function AdminView({ state }) {
+  // Add by delegate number + type
+  const [num, setNum] = useState("");
+  const [type, setType] = useState("innlegg");
+  const [manualName, setManualName] = useState("");
+  const [manualOrg, setManualOrg] = useState("");
+  const [lastInnlegg, setLastInnlegg] = useState(null);
+
+  // When current speaker switches to an innlegg, remember them
+  useEffect(() => {
+    const s = state.currentSpeaker;
+    if (s && (normalizeType ? normalizeType(s.type) : s.type) === 'innlegg') {
+      setLastInnlegg({
+        id: s.id,
+        name: s.name,
+        org: s.org,
+        delegateNumber: s.delegateNumber ?? '',
+      });
+    }
+  }, [state.currentSpeaker?.id]);
+
+  // type durations
+  const [dInnlegg, setDInnlegg] = useState(state.typeDurations.innlegg);
+  const [dReplikk, setDReplikk] = useState(state.typeDurations.replikk);
+  const [dSvar, setDSvar] = useState(state.typeDurations.svar_replikk);
+  useEffect(() => {
+    setDInnlegg(state.typeDurations.innlegg);
+    setDReplikk(state.typeDurations.replikk);
+    setDSvar(state.typeDurations.svar_replikk);
+  }, [state.typeDurations]);
+
+  const cur = state.currentSpeaker;
+  const remain = cur ? fmt(remainingSeconds(cur)) : "00:00";
+  const delegate = state.delegates[String((num || "").trim())];
+  const previewName = delegate?.name || (num ? `#${num}` : "");
+  const previewOrg = delegate?.org || "";
+
+  /* ---- LAN/P2P removed: keep a no-op stub so existing calls don't break ---- */
+  const sendSync = () => { /* no-op */ };
+
+  /* ---- handlers ---- */
+  function handleCSV(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || "");
+        const rows = parseCSV(text);
+        if (rows.length) {
+          try {
+            saveDelegatesToLocalStorageRaw(text);
+          } catch {}
+          loadDelegates(rows);
+        }
+      } catch (err) {
+        console.error("[CSV] parse error:", err);
+      }
+    };
+    reader.onerror = (err) => console.error("[CSV] FileReader error:", err);
+    reader.readAsText(file, "utf-8");
+  }
+  function handleAddByNum() {
+    if (!num.trim()) return;
+    addToQueueByDelegate({ delegateNumber: num.trim(), type });
+    setNum("");
+  }
+  function handleAddManual() {
+    if (!manualName.trim()) return;
+    addToQueueDirect({ name: manualName.trim(), org: manualOrg.trim(), type });
+    setManualName("");
+    setManualOrg("");
+  }
+
+  return (
+    <div className="page">
+      <header className="header">
+        <div className="nav-container">
+          <div className="navigation-bar">
+            <nav className="nav">
+              <a className="btn nav" href="#admin">Admin</a>
+              <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
+              <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
+            </nav>
+            <nav className="nav-r">
+              <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">CSV Verktøy</a>
+            </nav>
+          </div>     
+            <img className="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />    
+        </div>
+
+        <div className="header-space-container">
+          <div className="header-space">
+          </div>
+        </div>
+      </header>
+      <div className="container">
+        <section className="card main-card">
+
+          {/* Row: upload + type defaults */}
+          <div className="split">
+
+            <div className="card">
+              <div className={`card ${Object.keys(state.delegates).length === 0 ? 'csv-alert' : ''}`}>
+                <div className="title">Last opp delegater (CSV)</div>
+
+                  {/* Show helper only when no delegates are loaded */}
+                  {Object.keys(state.delegates).length === 0 && (
+                    <div className="csv-helper">
+                      Trenger du hjelp med CSV?{' '}
+                      <a href="#csv-verktoy" target="talestolen-csv" className="csv-link">Åpne CSV-Verktøy</a>
+                    </div>
+                  )}
+
+                  <input
+                    className="input wide"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSV}
+                  />
+                  <div className="spacer"></div>
+                  <div className="row">
+                    <div className="muted">
+                      Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            <div className="card time-defaults">
+              <div className="title">Taletid (sekunder)</div>
+              <div className="grid-3">
+                <div>
+                  <div className="muted">Innlegg</div>
+                  <input
+                    className="input input-time"
+                    type="number"
+                    min="10"
+                    step="5"
+                    value={dInnlegg}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDInnlegg(val);
+                      setTypeDuration("innlegg", val);
+                      sendSync("timer:setDurations", { innlegg: val });
+                    }}
+                  />
+                </div>
+                <div>
+                  <div className="muted">Replikk</div>
+                  <input
+                    className="input input-time"
+                    type="number"
+                    min="10"
+                    step="5"
+                    value={dReplikk}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDReplikk(val);
+                      setTypeDuration("replikk", val);
+                      sendSync("timer:setDurations", { replikk: val });
+                    }}
+                  />
+                </div>
+                <div>
+                  <div className="muted">Svar-replikk</div>
+                  <input
+                    className="input input-time"
+                    type="number"
+                    min="10"
+                    step="5"
+                    value={dSvar}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setDSvar(val);
+                      setTypeDuration("svar_replikk", val);
+                      sendSync("timer:setDurations", { svar_replikk: val });
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="spacer"></div>
+
+          {/* Row: add by number + manual add */}
+          <div className="split">
+            <div className="card">
+              <div className="title">Legg til i talelista</div>
+              <div className="row">
+                <input
+                  className="input"
+                  placeholder="Delegatnummer"
+                  value={num}
+                  onChange={(e) => setNum(e.target.value)}
+                />
+                <select
+                  className="input"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  <option value="innlegg">Innlegg</option>
+                  <option value="replikk">Replikk</option>
+                </select>
+                <button
+                  className="btn"
+                  onClick={handleAddByNum}
+                  disabled={!num.trim()}
+                >
+                  Legg til
+                </button>
+              </div>
+              <div className="spacer"></div>
+              <div className="preview-row">
+                Preview: <b>{previewName}</b>
+                {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
+                <span className="preview">{labelFor(type)}</span>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="title">Legg til manuelt</div>
+              <div className="row">
+                <input
+                  className="input"
+                  placeholder="Navn"
+                  value={manualName}
+                  onChange={(e) => setManualName(e.target.value)}
+                />
+                <input
+                  className="input"
+                  placeholder="Organisasjon"
+                  value={manualOrg}
+                  onChange={(e) => setManualOrg(e.target.value)}
+                />
+                <select
+                  className="input"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  <option value="innlegg">Innlegg</option>
+                  <option value="replikk">Replikk</option>
+                </select>
+                <button
+                  className="btn"
+                  onClick={handleAddManual}
+                  disabled={!manualName.trim()}
+                >
+                  Legg til
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="spacer"></div>
+
+          {/* Row: current speaker + queue */}
+          <div className="split">
+            <div className="card">
+              <div className="title">Snakker Nå</div>
+              <div className="list">
+                {cur ? (
+                  <div
+                    className="row"
+                    style={{
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div className="big">
+                        {cur.name}{" "}
+                        <span className="muted">
+                          ({cur.delegateNumber ? `#${cur.delegateNumber}` : "–"})
+                        </span>
+                      </div>
+                      <div className="muted">{cur.org || " "}</div>
+                      <div className="muted">
+                        Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
+                        {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
+                      </div>
+                    </div>
+                    <div className="badge">{remain}</div>
+                  </div>
+                ) : (
+                  <div className="muted">Ingen snakker nå.</div>
+                )}
+              </div>
+              <div className="row">
+                <button
+                  className="btn"
+                  onClick={() => {
+                    startNext();
+                    sendSync("timer:startNext");
+                  }}
+                  disabled={!!state.currentSpeaker || state.queue.length === 0}
+                >
+                  Start neste
+                </button>
+                <button
+                  className="btn secondary"
+                  onClick={() => {
+                    pauseTimer();
+                    sendSync("timer:pause");
+                  }}
+                  disabled={!cur || cur.paused}
+                >
+                  Pause
+                </button>
+                <button
+                  className="btn secondary"
+                  onClick={() => {
+                    resumeTimer();
+                    sendSync("timer:resume");
+                  }}
+                  disabled={!cur || !cur.paused}
+                >
+                  Fortsett
+                </button>
+                <button
+                  className="btn danger"
+                  onClick={() => {
+                    skipCurrent();
+                    sendSync("timer:reset");
+                  }}
+                  disabled={!cur}
+                >
+                  Skip
+                </button>
+                <button
+                  className="btn ghost"
+                  onClick={() => {
+                    resetTimer();
+                    sendSync("timer:reset");
+                  }}
+                  disabled={!cur}
+                >
+                  Reset
+                </button>
+                {cur && (normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk' && lastInnlegg ? (
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      if (lastInnlegg.delegateNumber) {
+                        addToQueueByDelegate({
+                          delegateNumber: String(lastInnlegg.delegateNumber),
+                          type: 'svar_replikk',
+                        });
+                      } else {
+                        addToQueueDirect({
+                          name: lastInnlegg.name || '',
+                          org: lastInnlegg.org || '',
+                          type: 'svar_replikk',
+                        });
+                      }
+                    }}
+                    title={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                  >
+                  Svar-replikk → {lastInnlegg.name || 'innlegg-holder'}
+                </button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="title">Taleliste</div>
+              <div className="list">
+                {state.queue.length === 0 ? (
+                  <div className="muted">Talelisten er tom.</div>
+                ) : (
+                  state.queue.map((q, i) => (
+                    <div key={q.id} className="queue-item">
+                      <div>
+                        <div className={"big queued"}>
+                          {i === 0 ? "Neste: " : ""}
+                          {q.name}{" "}
+                          <span className="muted">
+                            ({q.delegateNumber ? `#${q.delegateNumber}` : "–"})
+                          </span>
+                        </div>
+                        <div className="desc">{q.org || " "}</div>
+                        <div className="desc">
+                          Type: <b>{labelFor(q.type)}</b>
+                        </div>
+                      </div>
+                      <div className="col">
+                        <button
+                          className="btn secondary"
+                          onClick={() => {
+                            startSpecific(q.id);
+                            sendSync("timer:startSpecific", { id: q.id });
+                          }}
+                        >
+                          Start
+                        </button>
+                        <button
+                          className="btn danger"
+                          onClick={() => removeFromQueue(q.id)}
+                        >
+                          Fjern
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Single, real delegates table at the very end */}
+          <DelegatesTable state={state} />
+        </section>
+      </div>
+      <footer className="site-footer">
+        <div className="footer-social">
+          <div className="container">
+            <div className="footer-social-row">
+              <a href="https://www.facebook.com/telemarkfylkeskommune"
+                title="Facebook - Telemark fylkeskommune"
+                className="footer-social-btn footer-social-facebook"
+                target="_blank" rel="noreferrer noopener">
+                <span className="footer-social-icon">
+                    <img src="../f.png" className="footer-social-img" />
+                </span>
+
+              </a>
+              <a href="https://www.instagram.com/telemarkungdom/"
+                title="Instagram - Telemark fylkeskommune"
+                className="footer-social-btn footer-social-instagram"
+                target="_blank" rel="noreferrer noopener">
+                <span className="footer-social-icon">
+                    <img src="../ig.png" className="footer-social-img" />
+                </span>
+
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-main">
+          <div className="container footer-main-grid">
+            <div className="footer-col">
+              <p><strong>Kontakt oss</strong></p>
+              <p>Telemark Ungdomsråd<br/>Postboks 2844<br/>3702 Skien</p>
+              <p>Koordinator for Telemark Ungdomsråd<br/><a href="mailto:heidi.bekkevold@telemarkfylke.no">heidi.bekkevold@telemarkfylke.no</a><br/>+47 991 55 531</p>
+            </div>
+
+            <div className="footer-col">
+              <p><strong>Telemark Ungdomsråd</strong></p>
+              <p><strong>Leder:</strong> Jan Sander Ravn Gudbrandsen<br/><a href="mailto:jan.sander.ravn.gudbrandsen@telemarkfylke.no">jan.sander.ravn.gudbrandsen@telemarkfylke.no</a><br/>+47 969 06 790</p>
+              <p><strong>Nestleder:</strong> Helene Clausen Endresen<br/><a href="mailto:helene.c.endresen@gmail.com">helene.c.endresen@gmail.com</a><br/>+47 463 14 573</p>
+              <p><strong>Nettsideutvikler:</strong> Sondre Callaerts<br/><a href="mailto:mrsoncal@gmail.com">mrsoncal@gmail.com</a><br/>+47 929 57 188</p>
+            </div>
+
+            <div className="footer-col">
+              <p><strong></strong></p>
+              <p></p>
+            </div>
+
+            <div className="footer-col footer-decoration">
+              <svg xmlns="http://www.w3.org/2000/svg" width="158" height="243" viewBox="0 0 158 243" fill="none" aria-hidden="true">
+                <path opacity="0.8" d="M79 81V161.985V162V243C35.3754 242.985 0.01422 206.729 0 162V81H79Z" fill="white"></path>
+                <path opacity="0.4" d="M79 162C79.0063 117.264 114.362 81 157.974 81C157.983 81 157.991 81 158 81V162H79Z" fill="white"></path>
+                <path opacity="0.6" d="M158 243C157.994 198.264 122.638 162 79.0261 162C79.0174 162 79.0087 162 79 162V243H158Z" fill="white"></path>
+                <rect opacity="0.8" x="79" width="79" height="81" fill="white"></rect>
+              </svg>
+            </div>
+          </div>
+
+          <div className="container footer-bottom">
+            <div className="footer-logo-block">
+              <img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" className="footer-logo" />
+            </div>
+            <ul className="footer-links">
+              <p>© Sondre Callaerts — Frigitt til fri bruk</p>
+              <li className="footer-links-badge">
+                <a href="https://www.telemarkfylke.no/link/22cdc346a84a49e5add33a4198ce23ed.aspx" target="_blank" rel="noreferrer noopener">
+                  <img src="https://www.telemarkfylke.no/globalassets/Administrasjon/tfk/system/layout/miljofyrtaarn-logo-svart.svg" alt="Miljøfyrtårn logo" />
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ============================
+   Timer & Queue views
+   ============================ */
+function TimerFull({ state }) {
+  const cur = state.currentSpeaker;
+  const secs = cur ? remainingSeconds(cur) : 0;
+  const text = fmt(secs);
+  const typeLabel = cur ? labelFor(cur.type) : "";
+  return (
+    <div id="timer" className="full">
+      <div className="name">
+        {cur
+          ? `${cur.name} ${
+              cur.delegateNumber ? `(#${cur.delegateNumber})` : ""
+            }`
+          : ""}
+      </div>
+      <div className="name">{cur?.org || ""}</div>
+      <div className="timer">{text}</div>
+      <div className="status">
+        {cur
+          ? typeLabel + (cur.paused ? " · Pauset" : " · Live")
+          : "Venter på neste taler…"}
+      </div>
+    </div>
+  );
+}
+
+function QueueFull({ state }) {
+  const cur = state?.currentSpeaker ?? null;
+  const queue = Array.isArray(state?.queue) ? state.queue : [];
+
+  return (
+    <div id="queue" className="full queuePage" style={{ alignItems: 'stretch' }}>
+      <div className="queue">
+        {cur ? (
+          <div className="queueRow queueNow">
+            <div className="big">
+              Nå: {cur.name}{" "}
+              {cur.delegateNumber ? `(#${cur.delegateNumber})` : ""}
+            </div>
+          </div>
+        ) : null}
+
+        {queue.length === 0 ? (
+          <div className="queueRow">
+            <div className="muted">Ingen i køen.</div>
+          </div>
+        ) : (
+          queue.map((q, i) => (
+            <div
+              key={q.id ?? `${q.name || 'anon'}-${i}`}
+              className="queueRow"
+              data-type={normalizeType ? normalizeType(q.type) : q.type}
+            >
+              <div className="queueRow-content">
+                <div className={"big " + (i === 0 ? "next" : "")}>
+                  {i === 0 ? "Neste: " : ""}
+                  {q.name} {q.delegateNumber ? `(#${q.delegateNumber})` : ""}
+                  <div className="muted">{q.org || " "}</div>
+                </div>
+
+                {/* NEW: Type label badge */}
+                <span className="label-pill">{labelFor(q.type)}</span>
+              </div>
+
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============================
+   helpers
+   ============================ */
+function labelFor(t) {
+  const v = (typeof normalizeType === "function" ? normalizeType(t) : t) || "";
+  if (v === "replikk") return "Replikk";
+  if (v === "svar_replikk") return "Svar-replikk";
+  return "Innlegg";
+}
+function fmt(s) {
+  const sec = Number.isFinite(s) ? Math.max(0, Math.floor(s)) : 0;
+  const m = String(Math.floor(sec / 60)).padStart(2, "0");
+  const ss = String(sec % 60).padStart(2, "0");
+  return `${m}:${ss}`;
+}
