@@ -261,7 +261,7 @@ function AdminView({ state }) {
               <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">CSV Verktøy</a>
             </nav>
           </div>     
-            <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />    
+            <img className="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />    
         </div>
 
         <div className="header-space-container">
@@ -645,7 +645,7 @@ function AdminView({ state }) {
 
           <div className="container footer-bottom">
             <div className="footer-logo-block">
-              <img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" class="footer-logo" />
+              <img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" className="footer-logo" />
             </div>
             <ul className="footer-links">
               <p>© Sondre Callaerts — Frigitt til fri bruk</p>
