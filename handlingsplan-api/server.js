@@ -20,14 +20,26 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Ensure uploads folder exists
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
 
+// Multer storage: keep correct file extension so browser knows type
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname) || "";
+    cb(null, unique + ext);
+  },
+});
+
 // Multer for file uploads
-const upload = multer({ dest: uploadsDir });
+const upload = multer({ storage });
+
 
 // Middlewares
 app.use(cors());
