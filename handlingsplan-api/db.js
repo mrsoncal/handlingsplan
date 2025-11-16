@@ -44,6 +44,23 @@ async function init() {
     ADD COLUMN IF NOT EXISTS handlingsplan_path TEXT;
   `);
 
+    // Innspill per ungdomsråd
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS innspill (
+      id SERIAL PRIMARY KEY,
+      council_id INTEGER NOT NULL REFERENCES councils(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      action_type TEXT NOT NULL,
+      tema TEXT NOT NULL,
+      punkt_nr INTEGER NOT NULL,
+      underpunkt_nr INTEGER,
+      formuler_punkt TEXT,
+      endre_fra TEXT,
+      endre_til TEXT
+    );
+  `);
+
+
   console.log("[db] ensured councils table & columns exist");
 }
 
@@ -150,6 +167,81 @@ async function setCouncilHandlingsplanPath(id, path) {
   );
 }
 
+async function createInnspill({
+  councilId,
+  actionType,
+  tema,
+  punktNr,
+  underpunktNr,
+  nyttPunkt,
+  endreFra,
+  endreTil,
+}) {
+  const result = await pool.query(
+    `
+      INSERT INTO innspill (
+        council_id,
+        action_type,
+        tema,
+        punkt_nr,
+        underpunkt_nr,
+        formuler_punkt,
+        endre_fra,
+        endre_til
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING
+        id,
+        council_id,
+        created_at,
+        action_type,
+        tema,
+        punkt_nr,
+        underpunkt_nr,
+        formuler_punkt,
+        endre_fra,
+        endre_til
+    `,
+    [
+      councilId,
+      actionType,
+      tema,
+      punktNr,
+      underpunktNr || null,
+      nyttPunkt || null,
+      endreFra || null,
+      endreTil || null,
+    ]
+  );
+
+  return result.rows[0];
+}
+
+async function getInnspillForCouncil(councilId) {
+  const result = await pool.query(
+    `
+      SELECT
+        id,
+        council_id,
+        created_at,
+        action_type,
+        tema,
+        punkt_nr,
+        underpunkt_nr,
+        formuler_punkt,
+        endre_fra,
+        endre_til
+      FROM innspill
+      WHERE council_id = $1
+      ORDER BY tema ASC, punkt_nr ASC, created_at ASC
+    `,
+    [councilId]
+  );
+
+  return result.rows;
+}
+
+
 module.exports = {
   init,
   getCouncils,
@@ -158,4 +250,6 @@ module.exports = {
   getCouncilWithPassword,
   deleteCouncil,
   setCouncilHandlingsplanPath,
+  createInnspill,
+  getInnspillForCouncil,
 };

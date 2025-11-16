@@ -18,8 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Koble formen til et spesifikt ungdomsråd --------------------------
 
   const urlParams = new URLSearchParams(window.location.search);
-  const councilId =
-    urlParams.get("raadId") || urlParams.get("councilId") || null;
+  const councilId = urlParams.get("raadId") || urlParams.get("councilId") || null;
+
+  const API_BASE = window.HP_API_BASE || "";
 
   // Juster "Tilbake"-lenken til å peke tilbake til dette rådet
   const backLink = document.getElementById("backLink");
@@ -100,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     el.addEventListener("change", updateVisibilityAndValidity);
   });
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     updateVisibilityAndValidity();
     if (submitBtn.disabled) return;
@@ -122,10 +123,49 @@ document.addEventListener("DOMContentLoaded", () => {
       endreTil: action === "change" ? endreTilInput.value.trim() : null,
     };
 
-    console.log("[Handlingsplan innspill] payload:", payload);
-    alert(
-      "Innspill sendt! (demo)\n\nDenne siden kan senere kobles direkte til backend."
-    );
+    if (!councilId) {
+      alert(
+        "Kunne ikke koble innspillet til et ungdomsråd (mangler ?raadId i URLen)."
+      );
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+          councilId
+        )}/innspill`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.error("Feil ved lagring av innspill:", res.status, text);
+        alert(
+          "Det oppstod en feil ved innsending av innspillet. Prøv igjen senere."
+        );
+        return;
+      }
+
+      const saved = await res.json();
+      console.log("[Handlingsplan innspill] lagret:", saved);
+
+      alert("Innspillet er sendt inn!");
+      form.reset();
+      updateVisibilityAndValidity();
+    } catch (err) {
+      console.error("Nettverksfeil ved innsending av innspill:", err);
+      alert(
+        "Det oppstod en nettverksfeil ved innsending av innspillet. Prøv igjen."
+      );
+    }
+
 
     form.reset();
     updateVisibilityAndValidity();

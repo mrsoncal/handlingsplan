@@ -13,6 +13,8 @@ const {
   getCouncilWithPassword,
   deleteCouncil,
   setCouncilHandlingsplanPath,
+  createInnspill,
+  getInnspillForCouncil,
 } = require("./db");
 
 dotenv.config();
@@ -39,7 +41,6 @@ const storage = multer.diskStorage({
 
 // Multer for file uploads
 const upload = multer({ storage });
-
 
 // Middlewares
 app.use(cors());
@@ -109,6 +110,25 @@ app.get("/api/ungdomsrad/:id", async (req, res) => {
   }
 });
 
+// GET /api/ungdomsrad/:id/innspill  -> alle innspill for ett ungdomsråd
+app.get("/api/ungdomsrad/:id/innspill", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const council = await getCouncilById(id);
+
+    if (!council) {
+      return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+    }
+
+    const innspill = await getInnspillForCouncil(id);
+    res.json({ items: innspill });
+  } catch (err) {
+    console.error("Error getting innspill:", err);
+    res.status(500).json({ error: "Kunne ikke hente innspill." });
+  }
+});
+
+
 // DELETE /api/ungdomsrad/:id  -> delete a council
 app.delete("/api/ungdomsrad/:id", async (req, res) => {
   try {
@@ -163,6 +183,51 @@ app.post(
     }
   }
 );
+
+// POST /api/ungdomsrad/:id/innspill  -> lagre ett nytt innspill
+app.post("/api/ungdomsrad/:id/innspill", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const council = await getCouncilById(id);
+
+    if (!council) {
+      return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+    }
+
+    const {
+      actionType,
+      tema,
+      punktNr,
+      underpunktNr,
+      nyttPunkt,
+      endreFra,
+      endreTil,
+    } = req.body || {};
+
+    if (!actionType || !tema || !punktNr) {
+      return res.status(400).json({
+        error:
+          "Feltet 'actionType', 'tema' og 'punktNr' er påkrevd for å lagre et innspill.",
+      });
+    }
+
+    const created = await createInnspill({
+      councilId: id,
+      actionType,
+      tema,
+      punktNr: Number(punktNr),
+      underpunktNr: underpunktNr ? Number(underpunktNr) : null,
+      nyttPunkt,
+      endreFra,
+      endreTil,
+    });
+
+    res.status(201).json(created);
+  } catch (err) {
+    console.error("Error creating innspill:", err);
+    res.status(500).json({ error: "Kunne ikke lagre innspill." });
+  }
+});
 
 // Start server only after DB init
 init()
