@@ -8,20 +8,25 @@
 </head>
 <body>
   <div class="page">
-    <!-- Reuse same header style as before -->
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
             <a class="btn nav" href="../index.html">Tilbake til verktøy</a>
-            <a class="btn nav"
-               href="../docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf"
-               target="_blank">
+            <a
+              class="btn nav"
+              href="../docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf"
+              target="_blank"
+            >
               Handlingsplan 2025
             </a>
           </nav>
           <nav class="nav-r">
-            <!-- Plass til Admin senere om ønskelig -->
+            <!-- Admin login / logout like the other pages -->
+            <button class="btn nav" id="login-button">Admin</button>
+            <button class="btn nav" id="logout-button" style="display: none;">
+              Logg ut
+            </button>
           </nav>
         </div>
         <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />
@@ -31,6 +36,30 @@
       </div>
       <h1>Handlingsplan – velg ungdomsråd</h1>
     </header>
+
+    <!-- Admin login overlay (same structure as index.html/forms.html) -->
+    <div class="login-overlay" id="login-section" style="display: none;">
+      <div class="login-box">
+        <form id="login-form">
+          <h2>Logg inn som admin</h2>
+          <div class="password-toggle">
+            <input type="password" id="password" name="password" required />
+            <button
+              type="button"
+              id="togglePassword"
+              aria-label="Toggle password visibility"
+            >
+              <img
+                id="togglePasswordIcon"
+                src="visible.png"
+                alt="Vis passord"
+              />
+            </button>
+          </div>
+          <button type="submit">Logg inn</button>
+        </form>
+      </div>
+    </div>
 
     <main class="container">
       <section class="card">
@@ -49,17 +78,7 @@
             </label>
           </div>
 
-          <div class="form-row">
-            <label for="councilYear">
-              År / periode (valgfritt)
-              <input
-                id="councilYear"
-                name="year"
-                type="text"
-                placeholder="f.eks. 2026–2027"
-              />
-            </label>
-          </div>
+          <!-- År/periode er fjernet helt -->
 
           <button type="submit" class="btn primary">
             Opprett og åpne
@@ -77,9 +96,13 @@
     </main>
   </div>
 
-    <script>
-        window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
-    </script>
-    <script src="raad-oversikt.js" type="module"></script>
+  <script>
+    // Sett API base-URL til det nye backend-et på Render
+    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+  </script>
+  <!-- Admin login handling (samme som de andre sidene) -->
+  <script src="login.js" defer></script>
+  <!-- Råd-oversikt logikk -->
+  <script src="raad-oversikt.js" type="module"></script>
 </body>
 </html>

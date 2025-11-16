@@ -93,9 +93,21 @@ async function getCouncilById(id) {
   };
 }
 
+async function deleteCouncil(id) {
+  // Simple delete for now. Later we can enforce relations (suggestions, etc.)
+  await pool.query(
+    `DELETE FROM councils
+     WHERE id = $1`,
+    [id]
+  );
+}
+
+
 module.exports = {
   init,
   getCouncils,
   createCouncil,
   getCouncilById,
+  deleteCouncil,
 };
+

@@ -7,7 +7,9 @@ const {
   getCouncils,
   createCouncil,
   getCouncilById,
+  deleteCouncil,
 } = require("./db");
+
 
 dotenv.config();
 
@@ -72,6 +74,26 @@ app.get("/api/ungdomsrad/:id", async (req, res) => {
     res.status(500).json({ error: "Kunne ikke hente ungdomsråd." });
   }
 });
+
+// DELETE /api/ungdomsrad/:id – delete a council
+app.delete("/api/ungdomsrad/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // (Optional) you could check for a token here later:
+    // const authHeader = req.headers.authorization || "";
+    // if (!authHeader.startsWith("Bearer ")) return res.status(401).json({ error: "Unauthorized" });
+
+    await deleteCouncil(id);
+
+    // 204 No Content is standard for successful deletes
+    res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting council:", err);
+    res.status(500).json({ error: "Kunne ikke slette ungdomsråd." });
+  }
+});
+
 
 // Start server only after DB init
 init()

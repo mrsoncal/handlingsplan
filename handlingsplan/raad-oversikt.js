@@ -1,23 +1,103 @@
-// handlingsplan/raad-oversikt.js
-
 // Base-URL til API-et ditt.
-// Kan overskrives i HTML via window.HP_API_BASE.
+// Hvis du kjører API på samme domenet som statisk side, kan du la denne være tom streng.
 const API_BASE = window.HP_API_BASE || "";
 const COUNCILS_URL = `${API_BASE}/api/ungdomsrad`;
 
-// Naviger til individuell side for et ungdomsråd
+// --- AUTH HELPERS ---
+
+function isAdmin() {
+  return !!localStorage.getItem("token");
+}
+
+function setupAuthUI() {
+  const token = localStorage.getItem("token");
+  const loginSection = document.getElementById("login-section");
+  const loginButton = document.getElementById("login-button");
+  const logoutButton = document.getElementById("logout-button");
+
+  if (!loginSection || !loginButton || !logoutButton) return;
+
+  if (!token) {
+    loginSection.style.display = "none";
+    loginButton.style.display = "inline-block";
+    logoutButton.style.display = "none";
+    document.body.classList.remove("logged-in");
+  } else {
+    loginSection.style.display = "none";
+    loginButton.style.display = "none";
+    logoutButton.style.display = "inline-block";
+    document.body.classList.add("logged-in");
+  }
+
+  loginButton.addEventListener("click", () => {
+    loginSection.style.display = "flex";
+    loginButton.style.display = "none";
+  });
+
+  logoutButton.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    location.reload();
+  });
+}
+
+// --- NAVIGASJON ---
+
 function goToCouncil(council) {
-  // raad.html?id=123
   window.location.href = `raad.html?id=${encodeURIComponent(council.id)}`;
 }
+
+// --- DELETE ---
+
+async function deleteCouncil(council) {
+  if (!isAdmin()) {
+    alert("Du må være logget inn som admin for å slette et ungdomsråd.");
+    return;
+  }
+
+  const name = council.display_name || council.name || "dette ungdomsrådet";
+  const confirmed = window.confirm(
+    `Er du sikker på at du vil slette "${name}"?\nDette kan ikke angres.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `${COUNCILS_URL}/${encodeURIComponent(council.id)}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }
+    );
+
+    if (!res.ok && res.status !== 204) {
+      throw new Error("Kunne ikke slette ungdomsråd.");
+    }
+
+    // Oppdater liste
+    await fetchCouncils();
+  } catch (err) {
+    console.error(err);
+    alert("Det oppstod en feil ved sletting av ungdomsråd.");
+  }
+}
+
+// --- FETCH & RENDER LISTE ---
 
 async function fetchCouncils() {
   const listEl = document.getElementById("councilList");
   const emptyEl = document.getElementById("councilListEmpty");
 
+  if (!listEl) return;
+
   try {
     const res = await fetch(COUNCILS_URL);
-    if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd");
+    if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd.");
     const councils = await res.json();
 
     listEl.innerHTML = "";
@@ -29,17 +109,33 @@ async function fetchCouncils() {
 
     if (emptyEl) emptyEl.style.display = "none";
 
+    const admin = isAdmin();
+
     councils.forEach((council) => {
       const li = document.createElement("li");
       li.className = "council-list-item";
 
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "btn council-btn";
-      button.textContent = council.display_name || council.name;
-      button.addEventListener("click", () => goToCouncil(council));
+      const nameBtn = document.createElement("button");
+      nameBtn.type = "button";
+      nameBtn.className = "btn council-btn";
+      nameBtn.textContent = council.display_name || council.name;
+      nameBtn.addEventListener("click", () => goToCouncil(council));
 
-      li.appendChild(button);
+      li.appendChild(nameBtn);
+
+      if (admin) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "btn council-delete-btn";
+        deleteBtn.textContent = "Slett";
+        deleteBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation(); // ikke trigge navigasjon
+          deleteCouncil(council);
+        });
+
+        li.appendChild(deleteBtn);
+      }
+
       listEl.appendChild(li);
     });
   } catch (err) {
@@ -52,15 +148,14 @@ async function fetchCouncils() {
   }
 }
 
+// --- NYTT UNGDOMSRÅD ---
+
 async function handleNewCouncil(event) {
   event.preventDefault();
   const form = event.currentTarget;
 
   const nameInput = form.querySelector("#councilName");
-  const yearInput = form.querySelector("#councilYear");
-
   const name = nameInput?.value.trim();
-  const year = yearInput?.value.trim() || null;
 
   if (!name) {
     alert("Skriv inn navn på ungdomsråd.");
@@ -73,7 +168,8 @@ async function handleNewCouncil(event) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, year }),
+      // År/periode sendes ikke lenger – kun navn
+      body: JSON.stringify({ name }),
     });
 
     if (!res.ok) {
@@ -83,11 +179,9 @@ async function handleNewCouncil(event) {
 
     const created = await res.json();
 
-    // Rensk form og oppdater liste
     if (nameInput) nameInput.value = "";
-    if (yearInput) yearInput.value = "";
 
-    // Naviger direkte til nytt ungdomsråd
+    // Gå rett til det nye ungdomsrådet
     goToCouncil(created);
   } catch (err) {
     console.error(err);
@@ -95,7 +189,11 @@ async function handleNewCouncil(event) {
   }
 }
 
+// --- INIT ---
+
 document.addEventListener("DOMContentLoaded", () => {
+  setupAuthUI();
+
   const form = document.getElementById("newCouncilForm");
   if (form) {
     form.addEventListener("submit", handleNewCouncil);
