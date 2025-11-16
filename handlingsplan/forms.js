@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // NYTT: knytter innspillet til et konkret ungdomsråd
       raadId: councilId,
 
-      action,
+      actionType: action,
       tema: temaSelect.value || null,
       punktNr: punktNrInput.value ? Number(punktNrInput.value) : null,
       underpunktNr: underpunktInput.value
