@@ -1427,10 +1427,15 @@ object-fit: contain;
 .council-delete-btn {
   background: #B7173D;
   font-size: 0.85rem;
-  padding: 0.3rem 0.9rem;
+  padding: 0.4rem 1rem;
   border: none;
   border-radius: 9999px;
   color: white;
+}
+
+.council-delete-btn:hover {
+  background: #8e1230;
+  cursor: pointer;
 }
 
 /* Enkel muted-tekst, brukt til tom-liste melding */
