@@ -66,39 +66,58 @@
     <div class="login-overlay" id="newCouncilOverlay" style="display: none;">
       <div class="login-box">
         <form id="newCouncilForm" class="council-form">
-          <h2>Nytt ungdomsråd</h2>
+            <h2>Legg til nytt Ungdomsråd</h2>
 
-          <div class="form-row">
-            <label for="councilName">
-              Navn på ungdomsråd
-              <input
-                id="councilName"
-                name="name"
-                type="text"
-                placeholder="f.eks. Telemark Ungdomsråd 2026"
-                required
-              />
-            </label>
-          </div>
+            <div>
+                <label for="councilName" class="form-row">
+                Navn på ungdomsråd
+                <input
+                    class="new-council-input"
+                    id="councilName"
+                    name="name"
+                    type="text"
+                    placeholder="f.eks. Telemark Ungdomsråd 2026"
+                    required
+                />
+                </label>
+            </div>
 
-          <div class="form-row">
-            <label for="councilPassword">
-              Passord for dette ungdomsrådet (admin)
-              <input
-                id="councilPassword"
-                name="password"
-                type="password"
-                placeholder="Sett et passord for å administrere handlingsplanen"
-                required
-              />
-            </label>
-          </div>
+            <div>
+                <label for="councilPassword" class="form-row">
+                Passord for dette ungdomsrådet (admin)
+                <input
+                    class="new-council-input"
+                    id="councilPassword"
+                    name="password"
+                    type="password"
+                    placeholder="Sett et passord for å administrere handlingsplanen"
+                    required
+                />
+                <p class="warning">Dette passordet kan ikke endres. Pass på at alle fremtidige råd har dette passordet.</p>
+                </label>
+            </div>
 
-          <div class="form-row" style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.75rem;">
-            <button type="button" class="btn" id="cancelNewCouncil">
+            <div class="form-row logo-upload-row">
+                <label for="councilLogoFile">
+                Logo (valgfritt)
+                <input
+                    id="councilLogoFile"
+                    name="logo"
+                    type="file"
+                    accept="image/*"
+                />
+                </label>
+                <p class="input-help-text">
+                Hvis du ikke velger noe, brukes standardlogoen.
+                </p>
+            </div>
+
+
+          <div class="form-row" id="buttons" style="display:flex; gap:0.5rem; justify-content:flex-end; margin-top:0.75rem;">
+            <button type="button" class="btn-cancel" id="cancelNewCouncil">
               Avbryt
             </button>
-            <button type="submit" class="btn primary">
+            <button type="submit" class="btn">
               Opprett og åpne
             </button>
           </div>

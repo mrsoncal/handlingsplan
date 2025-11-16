@@ -88,6 +88,25 @@ flex: 1; /* fills available space between header and footer */
 background-color: #004a56;
 }
 
+.form-row {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row#buttons {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center !important;
+}
+
+.warning {
+  color: #B7173D;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 .carousel-slide h2 {
 font-size: 1.25rem;
 font-weight: bold;             /* heavier weight */
@@ -456,12 +475,12 @@ display: block;
 }
 
 .login-box {
-  background: white;
+  background: #d3d5e4;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 0px;
+  border: none;
   box-shadow: 0 0 20px rgba(0,0,0,0.25);
-  width: 90%;
-  max-width: 400px;
+  height: 90%;
   animation: popIn 0.3s ease;
 }
 
@@ -1437,6 +1456,103 @@ object-fit: contain;
   background: #8e1230;
   cursor: pointer;
 }
+
+.council-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  align-items: left;
+  justify-content: center;
+}
+
+.council-form .btn {
+  width: 10rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000000;
+  background: #ffcc00;
+  border: none;
+  border-radius: 9999px;
+}
+
+.council-form .btn:hover {
+  background: #efbf00;
+  cursor: pointer;
+}
+
+.council-form .btn-cancel {
+  width: 10rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #B7173D;
+  border: none;
+  border-radius: 9999px;
+}
+
+.council-form .btn-cancel:hover {
+  background: #a41335;
+  cursor: pointer;
+}
+
+.new-council-input {
+  width: 25rem;
+  max-width: 100%;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  background: #ffffff;
+  border: none;
+}
+
+.logo-upload-row {
+  margin-top: 0.5rem;
+}
+
+.logo-upload-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.logo-upload-row input[type="file"] {
+  padding: 0.4rem;
+  border-radius: 0.5rem;
+  background: #ceecf4;
+  border: none;
+  cursor: pointer;
+}
+
+.logo-upload-row input[type="file"]::-webkit-file-upload-button {
+  border: none;
+  background: #007aa3;
+  color: #ffffff;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.logo-upload-row input[type="file"]::file-selector-button {
+  border: none;
+  background: #007aa3;
+  color: #ffffff;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.input-help-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
 
 /* Enkel muted-tekst, brukt til tom-liste melding */
 .muted {

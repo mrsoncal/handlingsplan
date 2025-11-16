@@ -244,8 +244,6 @@ function renderInnspillCarousel(innspill) {
 
   container.innerHTML = `
     <section class="card">
-      <h2>Innspill til handlingsplanen</h2>
-      <p>Forslag sendt inn fra dette ungdomsrådet.</p>
       <div class="carousel-wrapper">
         <button class="carousel-nav left" id="hpPrevBtn">❮</button>
         <button class="carousel-nav right" id="hpNextBtn">❯</button>

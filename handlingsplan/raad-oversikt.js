@@ -283,11 +283,14 @@ async function handleNewCouncil(event) {
   }
   form.dataset.submitting = "true";
 
-  const nameInput = form.querySelector("#councilName");
-  const passwordInput = form.querySelector("#councilPassword");
+    const nameInput = form.querySelector("#councilName");
+    const passwordInput = form.querySelector("#councilPassword");
+    const logoFileInput = form.querySelector("#councilLogoFile");
 
-  const name = nameInput?.value.trim();
-  const password = passwordInput?.value.trim();
+    const name = nameInput?.value.trim();
+    const password = passwordInput?.value.trim();
+    const logoFile = logoFileInput?.files?.[0] || null;
+
 
   if (!name) {
     alert("Skriv inn navn på ungdomsråd.");
@@ -316,6 +319,34 @@ async function handleNewCouncil(event) {
     }
 
     const created = await res.json();
+
+    // Hvis vi har valgt en logo-fil, last den opp som med handlingsplanen
+    if (logoFile) {
+      try {
+        const fd = new FormData();
+        fd.append("password", password);
+        fd.append("file", logoFile);
+
+        const uploadRes = await fetch(
+          `${COUNCILS_URL}/${encodeURIComponent(created.id)}/logo`,
+          {
+            method: "POST",
+            body: fd,
+          }
+        );
+
+        if (!uploadRes.ok) {
+          console.warn("Logo-opplasting feilet, men rådet ble opprettet likevel.");
+        }
+      } catch (logoErr) {
+        console.error("Feil ved opplasting av logo:", logoErr);
+      }
+    }
+
+    if (nameInput) nameInput.value = "";
+    if (passwordInput) passwordInput.value = "";
+    if (logoFileInput) logoFileInput.value = "";
+
 
     if (nameInput) nameInput.value = "";
     if (passwordInput) passwordInput.value = "";
