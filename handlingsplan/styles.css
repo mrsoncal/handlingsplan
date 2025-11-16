@@ -1424,7 +1424,8 @@ object-fit: contain;
   opacity: 0.8;
 }
 
-.council-open-btn {
+.council-delete-btn {
+  background: #B7173D;
   font-size: 0.85rem;
   padding: 0.3rem 0.9rem;
 }
