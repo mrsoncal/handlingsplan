@@ -1333,24 +1333,83 @@ object-fit: contain;
 
 .raad-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  /* ALWAYS create at least 3 columns */
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 1rem;
-  margin-top: 1rem;
+  margin-bottom: 6rem;
+}
+
+@media (max-width: 900px) {
+  /* On smaller screens allow auto-fit */
+  .raad-grid {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
 }
 
 .raad-card {
-  background: #f8fafc;
-  border: 1px solid #d1d5db;
-  border-radius: 0.75rem;
+  background: #ceecf4;
+  border: none;
+  border-radius: 0;
   padding: 0.9rem 1rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-direction: row;      /* two horizontal divs */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  min-height: 130px;        /* keeps a nice, consistent card height */
 }
 
+.raad-card:hover {
+  background: #99D7E7;
+  cursor: pointer;
+}
+
+/* "Legg til nytt råd"-kort */
 .raad-card-add {
-  background: #ceecf4;
-  border-color: #38bdf8;
+  background: #ffcc00;
+  cursor: pointer;
+  /* Same min-height so it doesn't collapse when alone */
+  min-height: 130px;
+  /* Center its content since it has no icon/body split */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.raad-card-add:hover {
+  background: #e4b700;
+}
+
+/* Left icon column */
+.raad-card-icon-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.raad-card-icon {
+  width: 4rem;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Right content column */
+.raad-card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.raad-card-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-start;  /* align with text */
+  gap: 0.5rem;
 }
 
 .raad-card-title {
@@ -1365,13 +1424,6 @@ object-fit: contain;
   opacity: 0.8;
 }
 
-.raad-card-actions {
-  margin-top: 0.5rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
 .council-open-btn {
   font-size: 0.85rem;
   padding: 0.3rem 0.9rem;
@@ -1382,4 +1434,12 @@ object-fit: contain;
   font-size: 0.9rem;
   color: #6b7280;
   margin-top: 0.75rem;
+}
+
+.raadSearch {
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 9999px;
+  background: #ceecf4;
+  padding: 0.5rem 1rem;
 }
