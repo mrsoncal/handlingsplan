@@ -154,38 +154,64 @@ async function handleNewCouncil(event) {
   event.preventDefault();
   const form = event.currentTarget;
 
+  // Prevent double-submit (from double-clicks OR duplicate listeners)
+  if (form.dataset.submitting === "true") {
+    console.warn("New council form is already submitting, ignoring.");
+    return;
+  }
+  form.dataset.submitting = "true";
+
   const nameInput = form.querySelector("#councilName");
+  const yearInput = form.querySelector("#councilYear"); // ok if not present
+
   const name = nameInput?.value.trim();
+  const year = yearInput?.value.trim() || null;
 
   if (!name) {
-    alert("Skriv inn navn på ungdomsråd.");
+    alert("Skriv inn et navn på ungdomsrådet.");
+    form.dataset.submitting = "false";
     return;
   }
 
+  const payload = { name };
+  if (year) payload.year = year; // if you dropped year, you can remove this line
+
   try {
+    console.log("Oppretter ungdomsråd med payload:", payload);
+
     const res = await fetch(COUNCILS_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      // År/periode sendes ikke lenger – kun navn
-      body: JSON.stringify({ name }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw new Error(error.error || "Kunne ikke opprette ungdomsråd.");
+      let msg = "Kunne ikke opprette ungdomsråd.";
+      try {
+        const data = await res.json();
+        if (data && data.error) msg = data.error;
+      } catch (e) {
+        // ignore JSON parse errors
+      }
+      alert(msg);
+      return;
     }
 
     const created = await res.json();
+    console.log("Opprettet ungdomsråd:", created);
 
+    // evt. resett feltene
     if (nameInput) nameInput.value = "";
+    if (yearInput) yearInput.value = "";
 
-    // Gå rett til det nye ungdomsrådet
+    // Naviger direkte til det nye rådet
     goToCouncil(created);
   } catch (err) {
     console.error(err);
     alert("Det oppstod en feil ved opprettelse av ungdomsråd.");
+  } finally {
+    // Allow another submit after request is done
+    form.dataset.submitting = "false";
   }
 }
 
