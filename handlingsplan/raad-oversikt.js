@@ -193,11 +193,19 @@ function renderCouncils() {
     const iconWrap = document.createElement("div");
     iconWrap.className = "raad-card-icon-wrap";
 
-    const icon = document.createElement("img");
-    // Bruk samme logo som i headeren (juster om du vil)
-    icon.src = "../TU-logov2.png";
-    icon.alt = "Ungdomsråd ikon";
+   const icon = document.createElement("img");
+
+    let logoSrc = "../TU-logov2.png"; // correct relative path from raad-oversikt.html
+
+    if (council.logo_path) {
+    // logo_path comes from the backend, e.g. "/uploads/abcd.png"
+    logoSrc = `${API_BASE}${council.logo_path}`;
+    }
+
+    icon.src = logoSrc;
+    icon.alt = `Logo for ${name}`;
     icon.className = "raad-card-icon";
+
 
     iconWrap.appendChild(icon);
 

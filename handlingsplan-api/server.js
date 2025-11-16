@@ -184,6 +184,46 @@ app.post(
   }
 );
 
+const { setCouncilLogoPath } = require("./db");
+
+// POST /api/ungdomsrad/:id/logo -> upload logo image for a council
+app.post(
+  "/api/ungdomsrad/:id/logo",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      const password = req.body.password;
+
+      const council = await getCouncilWithPassword(id);
+      if (!council) {
+        return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+      }
+
+      if (!password || password.trim() !== (council.admin_password || "").trim()) {
+        return res
+          .status(401)
+          .json({ error: "Feil passord for dette ungdomsrådet." });
+      }
+
+      if (!req.file) {
+        return res
+          .status(400)
+          .json({ error: "Ingen fil mottatt for logo-opplasting." });
+      }
+
+      const relativePath = `/uploads/${req.file.filename}`;
+      await setCouncilLogoPath(id, relativePath);
+
+      res.json({ logo_path: relativePath });
+    } catch (err) {
+      console.error("Error uploading logo:", err);
+      res.status(500).json({ error: "Kunne ikke laste opp logo." });
+    }
+  }
+);
+
+
 // POST /api/ungdomsrad/:id/innspill  -> lagre ett nytt innspill
 app.post("/api/ungdomsrad/:id/innspill", async (req, res) => {
   try {

@@ -67,7 +67,7 @@ async function init() {
 async function getCouncils() {
   const result = await pool.query(
     `
-      SELECT id, name, year, created_at, handlingsplan_path
+      SELECT id, name, year, created_at, handlingsplan_path, logo_path
       FROM councils
       ORDER BY created_at ASC, id ASC
     `
@@ -78,11 +78,12 @@ async function getCouncils() {
     name: row.name,
     year: row.year,
     created_at: row.created_at,
-    // path is relative, frontend will prefix with API base
     handlingsplan_path: row.handlingsplan_path || null,
-    display_name: row.name, // we dropped år/periode in UI
+    logo_path: row.logo_path || null,
+    // display_name if you have it
   }));
 }
+
 
 async function createCouncil({ name, password }) {
   if (!name || !name.trim()) {
@@ -167,6 +168,18 @@ async function setCouncilHandlingsplanPath(id, path) {
   );
 }
 
+async function setCouncilLogoPath(id, logoPath) {
+  await pool.query(
+    `
+      UPDATE councils
+      SET logo_path = $2
+      WHERE id = $1
+    `,
+    [id, logoPath]
+  );
+}
+
+
 async function createInnspill({
   councilId,
   actionType,
@@ -250,6 +263,7 @@ module.exports = {
   getCouncilWithPassword,
   deleteCouncil,
   setCouncilHandlingsplanPath,
+  setCouncilLogoPath,
   createInnspill,
   getInnspillForCouncil,
 };
