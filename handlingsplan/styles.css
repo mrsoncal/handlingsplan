@@ -1328,3 +1328,58 @@ object-fit: contain;
     font-size: 0.9rem;
   }
 }
+
+/* --- Råd-oversikt: grid med kort --- */
+
+.raad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.raad-card {
+  background: #f8fafc;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.raad-card-add {
+  background: #ceecf4;
+  border-color: #38bdf8;
+}
+
+.raad-card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.raad-card-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.raad-card-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.council-open-btn {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.9rem;
+}
+
+/* Enkel muted-tekst, brukt til tom-liste melding */
+.muted {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.75rem;
+}

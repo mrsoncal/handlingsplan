@@ -34,13 +34,30 @@
     <div class="login-overlay" id="login-section" style="display: none;">
       <div class="login-box">
         <form id="login-form">
-          <h2>Logg inn som admin</h2>
-          <div class="password-toggle">
-            <input type="password" id="password" name="password" required />
+          <h2>Admin-innlogging</h2>
+          <label for="username">Brukernavn</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Skriv inn brukernavn"
+            required
+          />
+
+          <label for="password">Passord</label>
+          <div class="password-wrapper">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Skriv inn passord"
+              required
+            />
             <button
               type="button"
               id="togglePassword"
-              aria-label="Toggle password visibility"
+              class="password-toggle-btn"
+              aria-label="Vis eller skjul passord"
             >
               <img
                 id="togglePasswordIcon"
@@ -56,47 +73,50 @@
 
     <main class="container">
       <section class="card">
-        <h2>Opprett nytt ungdomsråd</h2>
-        <form id="newCouncilForm" class="council-form">
-            <div class="form-row">
+        <h2>Ungdomsråd</h2>
+
+        <div id="raadGrid" class="raad-grid">
+          <!-- Første kort: legg til nytt råd -->
+          <article class="raad-card raad-card-add">
+            <h3 class="raad-card-title">Legg til nytt ungdomsråd</h3>
+            <form id="newCouncilForm" class="council-form">
+              <div class="form-row">
                 <label for="councilName">
-                Navn på ungdomsråd
-                <input
+                  Navn på ungdomsråd
+                  <input
                     id="councilName"
                     name="name"
                     type="text"
                     placeholder="f.eks. Telemark Ungdomsråd 2026"
                     required
-                />
+                  />
                 </label>
-            </div>
+              </div>
 
-            <div class="form-row">
+              <div class="form-row">
                 <label for="councilPassword">
-                Passord for dette ungdomsrådet (admin)
-                <input
+                  Passord for dette ungdomsrådet (admin)
+                  <input
                     id="councilPassword"
                     name="password"
                     type="password"
                     placeholder="Sett et passord for å administrere handlingsplanen"
                     required
-                />
+                  />
                 </label>
-            </div>
+              </div>
 
-            <button type="submit" class="btn primary">
+              <button type="submit" class="btn primary">
                 Opprett og åpne
-            </button>
-        </form>
+              </button>
+            </form>
+          </article>
+          <!-- Øvrige råd-kort legges inn her med JS -->
+        </div>
 
-      </section>
-
-      <section class="card">
-        <h2>Eksisterende ungdomsråd</h2>
         <p id="councilListEmpty" class="muted">
-          Ingen ungdomsråd er opprettet ennå.
+          Ingen ungdomsråd er opprettet ennå. Bruk kortet «Legg til nytt ungdomsråd» for å opprette ett.
         </p>
-        <ul id="councilList" class="council-list"></ul>
       </section>
     </main>
   </div>

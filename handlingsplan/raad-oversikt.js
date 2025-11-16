@@ -29,15 +29,60 @@ function setupAuthUI() {
     document.body.classList.add("logged-in");
   }
 
-  loginButton.addEventListener("click", () => {
-    loginSection.style.display = "flex";
-    loginButton.style.display = "none";
-  });
+  if (loginButton) {
+    loginButton.addEventListener("click", () => {
+      loginSection.style.display = "flex";
+    });
+  }
 
-  logoutButton.addEventListener("click", () => {
-    localStorage.removeItem("token");
-    location.reload();
-  });
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      setupAuthUI();
+    });
+  }
+
+  const loginForm = document.getElementById("login-form");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const username = document.getElementById("username")?.value;
+      const password = document.getElementById("password")?.value;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Feil brukernavn eller passord");
+        }
+
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        loginSection.style.display = "none";
+        setupAuthUI();
+      } catch (err) {
+        console.error(err);
+        alert("Innlogging feilet. Sjekk brukernavn og passord.");
+      }
+    });
+  }
+
+  const togglePasswordBtn = document.getElementById("togglePassword");
+  const passwordInput = document.getElementById("password");
+  const togglePasswordIcon = document.getElementById("togglePasswordIcon");
+
+  if (togglePasswordBtn && passwordInput && togglePasswordIcon) {
+    togglePasswordBtn.addEventListener("click", () => {
+      const isPassword = passwordInput.type === "password";
+      passwordInput.type = isPassword ? "text" : "password";
+      togglePasswordIcon.src = isPassword ? "hidden.png" : "visible.png";
+      togglePasswordIcon.alt = isPassword ? "Skjul passord" : "Vis passord";
+    });
+  }
 }
 
 // --- NAVIGASJON ---
@@ -54,16 +99,16 @@ async function deleteCouncil(council) {
     return;
   }
 
-  const name = council.display_name || council.name || "dette ungdomsrådet";
-  const confirmed = window.confirm(
-    `Er du sikker på at du vil slette "${name}"?\nDette kan ikke angres.`
+  const confirmDelete = confirm(
+    `Er du sikker på at du vil slette ungdomsrådet "${council.display_name || council.name}"? ` +
+      "Denne handlingen kan ikke angres."
   );
 
-  if (!confirmed) return;
+  if (!confirmDelete) return;
+
+  const token = localStorage.getItem("token");
 
   try {
-    const token = localStorage.getItem("token");
-
     const res = await fetch(
       `${COUNCILS_URL}/${encodeURIComponent(council.id)}`,
       {
@@ -90,17 +135,24 @@ async function deleteCouncil(council) {
 // --- FETCH & RENDER LISTE ---
 
 async function fetchCouncils() {
-  const listEl = document.getElementById("councilList");
+  const gridEl = document.getElementById("raadGrid");
   const emptyEl = document.getElementById("councilListEmpty");
 
-  if (!listEl) return;
+  if (!gridEl) return;
+
+  // Behold første kort (legg til råd), fjern øvrige før vi tegner på nytt
+  const addCard = gridEl.querySelector(".raad-card-add");
 
   try {
     const res = await fetch(COUNCILS_URL);
     if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd.");
     const councils = await res.json();
 
-    listEl.innerHTML = "";
+    // Tøm grid og legg tilbake «legg til»-kortet først
+    gridEl.innerHTML = "";
+    if (addCard) {
+      gridEl.appendChild(addCard);
+    }
 
     if (!councils.length) {
       if (emptyEl) emptyEl.style.display = "block";
@@ -112,16 +164,43 @@ async function fetchCouncils() {
     const admin = isAdmin();
 
     councils.forEach((council) => {
-      const li = document.createElement("li");
-      li.className = "council-list-item";
+      const card = document.createElement("article");
+      card.className = "raad-card";
 
-      const nameBtn = document.createElement("button");
-      nameBtn.type = "button";
-      nameBtn.className = "btn council-btn";
-      nameBtn.textContent = council.display_name || council.name;
-      nameBtn.addEventListener("click", () => goToCouncil(council));
+      const name = council.display_name || council.name || `Ungdomsråd #${council.id}`;
+      const created = council.created_at
+        ? new Date(council.created_at).toLocaleDateString("nb-NO")
+        : "";
 
-      li.appendChild(nameBtn);
+      const header = document.createElement("div");
+      header.className = "raad-card-header";
+
+      const title = document.createElement("h3");
+      title.className = "raad-card-title";
+      title.textContent = name;
+      header.appendChild(title);
+
+      card.appendChild(header);
+
+      if (created) {
+        const meta = document.createElement("p");
+        meta.className = "raad-card-meta";
+        meta.textContent = `Opprettet ${created}`;
+        card.appendChild(meta);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "raad-card-actions";
+
+      const openBtn = document.createElement("button");
+      openBtn.type = "button";
+      openBtn.className = "btn council-open-btn";
+      openBtn.textContent = "Åpne";
+      openBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        goToCouncil(council);
+      });
+      actions.appendChild(openBtn);
 
       if (admin) {
         const deleteBtn = document.createElement("button");
@@ -132,11 +211,17 @@ async function fetchCouncils() {
           ev.stopPropagation(); // ikke trigge navigasjon
           deleteCouncil(council);
         });
-
-        li.appendChild(deleteBtn);
+        actions.appendChild(deleteBtn);
       }
 
-      listEl.appendChild(li);
+      card.appendChild(actions);
+
+      // Hele kortet er klikkbart for å åpne rådet
+      card.addEventListener("click", () => {
+        goToCouncil(council);
+      });
+
+      gridEl.appendChild(card);
     });
   } catch (err) {
     console.error(err);
