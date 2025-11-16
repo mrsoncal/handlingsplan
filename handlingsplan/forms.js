@@ -1,7 +1,9 @@
 // Handlingsplan: dynamic logic for forms.html
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("hp-form");
-  const actionRadios = Array.from(document.querySelectorAll('input[name="actionType"]'));
+  const actionRadios = Array.from(
+    document.querySelectorAll('input[name="actionType"]')
+  );
   const temaSelect = document.getElementById("tema");
   const punktNrInput = document.getElementById("punktNr");
   const underpunktInput = document.getElementById("underpunktNr");
@@ -13,8 +15,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const sectionRemove = document.getElementById("section-remove");
   const submitBtn = document.getElementById("submitBtn");
 
+  // --- Koble formen til et spesifikt ungdomsråd --------------------------
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const councilId =
+    urlParams.get("raadId") || urlParams.get("councilId") || null;
+
+  // Juster "Tilbake"-lenken til å peke tilbake til dette rådet
+  const backLink = document.getElementById("backLink");
+  if (backLink && councilId) {
+    backLink.href = `raad.html?id=${encodeURIComponent(councilId)}`;
+  }
+
   function getSelectedAction() {
-    const checked = actionRadios.find(r => r.checked);
+    const checked = actionRadios.find((r) => r.checked);
     return checked ? checked.value : "";
   }
 
@@ -43,12 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (!isValidInteger(punktNrInput.value)) {
+    const punktVal = punktNrInput.value.trim();
+    if (!isValidInteger(punktVal)) {
       submitBtn.disabled = true;
       return;
     }
 
-    if (!isValidInteger(underpunktInput.value, { allowEmpty: true })) {
+    // Underpunkt kan være tomt, men hvis fylt må det være gyldig tall
+    const underVal = underpunktInput.value.trim();
+    if (!isValidInteger(underVal, { allowEmpty: true })) {
       submitBtn.disabled = true;
       return;
     }
@@ -58,9 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = true;
         return;
       }
-    }
-
-    if (action === "change") {
+    } else if (action === "change") {
       if (!endreFraInput.value.trim() || !endreTilInput.value.trim()) {
         submitBtn.disabled = true;
         return;
@@ -71,13 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Attach listeners
-  [...actionRadios,
-   temaSelect,
-   punktNrInput,
-   underpunktInput,
-   nyttPunktInput,
-   endreFraInput,
-   endreTilInput].forEach(el => {
+  [
+    ...actionRadios,
+    temaSelect,
+    punktNrInput,
+    underpunktInput,
+    nyttPunktInput,
+    endreFraInput,
+    endreTilInput,
+  ].forEach((el) => {
     if (!el) return;
     el.addEventListener("input", updateVisibilityAndValidity);
     el.addEventListener("change", updateVisibilityAndValidity);
@@ -91,17 +108,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const action = getSelectedAction();
 
     const payload = {
+      // NYTT: knytter innspillet til et konkret ungdomsråd
+      raadId: councilId,
+
       action,
       tema: temaSelect.value || null,
       punktNr: punktNrInput.value ? Number(punktNrInput.value) : null,
-      underpunktNr: underpunktInput.value ? Number(underpunktInput.value) : null,
+      underpunktNr: underpunktInput.value
+        ? Number(underpunktInput.value)
+        : null,
       nyttPunkt: action === "add" ? nyttPunktInput.value.trim() : null,
       endreFra: action === "change" ? endreFraInput.value.trim() : null,
       endreTil: action === "change" ? endreTilInput.value.trim() : null,
     };
 
     console.log("[Handlingsplan innspill] payload:", payload);
-    alert("Innspill sendt! (demo)\n\nDenne siden kan senere kobles direkte til backend.");
+    alert(
+      "Innspill sendt! (demo)\n\nDenne siden kan senere kobles direkte til backend."
+    );
 
     form.reset();
     updateVisibilityAndValidity();

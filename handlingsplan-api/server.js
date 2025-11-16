@@ -2,23 +2,39 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 const {
   init,
   getCouncils,
   createCouncil,
   getCouncilById,
+  getCouncilWithPassword,
   deleteCouncil,
+  setCouncilHandlingsplanPath,
 } = require("./db");
-
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Ensure uploads folder exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+// Multer for file uploads
+const upload = multer({ dest: uploadsDir });
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files
+app.use("/uploads", express.static(uploadsDir));
 
 // Simple health check
 app.get("/health", (req, res) => {
@@ -39,10 +55,10 @@ app.get("/api/ungdomsrad", async (req, res) => {
   }
 });
 
-// POST /api/ungdomsrad  -> create council
+// POST /api/ungdomsrad  -> create council (with admin password)
 app.post("/api/ungdomsrad", async (req, res) => {
   try {
-    const { name, year } = req.body || {};
+    const { name, password } = req.body || {};
 
     if (!name || !name.trim()) {
       return res
@@ -50,7 +66,13 @@ app.post("/api/ungdomsrad", async (req, res) => {
         .json({ error: "Feltet 'name' (navn på ungdomsråd) er påkrevd." });
     }
 
-    const council = await createCouncil({ name, year });
+    if (!password || !password.trim()) {
+      return res.status(400).json({
+        error: "Feltet 'password' (passord for ungdomsråd) er påkrevd.",
+      });
+    }
+
+    const council = await createCouncil({ name, password });
     res.status(201).json(council);
   } catch (err) {
     console.error("Error creating council:", err);
@@ -58,7 +80,7 @@ app.post("/api/ungdomsrad", async (req, res) => {
   }
 });
 
-// GET /api/ungdomsrad/:id  -> fetch single council
+// GET /api/ungdomsrad/:id  -> fetch single council (no password)
 app.get("/api/ungdomsrad/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -75,18 +97,11 @@ app.get("/api/ungdomsrad/:id", async (req, res) => {
   }
 });
 
-// DELETE /api/ungdomsrad/:id – delete a council
+// DELETE /api/ungdomsrad/:id  -> delete a council
 app.delete("/api/ungdomsrad/:id", async (req, res) => {
   try {
     const id = req.params.id;
-
-    // (Optional) you could check for a token here later:
-    // const authHeader = req.headers.authorization || "";
-    // if (!authHeader.startsWith("Bearer ")) return res.status(401).json({ error: "Unauthorized" });
-
     await deleteCouncil(id);
-
-    // 204 No Content is standard for successful deletes
     res.status(204).send();
   } catch (err) {
     console.error("Error deleting council:", err);
@@ -94,6 +109,48 @@ app.delete("/api/ungdomsrad/:id", async (req, res) => {
   }
 });
 
+// POST /api/ungdomsrad/:id/handlingsplan -> upload PDF/image for a council
+// expects multipart/form-data with fields:
+//  - password (admin password for this råd)
+//  - file (PDF/image)
+app.post(
+  "/api/ungdomsrad/:id/handlingsplan",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const id = req.params.id;
+      const { password } = req.body || {};
+
+      const council = await getCouncilWithPassword(id);
+      if (!council) {
+        return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+      }
+
+      if (!password || password.trim() !== (council.admin_password || "").trim()) {
+        return res
+          .status(401)
+          .json({ error: "Feil passord for dette ungdomsrådet." });
+      }
+
+      if (!req.file) {
+        return res
+          .status(400)
+          .json({ error: "Ingen fil ble lastet opp. Velg en PDF eller et bilde." });
+      }
+
+      const relativePath = `/uploads/${req.file.filename}`;
+      await setCouncilHandlingsplanPath(id, relativePath);
+
+      const updated = await getCouncilById(id);
+      res.json(updated);
+    } catch (err) {
+      console.error("Error uploading handlingsplan:", err);
+      res
+        .status(500)
+        .json({ error: "Kunne ikke laste opp handlingsplan for dette ungdomsrådet." });
+    }
+  }
+);
 
 // Start server only after DB init
 init()

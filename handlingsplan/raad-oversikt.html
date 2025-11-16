@@ -65,25 +65,37 @@
       <section class="card">
         <h2>Opprett nytt ungdomsråd</h2>
         <form id="newCouncilForm" class="council-form">
-          <div class="form-row">
-            <label for="councilName">
-              Navn på ungdomsråd
-              <input
-                id="councilName"
-                name="name"
-                type="text"
-                placeholder="f.eks. Telemark Ungdomsråd 2026"
-                required
-              />
-            </label>
-          </div>
+            <div class="form-row">
+                <label for="councilName">
+                Navn på ungdomsråd
+                <input
+                    id="councilName"
+                    name="name"
+                    type="text"
+                    placeholder="f.eks. Telemark Ungdomsråd 2026"
+                    required
+                />
+                </label>
+            </div>
 
-          <!-- År/periode er fjernet helt -->
+            <div class="form-row">
+                <label for="councilPassword">
+                Passord for dette ungdomsrådet (admin)
+                <input
+                    id="councilPassword"
+                    name="password"
+                    type="password"
+                    placeholder="Sett et passord for å administrere handlingsplanen"
+                    required
+                />
+                </label>
+            </div>
 
-          <button type="submit" class="btn primary">
-            Opprett og åpne
-          </button>
+            <button type="submit" class="btn primary">
+                Opprett og åpne
+            </button>
         </form>
+
       </section>
 
       <section class="card">

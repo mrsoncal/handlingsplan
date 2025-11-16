@@ -1318,7 +1318,6 @@ object-fit: contain;
 @media (max-width: 640px) {
   .card.forms-card {
     padding: 1.3rem 1.1rem 1.5rem;
-    border-radius: 14px;
   }
 
   .card.forms-card h2 {

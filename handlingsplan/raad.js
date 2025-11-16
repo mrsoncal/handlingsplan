@@ -16,42 +16,166 @@ async function fetchCouncil(id) {
   return await res.json();
 }
 
+function setupOpenFormsButton(councilId) {
+  const btn = document.getElementById("openFormsBtn");
+  if (!btn) return;
+
+  if (!councilId) {
+    btn.disabled = true;
+    btn.textContent = "Ingen ungdomsråd valgt";
+    return;
+  }
+
+  btn.addEventListener("click", () => {
+    window.location.href = `forms.html?raadId=${encodeURIComponent(
+      councilId
+    )}`;
+  });
+}
+
+function setupHandlingsplanLink(council) {
+  const link = document.getElementById("handlingsplanLink");
+  if (!link) return;
+
+  const path = council.handlingsplan_path;
+  if (path) {
+    const url = `${API_BASE}${path}`;
+    link.href = url;
+    link.target = "_blank";
+    link.textContent = "Handlingsplan";
+    link.classList.remove("disabled");
+    link.setAttribute("aria-disabled", "false");
+  } else {
+    link.href = "#";
+    link.removeAttribute("target");
+    link.textContent = "Ingen handlingsplan satt";
+    link.classList.add("disabled");
+    link.setAttribute("aria-disabled", "true");
+    link.addEventListener("click", (e) => e.preventDefault());
+  }
+}
+
+function setupAdminOverlay(councilId, onUploaded) {
+  const adminBtn = document.getElementById("raadAdminBtn");
+  const overlay = document.getElementById("raadAdminOverlay");
+  const form = document.getElementById("raadAdminForm");
+  const passwordInput = document.getElementById("raadAdminPassword");
+  const fileInput = document.getElementById("handlingsplanFile");
+  const cancelBtn = document.getElementById("raadAdminCancelBtn");
+
+  if (!adminBtn || !overlay || !form || !passwordInput || !fileInput) return;
+  if (!councilId) {
+    adminBtn.disabled = true;
+    return;
+  }
+
+  adminBtn.addEventListener("click", () => {
+    overlay.style.display = "flex";
+  });
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      form.reset();
+    });
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const password = passwordInput.value.trim();
+    const file = fileInput.files[0];
+
+    if (!password) {
+      alert("Skriv inn passord for dette ungdomsrådet.");
+      return;
+    }
+
+    if (!file) {
+      alert("Velg en fil (PDF eller bilde) før du laster opp.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("password", password);
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(
+        `${COUNCILS_URL}/${encodeURIComponent(councilId)}/handlingsplan`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!res.ok) {
+        let msg = "Kunne ikke laste opp handlingsplan.";
+        try {
+          const data = await res.json();
+          if (data && data.error) msg = data.error;
+        } catch (err) {
+          // ignore JSON parse error
+        }
+        alert(msg);
+        return;
+      }
+
+      const updatedCouncil = await res.json();
+      alert("Handlingsplan ble oppdatert!");
+
+      overlay.style.display = "none";
+      form.reset();
+
+      if (typeof onUploaded === "function") {
+        onUploaded(updatedCouncil);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Det oppstod en feil ved opplasting av handlingsplan.");
+    }
+  });
+}
+
 async function init() {
   const id = getCouncilIdFromUrl();
   const heading = document.getElementById("councilHeading");
   const container = document.getElementById("raadContent");
 
+  setupOpenFormsButton(id);
+
   if (!id) {
     if (heading) heading.textContent = "Ingen ungdomsråd valgt";
     if (container) {
       container.innerHTML =
-        '<p>Ingen ungdomsråd er valgt. Gå tilbake til oversikten.</p>';
+        "<p>Ingen ungdomsråd er valgt. Gå tilbake til oversikten.</p>";
     }
     return;
   }
 
   try {
-    const council = await fetchCouncil(id);
+    let council = await fetchCouncil(id);
 
-    // Sett tittel/heading
     const title = council.display_name || council.name;
     if (heading) heading.textContent = `Handlingsplan – ${title}`;
     document.title = `Handlingsplan – ${title}`;
 
-    // Foreløpig holder vi innholdet tomt, men vi kan vise litt basic info:
     if (container) {
       container.innerHTML = `
         <section class="card">
           <h2>${title}</h2>
           <p>Her kommer innholdet for dette ungdomsrådet etter hvert.</p>
-          <p><small>ID: ${council.id}${
-        council.year ? ` • År/periode: ${council.year}` : ""
-      }</small></p>
+          <p><small>ID: ${council.id}</small></p>
         </section>
       `;
     }
 
-    // Fremtidig: her kan du montere tabell-karusell, forms osv.
+    setupHandlingsplanLink(council);
+
+    setupAdminOverlay(id, (updatedCouncil) => {
+      council = updatedCouncil;
+      setupHandlingsplanLink(council);
+    });
   } catch (err) {
     console.error(err);
     if (heading) heading.textContent = "Feil ved henting av ungdomsråd";

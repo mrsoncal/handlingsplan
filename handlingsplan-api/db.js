@@ -13,7 +13,6 @@ if (!connectionString) {
 }
 
 // Render Postgres usually needs SSL, local often doesn't.
-// This tries to "do the right thing" in both cases.
 const useSSL =
   process.env.PGSSL === "true" ||
   (!!process.env.RENDER && process.env.PGSSL !== "false");
@@ -24,60 +23,82 @@ const pool = new Pool({
 });
 
 async function init() {
-  // Create table for ungdomsråd / councils if it doesn't exist
-  const sql = `
+  // Base table
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS councils (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       year TEXT,
       created_at TIMESTAMPTZ DEFAULT now()
     );
-  `;
-  await pool.query(sql);
-  console.log("[db] ensured councils table exists");
+  `);
+
+  // New columns for per-råd admin + handlingsplan
+  await pool.query(`
+    ALTER TABLE councils
+    ADD COLUMN IF NOT EXISTS admin_password TEXT;
+  `);
+
+  await pool.query(`
+    ALTER TABLE councils
+    ADD COLUMN IF NOT EXISTS handlingsplan_path TEXT;
+  `);
+
+  console.log("[db] ensured councils table & columns exist");
 }
 
 async function getCouncils() {
   const result = await pool.query(
     `
-      SELECT id, name, year, created_at
+      SELECT id, name, year, created_at, handlingsplan_path
       FROM councils
       ORDER BY created_at ASC, id ASC
     `
   );
 
-  // Add display_name helper for frontend
   return result.rows.map((row) => ({
-    ...row,
-    display_name: row.year ? `${row.name} (${row.year})` : row.name,
+    id: row.id,
+    name: row.name,
+    year: row.year,
+    created_at: row.created_at,
+    // path is relative, frontend will prefix with API base
+    handlingsplan_path: row.handlingsplan_path || null,
+    display_name: row.name, // we dropped år/periode in UI
   }));
 }
 
-async function createCouncil({ name, year }) {
+async function createCouncil({ name, password }) {
   if (!name || !name.trim()) {
     throw new Error("Name is required");
+  }
+  if (!password || !password.trim()) {
+    throw new Error("Password is required");
   }
 
   const result = await pool.query(
     `
-      INSERT INTO councils (name, year)
+      INSERT INTO councils (name, admin_password)
       VALUES ($1, $2)
-      RETURNING id, name, year, created_at
+      RETURNING id, name, year, created_at, handlingsplan_path
     `,
-    [name.trim(), year || null]
+    [name.trim(), password.trim()]
   );
 
   const row = result.rows[0];
   return {
-    ...row,
-    display_name: row.year ? `${row.name} (${row.year})` : row.name,
+    id: row.id,
+    name: row.name,
+    year: row.year,
+    created_at: row.created_at,
+    handlingsplan_path: row.handlingsplan_path || null,
+    display_name: row.name,
   };
 }
 
 async function getCouncilById(id) {
   const result = await pool.query(
     `
-      SELECT id, name, year, created_at
+      SELECT id, name, year, created_at, handlingsplan_path
       FROM councils
       WHERE id = $1
     `,
@@ -88,13 +109,29 @@ async function getCouncilById(id) {
 
   const row = result.rows[0];
   return {
-    ...row,
-    display_name: row.year ? `${row.name} (${row.year})` : row.name,
+    id: row.id,
+    name: row.name,
+    year: row.year,
+    created_at: row.created_at,
+    handlingsplan_path: row.handlingsplan_path || null,
+    display_name: row.name,
   };
 }
 
+// used internally, we do NOT expose password via API
+async function getCouncilWithPassword(id) {
+  const result = await pool.query(
+    `
+      SELECT id, name, year, created_at, handlingsplan_path, admin_password
+      FROM councils
+      WHERE id = $1
+    `,
+    [id]
+  );
+  return result.rows[0] || null;
+}
+
 async function deleteCouncil(id) {
-  // Simple delete for now. Later we can enforce relations (suggestions, etc.)
   await pool.query(
     `DELETE FROM councils
      WHERE id = $1`,
@@ -102,12 +139,23 @@ async function deleteCouncil(id) {
   );
 }
 
+async function setCouncilHandlingsplanPath(id, path) {
+  await pool.query(
+    `
+      UPDATE councils
+      SET handlingsplan_path = $1
+      WHERE id = $2
+    `,
+    [path, id]
+  );
+}
 
 module.exports = {
   init,
   getCouncils,
   createCouncil,
   getCouncilById,
+  getCouncilWithPassword,
   deleteCouncil,
+  setCouncilHandlingsplanPath,
 };
-

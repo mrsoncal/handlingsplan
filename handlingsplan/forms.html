@@ -11,7 +11,7 @@
     <div class="nav-container">
       <div class="navigation-bar">
         <nav class="nav">
-          <a class="btn nav" href="index.html">Tilbake</a>
+          <a class="btn nav" id="backLink" href="index.html">Tilbake</a>
         </nav>
         <nav class="nav-r">
           <nav class="nav-r">
@@ -236,7 +236,10 @@
     </div>
   </footer>
 
-
+  <script>
+    // Samme backend-base som de andre sidene
+    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+  </script>
   <script src="forms.js" defer></script>
   <script src="login.js" defer></script>
   <script src="script.js" defer></script>
