@@ -1428,6 +1428,9 @@ object-fit: contain;
   background: #B7173D;
   font-size: 0.85rem;
   padding: 0.3rem 0.9rem;
+  border: none;
+  border-radius: 9999px;
+  color: white;
 }
 
 /* Enkel muted-tekst, brukt til tom-liste melding */
