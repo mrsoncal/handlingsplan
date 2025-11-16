@@ -3,6 +3,8 @@
 const API_BASE = window.HP_API_BASE || "";
 const COUNCILS_URL = `${API_BASE}/api/ungdomsrad`;
 
+// --- Helpers ---
+
 function getCouncilIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("id");
@@ -33,12 +35,15 @@ function setupOpenFormsButton(councilId) {
   });
 }
 
+// === Handlingsplan-lenke ===
 function setupHandlingsplanLink(council) {
   const link = document.getElementById("handlingsplanLink");
   if (!link) return;
 
   const path = council.handlingsplan_path;
+
   if (path) {
+    // Dette er den faktiske filen vi lastet opp, f.eks. /uploads/<id>
     const url = `${API_BASE}${path}`;
     link.href = url;
     link.target = "_blank";
@@ -46,6 +51,7 @@ function setupHandlingsplanLink(council) {
     link.classList.remove("disabled");
     link.setAttribute("aria-disabled", "false");
   } else {
+    // Ingen fil satt ennå → disable og vis tekst
     link.href = "#";
     link.removeAttribute("target");
     link.textContent = "Ingen handlingsplan satt";
@@ -55,6 +61,7 @@ function setupHandlingsplanLink(council) {
   }
 }
 
+// === Admin-overlay for opplasting av handlingsplan ===
 function setupAdminOverlay(councilId, onUploaded) {
   const adminBtn = document.getElementById("raadAdminBtn");
   const overlay = document.getElementById("raadAdminOverlay");
@@ -64,6 +71,7 @@ function setupAdminOverlay(councilId, onUploaded) {
   const cancelBtn = document.getElementById("raadAdminCancelBtn");
 
   if (!adminBtn || !overlay || !form || !passwordInput || !fileInput) return;
+
   if (!councilId) {
     adminBtn.disabled = true;
     return;
@@ -114,7 +122,7 @@ function setupAdminOverlay(councilId, onUploaded) {
         try {
           const data = await res.json();
           if (data && data.error) msg = data.error;
-        } catch (err) {
+        } catch {
           // ignore JSON parse error
         }
         alert(msg);
@@ -137,6 +145,8 @@ function setupAdminOverlay(councilId, onUploaded) {
   });
 }
 
+// --- Init ---
+
 async function init() {
   const id = getCouncilIdFromUrl();
   const heading = document.getElementById("councilHeading");
@@ -156,7 +166,7 @@ async function init() {
   try {
     let council = await fetchCouncil(id);
 
-    const title = council.display_name || council.name;
+    const title = council.display_name || council.name || "Ukjent ungdomsråd";
     if (heading) heading.textContent = `Handlingsplan – ${title}`;
     document.title = `Handlingsplan – ${title}`;
 
@@ -170,8 +180,10 @@ async function init() {
       `;
     }
 
+    // Koble Handlingsplan-knappen til opplastet fil (hvis finnes)
     setupHandlingsplanLink(council);
 
+    // Admin-opplasting: etter opplasting oppdaterer vi lenken
     setupAdminOverlay(id, (updatedCouncil) => {
       council = updatedCouncil;
       setupHandlingsplanLink(council);

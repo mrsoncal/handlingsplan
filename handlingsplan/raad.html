@@ -12,14 +12,13 @@
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-            <button class="btn nav" id="openFormsBtn">Åpne forms</button>
-            <a class="btn nav"
-               href="../docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf"
-               target="_blank">
-              Handlingsplan 2025
+            <!-- Handlingsplan-lenken blir dynamisk satt i raad.js -->
+            <a class="btn nav" id="handlingsplanLink" href="#" target="_blank">
+              Handlingsplan
             </a>
           </nav>
           <nav class="nav-r">
+            <button class="btn nav" id="openFormsBtn">Åpne forms</button>
             <button class="btn nav" id="raadAdminBtn">Admin</button>
           </nav>
         </div>
@@ -31,48 +30,51 @@
       <h1 id="councilHeading">Handlingsplan – ungdomsråd</h1>
     </header>
 
+    <!-- Admin-overlay for å laste opp handlingsplan (PDF/bilde) -->
     <div class="login-overlay" id="raadAdminOverlay" style="display: none;">
-        <div class="login-box">
-            <form id="raadAdminForm">
-            <h2>Last opp handlingsplan</h2>
-            <p>
-                Last opp en PDF eller et bilde som skal være handlingsplanen for dette
-                ungdomsrådet.
-            </p>
+      <div class="login-box">
+        <form id="raadAdminForm">
+          <h2>Last opp handlingsplan</h2>
+          <p>
+            Last opp en PDF eller et bilde som skal være handlingsplanen for dette
+            ungdomsrådet.
+          </p>
 
-            <label>
-                Passord for dette rådet
-                <input type="password" id="raadAdminPassword" required />
-            </label>
+          <label>
+            Passord for dette rådet
+            <input type="password" id="raadAdminPassword" required />
+          </label>
 
-            <label>
-                Fil
-                <input
-                type="file"
-                id="handlingsplanFile"
-                accept="application/pdf,image/*"
-                required
-                />
-            </label>
+          <label>
+            Fil
+            <input
+              type="file"
+              id="handlingsplanFile"
+              accept="application/pdf,image/*"
+              required
+            />
+          </label>
 
-            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn primary">Last opp</button>
-                <button type="button" class="btn" id="raadAdminCancelBtn">
-                Avbryt
-                </button>
-            </div>
-            </form>
-        </div>
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn primary">Last opp</button>
+            <button type="button" class="btn" id="raadAdminCancelBtn">
+              Avbryt
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
-    <!-- Intentionally left empty for now; kun header + tittel -->
     <main class="container" id="raadContent">
       <!-- Fremtidig innhold for valgt ungdomsråd kommer her -->
     </main>
   </div>
-    <script>
-        window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
-    </script>
-    <script src="raad.js" type="module"></script>
+
+  <script>
+    // Viktig: dette skal peke på backend-et som returnerer handlingsplan_path
+    // og serverer /uploads/...
+    window.HP_API_BASE = "https://handlingsplan-api.onrender.com";
+  </script>
+  <script src="raad.js" type="module"></script>
 </body>
 </html>
