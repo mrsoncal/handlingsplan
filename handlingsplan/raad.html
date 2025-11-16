@@ -12,13 +12,13 @@
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
+            <button class="btn nav" id="openFormsBtn">Åpne forms</button>
             <!-- Handlingsplan-lenken blir dynamisk satt i raad.js -->
             <a class="btn nav" id="handlingsplanLink" href="#" target="_blank">
               Handlingsplan
             </a>
           </nav>
           <nav class="nav-r">
-            <button class="btn nav" id="openFormsBtn">Åpne forms</button>
             <button class="btn nav" id="raadAdminBtn">Admin</button>
           </nav>
         </div>
@@ -73,7 +73,7 @@
   <script>
     // Viktig: dette skal peke på backend-et som returnerer handlingsplan_path
     // og serverer /uploads/...
-    window.HP_API_BASE = "https://handlingsplan-api.onrender.com";
+    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
   </script>
   <script src="raad.js" type="module"></script>
 </body>
