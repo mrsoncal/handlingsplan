@@ -440,15 +440,15 @@ function render(items) {
 
 
 // ---------- REFRESH ----------
-async function refresh(force = false) {
-  try {
-    const items = await fetchAll();
-    if (force) lastDataHash = ""; // force redraw when explicit
-    render(items);
-  } catch (err) {
-    console.error("refresh failed:", err);
-  }
-}
+//async function refresh(force = false) {
+//  try {
+//    const items = await fetchAll();
+//    if (force) lastDataHash = ""; // force redraw when explicit
+//    render(items);
+//  } catch (err) {
+//    console.error("refresh failed:", err);
+//  }
+//}
 
 // ---------- INITIALIZATION & REFRESH INTERVAL ----------
 window.addEventListener("DOMContentLoaded", async () => {
