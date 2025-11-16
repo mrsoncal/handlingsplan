@@ -20,6 +20,9 @@ function applySlideAccent(slideEl, tema) {
   slideEl.dataset.tema = tema; // nice to have (for debugging/styling)
 }
 
+const API_BASE = window.HP_API_BASE || "";
+const COUNCILS_URL = `${API_BASE}/api/ungdomsrad`;
+
 const COLS = [
   { key: "Hva vil du gjøre?", label: "Hva vil du gjøre?" },
   { key: "Velg et punkt (nr)", label: "Punkt (nr)" }, // display label only
@@ -108,69 +111,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------- FETCH FROM BACKEND ----------
 async function fetchAll() {
-  const url = `${API}?_=${Date.now()}`;
-  const controller = new AbortController();
+  // 1. Get all councils
+  const res = await fetch(COUNCILS_URL);
+  if (!res.ok) throw new Error("Failed to fetch councils");
 
-  // 12s safety timeout
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  const councils = await res.json();
+  const all = [];
 
-  // up to 3 tries (Render cold start, transient network)
-  const tries = [0, 600, 1500]; // ms backoff
-  let lastErr;
+  for (const council of councils) {
+    const councilId = council.id;
 
-  for (let i = 0; i < tries.length; i++) {
-    if (i > 0) await new Promise(r => setTimeout(r, tries[i]));
-    console.debug(`[fetchAll] GET (try ${i+1}/${tries.length})`, url);
+    const innspillRes = await fetch(
+      `${API_BASE}/api/ungdomsrad/${councilId}/innspill`
+    );
 
-    try {
-      const res = await fetch(url, {
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-        signal: controller.signal
+    if (!innspillRes.ok) continue;
+
+    const innspillJson = await innspillRes.json();
+    const items = Array.isArray(innspillJson.items)
+      ? innspillJson.items
+      : innspillJson;
+
+    // Convert new DB row into the old "payload" format:
+    // unify shape for your render()
+    for (const s of items) {
+      const payload = {
+        "Hva vil du gjøre?":
+          s.action_type === "add"
+            ? "Legge til et punkt"
+            : s.action_type === "change"
+            ? "Endre et punkt"
+            : s.action_type === "remove"
+            ? "Fjerne et punkt"
+            : "",
+
+        "Velg et tema": s.tema || "",
+
+        "Velg et punkt (nr)": s.underpunkt_nr
+          ? `${s.punkt_nr}.${s.underpunkt_nr}`
+          : `${s.punkt_nr}`,
+
+        "Formuler punktet": s.formuler_punkt || "",
+        "Endre fra": s.endre_fra || "",
+        "Endre til": s.endre_til || "",
+      };
+
+      all.push({
+        suggestion_id: s.id,   // old naming expected by render()
+        raadId: councilId,
+        raadNavn: council.display_name || council.name || `Råd #${councilId}`,
+        status: "ny", // no status yet → default
+        updated_at: s.created_at,
+        payload,
       });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "(no body)");
-        console.error("[fetchAll] HTTP", res.status, text);
-        // Non-2xx reached server; no need to retry unless you want to.
-        clearTimeout(timeoutId);
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const json = await res.json();
-      const items = Array.isArray(json.items) ? json.items : [];
-      const latestUpdated = items.reduce((m, it) => Math.max(m, it?.updated_at ? Date.parse(it.updated_at) : 0), 0);
-
-      console.debug(
-        "[fetchAll] OK",
-        { count: items.length, serverTime: json.serverTime ?? "(n/a)", latest: latestUpdated ? new Date(latestUpdated).toISOString() : "(none)" }
-      );
-
-      clearTimeout(timeoutId);
-      return items;
-    } catch (err) {
-      lastErr = err;
-      // AbortError or “TypeError: Failed to fetch” often = CORS/mixed content/network
-      console.warn(`[fetchAll] attempt ${i+1} failed:`, err?.name, err?.message);
     }
+
   }
 
-  clearTimeout(timeoutId);
-
-  // Helpful environment dump
-  console.error("[fetchAll] FINAL FAIL", {
-    online: navigator.onLine,
-    api: API,
-    pageOrigin: location.origin,
-    userAgent: navigator.userAgent
-  });
-
-  // Extra hint for classic causes
-  if (location.protocol === "https:" && API.startsWith("http://")) {
-    console.error("Mixed content: https page cannot call http API. Use https API.");
-  }
-
-  throw lastErr || new Error("fetchAll failed");
+  return all;
 }
 
 // ---------- SORT & GROUP ----------
@@ -220,7 +218,7 @@ function render(items) {
     return;
   }
 
-  const isAdmin = document.body.classList.contains("logged-in");
+  const isAdmin = false; // midlertidig: kun lesevisning CHANGE WHEN ADDING ADMIN AND VEDTA FEATURES
 
   // Fingerprint of the data + login state to skip no-op rerenders
   const newHash = JSON.stringify([
@@ -440,15 +438,15 @@ function render(items) {
 
 
 // ---------- REFRESH ----------
-//async function refresh(force = false) {
-//  try {
-//    const items = await fetchAll();
-//    if (force) lastDataHash = ""; // force redraw when explicit
-//    render(items);
-//  } catch (err) {
-//    console.error("refresh failed:", err);
-//  }
-//}
+async function refresh(force = false) {
+  try {
+    const items = await fetchAll();
+    if (force) lastDataHash = ""; // force redraw when explicit
+    render(items);
+  } catch (err) {
+    console.error("refresh failed:", err);
+  }
+}
 
 // ---------- INITIALIZATION & REFRESH INTERVAL ----------
 window.addEventListener("DOMContentLoaded", async () => {
@@ -460,10 +458,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Poll for new data every 10 seconds
-  //setInterval(() => {
-  //  console.debug("[poll] running scheduled refresh");
-  //  refresh();
-  //}, 10000);
+  setInterval(() => {
+    console.debug("[poll] running scheduled refresh");
+    refresh();
+  }, 10000);
 });
 
 window.addEventListener("online",  () => console.debug("[net] online — refreshing")); 
