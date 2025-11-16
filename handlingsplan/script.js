@@ -462,10 +462,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Poll for new data every 10 seconds
-  setInterval(() => {
-    console.debug("[poll] running scheduled refresh");
-    refresh();
-  }, 10000);
+  //setInterval(() => {
+  //  console.debug("[poll] running scheduled refresh");
+  //  refresh();
+  //}, 10000);
 });
 
 window.addEventListener("online",  () => console.debug("[net] online — refreshing")); 
