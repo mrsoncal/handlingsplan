@@ -20,8 +20,6 @@ function applySlideAccent(slideEl, tema) {
   slideEl.dataset.tema = tema; // nice to have (for debugging/styling)
 }
 
-
-const API = "https://handlingsplan-backend.onrender.com/api/suggestions";
 const COLS = [
   { key: "Hva vil du gjøre?", label: "Hva vil du gjøre?" },
   { key: "Velg et punkt (nr)", label: "Punkt (nr)" }, // display label only
