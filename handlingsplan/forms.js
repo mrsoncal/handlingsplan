@@ -46,19 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadTema() {
-    const res = await fetch(`${API_BASE}/api/ungdomsrad/${raadId}`);
+    if (!councilId) return;
+
+    const res = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}`);
     const raad = await res.json();
 
     const temaSelect = document.getElementById("tema");
     temaSelect.innerHTML = "";
 
-    raad.temaer.forEach(t => {
+    (raad.temaer || []).forEach(t => {
       const opt = document.createElement("option");
       opt.value = t.name;
       opt.textContent = t.name;
       temaSelect.appendChild(opt);
     });
   }
+
 
   function updateVisibilityAndValidity() {
     const action = getSelectedAction();
