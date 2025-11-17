@@ -34,41 +34,6 @@
       </div>
     </header>
 
-    <!-- Admin-overlay for å laste opp handlingsplan (PDF/bilde) -->
-    <div class="login-overlay" id="raadAdminOverlay" style="display: none;">
-      <div class="login-box">
-        <form id="raadAdminForm">
-          <h2>Last opp handlingsplan</h2>
-          <p>
-            Last opp en PDF eller et bilde som skal være handlingsplanen for dette
-            ungdomsrådet.
-          </p>
-
-          <label>
-            Passord for dette rådet
-            <input type="password" id="raadAdminPassword" required />
-          </label>
-
-          <label>
-            Fil
-            <input
-              type="file"
-              id="handlingsplanFile"
-              accept="application/pdf,image/*"
-              required
-            />
-          </label>
-
-          <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-            <button type="submit" class="btn primary">Last opp</button>
-            <button type="button" class="btn" id="raadAdminCancelBtn">
-              Avbryt
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <main class="container" id="raadContent">
       <!-- Fremtidig innhold for valgt ungdomsråd kommer her -->
     </main>

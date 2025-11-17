@@ -94,15 +94,10 @@ function updateHeaderBrand(council) {
 
 
 // === Admin-overlay for opplasting av handlingsplan ===
-function setupAdminOverlay(councilId, onUploaded) {
+function setupAdminOverlay(councilId) {
   const adminBtn = document.getElementById("raadAdminBtn");
-  const overlay = document.getElementById("raadAdminOverlay");
-  const form = document.getElementById("raadAdminForm");
-  const passwordInput = document.getElementById("raadAdminPassword");
-  const fileInput = document.getElementById("handlingsplanFile");
-  const cancelBtn = document.getElementById("raadAdminCancelBtn");
 
-  if (!adminBtn || !overlay || !form || !passwordInput || !fileInput) return;
+  if (!adminBtn) return;
 
   if (!councilId) {
     adminBtn.disabled = true;
@@ -110,72 +105,11 @@ function setupAdminOverlay(councilId, onUploaded) {
   }
 
   adminBtn.addEventListener("click", () => {
-    overlay.style.display = "flex";
-  });
-
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", () => {
-      overlay.style.display = "none";
-      form.reset();
-    });
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const password = passwordInput.value.trim();
-    const file = fileInput.files[0];
-
-    if (!password) {
-      alert("Skriv inn passord for dette ungdomsrådet.");
-      return;
-    }
-
-    if (!file) {
-      alert("Velg en fil (PDF eller bilde) før du laster opp.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("password", password);
-    formData.append("file", file);
-
-    try {
-      const res = await fetch(
-        `${COUNCILS_URL}/${encodeURIComponent(councilId)}/handlingsplan`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!res.ok) {
-        let msg = "Kunne ikke laste opp handlingsplan.";
-        try {
-          const data = await res.json();
-          if (data && data.error) msg = data.error;
-        } catch {
-          // ignore JSON parse error
-        }
-        alert(msg);
-        return;
-      }
-
-      const updatedCouncil = await res.json();
-      alert("Handlingsplan ble oppdatert!");
-
-      overlay.style.display = "none";
-      form.reset();
-
-      if (typeof onUploaded === "function") {
-        onUploaded(updatedCouncil);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Det oppstod en feil ved opplasting av handlingsplan.");
-    }
+    // Redirect to the new admin page
+    window.location.href = `raad-admin.html?id=${encodeURIComponent(councilId)}`;
   });
 }
+
 
 // === Innspill-visning: tema-farger & karusell ===
 
