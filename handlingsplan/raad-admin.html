@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <title>Råd Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="nav-container">
+      <img class="brand" src="/TU-logov2.png" alt="TU" />
+    </div>
+    <div class="header-space-container"><div class="header-space"></div></div>
+  </header>
+
+  <div id="login-section" class="card" style="max-width:400px; margin:2rem auto;">
+    <h2>Admin innlogging</h2>
+    <input id="admin-password" type="password" placeholder="Passord" />
+    <button id="login-btn" class="btn">Logg inn</button>
+  </div>
+
+  <div id="admin-section" style="display:none;" class="container">
+    <section class="card">
+      <h2>Råd Admin</h2>
+
+      <label>Navn:</label>
+      <input id="raad-name" type="text" />
+
+      <label>Logo / ikon:</label>
+      <input id="raad-logo" type="file" accept="image/*" />
+
+      <label>Last opp handlingsplan:</label>
+      <input id="raad-handlingsplan" type="file" accept="application/pdf,image/*" />
+
+      <h3>Endringer i skjema</h3>
+      <label><input type="checkbox" id="chk-legge-til" /> Legge til</label>
+      <label><input type="checkbox" id="chk-endre" /> Endre</label>
+      <label><input type="checkbox" id="chk-fjerne" /> Fjerne</label>
+
+      <h3>Temaer</h3>
+      <div id="tema-list"></div>
+      <button id="add-tema-btn" class="btn">Legg til nytt tema</button>
+
+      <button id="save-btn" class="btn" style="margin-top:1rem;">Lagre</button>
+    </section>
+  </div>
+
+  <script src="raad-admin.js"></script>
+</body>
+</html>
