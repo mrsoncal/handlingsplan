@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+const crypto = require("crypto");
 const {
   init,
   getCouncils,
@@ -18,6 +19,33 @@ const {
 } = require("./db");
 
 dotenv.config();
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
+if (!ADMIN_PASSWORD) {
+  console.warn(
+    "WARNING: ADMIN_PASSWORD is not set. /api/admin/login will always fail."
+  );
+}
+
+const adminTokens = new Set();
+
+function generateAdminToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+function requireAdmin(req, res, next) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length)
+    : null;
+
+  if (!token || !adminTokens.has(token)) {
+    return res.status(401).json({ error: "Ikke autorisert." });
+  }
+
+  next();
+}
+
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -93,6 +121,26 @@ app.post("/api/ungdomsrad", async (req, res) => {
   }
 });
 
+// POST /api/admin/login  -> global admin login for råd-oversikt
+app.post("/api/admin/login", (req, res) => {
+  try {
+    const { password } = req.body || {};
+
+    if (!password || password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ error: "Feil passord." });
+    }
+
+    const token = generateAdminToken();
+    adminTokens.add(token);
+
+    res.json({ token });
+  } catch (err) {
+    console.error("Error in /api/admin/login:", err);
+    res.status(500).json({ error: "Kunne ikke logge inn." });
+  }
+});
+
+
 // GET /api/ungdomsrad/:id  -> fetch single council (no password)
 app.get("/api/ungdomsrad/:id", async (req, res) => {
   try {
@@ -129,8 +177,8 @@ app.get("/api/ungdomsrad/:id/innspill", async (req, res) => {
 });
 
 
-// DELETE /api/ungdomsrad/:id  -> delete a council
-app.delete("/api/ungdomsrad/:id", async (req, res) => {
+// DELETE /api/ungdomsrad/:id  -> delete a council (global admin only)
+app.delete("/api/ungdomsrad/:id", requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     await deleteCouncil(id);
@@ -140,6 +188,7 @@ app.delete("/api/ungdomsrad/:id", async (req, res) => {
     res.status(500).json({ error: "Kunne ikke slette ungdomsråd." });
   }
 });
+
 
 // POST /api/ungdomsrad/:id/handlingsplan -> upload PDF/image for a council
 // expects multipart/form-data with fields:
