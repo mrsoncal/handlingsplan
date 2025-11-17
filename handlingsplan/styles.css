@@ -435,10 +435,10 @@ to { opacity: 1; transform: translateY(0); }
 }
 
 .container {
-position: relative;
-max-width: 1000px;
-margin: 0 auto;
-padding: 0 1rem;
+  position: relative;
+  max-width: 1140px;   /* match header */
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 /* Make header and footer stretch full width */
@@ -858,8 +858,7 @@ object-fit: contain;
   flex-direction: column;
   align-items: center;
   margin: 0 auto;
-  max-width: 100%;
-  width: 100vw;
+  width: 100%;        /* was 100vw */
 }
 
 .nav-container {
@@ -868,8 +867,30 @@ object-fit: contain;
   align-items: center;
   justify-content: center;
   background: #dad5af;
-  max-width: 100vw;
+  width: 100%;        /* drop max-width: 100vw */
+}
+
+.header-space-container {
+  margin-bottom: 2rem;
+  padding-top: 32px;
+  width: 100%;        /* drop max-width: 100vw */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-bottom: 2px solid #dad5af;
+}
+
+.navigation-bar,
+.header-space {
+  max-width: 1140px;
+}
+
+.header-space {
+  flex: 1;
+  max-width: 1140px; /* or your chosen max width */
   width: 100%;
+  min-height: clamp(4rem, 9vw, 4.5rem);
 }
 
 .navigation-bar {
@@ -877,16 +898,16 @@ object-fit: contain;
   flex-direction: row;
   max-width: 1140px;
   width: 100%;
-  min-height: 54px;
+  min-height: clamp(3rem, 6vw, 3.5rem);
 }
 
 /* Floating TU logo */
 .nav-container .brand {
   position: absolute;
   left: 50%;
-  bottom: -11vh;
   transform: translateX(-50%);
-  height: 16vh;
+  height: clamp(3.5rem, 12vw, 6rem); /* shrinks on small screens, caps on large */
+  bottom: calc(-0.7 * clamp(3.5rem, 12vw, 6rem));
 }
 
 .btn.nav, .btn.nav-r { 
@@ -926,25 +947,6 @@ object-fit: contain;
   padding: 4px; 
   text-decoration: none !important;
   align-items: center;
-}
-
-.header-space-container {
-  margin-bottom: 2rem;
-  padding-top: 32px;
-  max-width: 100vw;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
-  border-bottom: 2px solid #dad5af;
-}
-
-.header-space {
-  flex: 1;
-  max-width: 1140px;
-  width: 100%;
-  min-height: 10vh;
 }
 
 /* === Telemark-style combined footer === */
