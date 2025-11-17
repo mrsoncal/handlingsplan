@@ -249,8 +249,6 @@ app.post(
   }
 );
 
-const { setCouncilLogoPath } = require("./db");
-
 // POST /api/ungdomsrad/:id/logo -> upload logo image for a council
 app.post(
   "/api/ungdomsrad/:id/logo",
