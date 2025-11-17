@@ -62,6 +62,8 @@ function setupAuthUI() {
         localStorage.setItem("token", data.token);
         loginSection.style.display = "none";
         setupAuthUI();
+        renderCouncils(); // <--- add this line
+
       } catch (err) {
         console.error(err);
         alert("Innlogging feilet. Sjekk passordet.");
