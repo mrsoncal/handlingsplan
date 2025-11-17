@@ -445,7 +445,53 @@ function initButtons() {
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
 }
 
-updateHeaderBrand(council);
+async function init() {
+  const id = getCouncilIdFromUrl();
+  const heading = document.getElementById("councilHeading");
+  const container = document.getElementById("raadContent");
+
+  setupOpenFormsButton(id);
+
+  if (!id) {
+    if (heading) heading.textContent = "Ingen ungdomsråd valgt";
+    if (container) {
+      container.innerHTML =
+        "<p>Ingen ungdomsråd er valgt. Gå tilbake til oversikten.</p>";
+    }
+    return;
+  }
+
+    try {
+        let council = await fetchCouncil(id);
+
+        const title = council.display_name || council.name || "Ukjent ungdomsråd";
+        if (heading) heading.textContent = `Handlingsplan – ${title}`;
+        document.title = `Handlingsplan – ${title}`;
+
+        updateHeaderBrand(council);
+
+        // Koble Handlingsplan-knappen til opplastet fil (hvis finnes)
+        setupHandlingsplanLink(council);
+
+        // Admin-opplasting: etter opplasting oppdatere lenken
+        setupAdminOverlay(id, (updatedCouncil) => {
+        council = updatedCouncil;
+        setupHandlingsplanLink(council);
+        });
+
+        // Hent og vis innspill for dette rådet
+        const innspill = await fetchInnspill(id);
+        renderInnspillCarousel(innspill);
+    } catch (err) {
+        console.error(err);
+        if (heading) heading.textContent = "Feil ved henting av ungdomsråd";
+
+        if (container) {
+        container.innerHTML =
+            "<p>Det oppstod en feil ved henting av ungdomsrådet. Prøv igjen, eller gå tilbake til oversikten.</p>";
+        }
+  }
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   initBackLink();
