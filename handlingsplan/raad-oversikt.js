@@ -39,7 +39,9 @@ function setupAuthUI() {
   logoutButton.addEventListener("click", () => {
     localStorage.removeItem("token");
     setupAuthUI();
+    renderCouncils(); // or fetchCouncils() if you prefer a fresh load
   });
+
 
   const loginForm = document.getElementById("login-form");
   if (loginForm) {
