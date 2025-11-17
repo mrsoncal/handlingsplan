@@ -884,6 +884,7 @@ object-fit: contain;
 .navigation-bar,
 .header-space {
   max-width: 1140px;
+  width: 100%;
 }
 
 .header-space {
@@ -891,14 +892,16 @@ object-fit: contain;
   max-width: 1140px; /* or your chosen max width */
   width: 100%;
   min-height: clamp(3rem, 9vw, 3.5rem);
+  padding: 0.1rem;
 }
 
 .navigation-bar {
   display: flex;
   flex-direction: row;
-  max-width: 1140px;
-  width: 100%;
+  width: 80vw;
   min-height: clamp(2.5rem, 6vw, 3rem);
+  max-width: 1250px;
+  padding: 0 1rem;
 }
 
 /* Floating TU logo */
@@ -917,7 +920,6 @@ object-fit: contain;
   background: transparent;
   border:none !important; 
   max-width: fit-content;
-  padding: auto;
   padding-bottom: .625rem !important;
   padding-top: .625rem !important;
   cursor: pointer;
@@ -931,9 +933,10 @@ object-fit: contain;
   display: flex; 
   text-align: left;
   max-width: 1140px;
-  width: 100%;
+  width: 50%;
   gap: 30px; 
-  padding: 4px; 
+  padding-top: 4px; 
+  padding-bottom: 4px; 
   text-decoration: none !important;
   align-items: center;
 }
@@ -942,9 +945,10 @@ object-fit: contain;
   text-align: right;
   justify-content: right;
   max-width: 1140px;
-  width: 100%;
+  width: 50%;
   gap: 30px; 
-  padding: 4px; 
+  padding-top: 4px; 
+  padding-bottom: 4px; 
   text-decoration: none !important;
   align-items: center;
 }
