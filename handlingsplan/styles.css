@@ -890,7 +890,7 @@ object-fit: contain;
   flex: 1;
   max-width: 1140px; /* or your chosen max width */
   width: 100%;
-  min-height: clamp(4rem, 9vw, 4.5rem);
+  min-height: clamp(3.5rem, 9vw, 4rem);
 }
 
 .navigation-bar {
