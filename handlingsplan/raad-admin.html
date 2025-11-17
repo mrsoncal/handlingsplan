@@ -10,45 +10,54 @@
     </script>
   </head>
   <body>
+
     <header class="header">
       <div class="nav-container">
-        <a id="back-link" class="btn" style="margin-right: 1rem">← Tilbake</a>
-        <img class="brand" src="/TU-logov2.png" alt="TU" />
+        <div class="navigation-bar">
+          <nav class="nav">
+            <a class="btn nav" id="back-link">Tilbake</a>
+          </nav>
+        </div>
+        <img
+          class="brand"
+          id="raadBrandLogo"
+          src="../TU-logov2.png"
+          alt="Telemark Ungdomsråd"
+        />
       </div>
       <div class="header-space-container">
         <div class="header-space"></div>
       </div>
     </header>
 
+
     <div class="container">
       <section class="card main-card">
-        <h1>Admin for <span id="raad-name">…</span></h1>
-        <p>
-          Her kan du endre navn, logo, handlingsplan og temaer for dette
-          ungdomsrådet.
-        </p>
+        <h2>Admin for <span id="raad-name">…</span></h2>
 
         <!-- RÅD-SPESIFIKT LOGIN -->
-        <div id="login-section" style="margin-top: 1.5rem">
-          <label for="raad-password" class="field-label">
-            Admin-passord for dette ungdomsrådet
-          </label>
-          <div
-            class="form-row"
-            style="gap: 0.5rem; align-items: center; margin-top: 0.25rem"
-          >
-            <input
-              id="raad-password"
-              type="password"
-              class="input"
-              placeholder="Passord satt ved opprettelse"
-            />
-            <button id="raad-login-btn" class="btn">Logg inn</button>
+        <div id="login-section">
+          <div class="login-module">
+            <div
+              class="form-row"
+            >
+              <label for="raad-password" class="field-label">
+                Skriv inn passord for å redigere ungdomsrådet.
+              </label>
+              <input
+                id="raad-password"
+                type="password"
+                class="input"
+                placeholder="Passord"
+              />
+              <button id="raad-login-btn" class="btn">Logg inn</button>
+            </div>
+            <p
+              id="raad-login-error"
+              style="color: #b7173d; margin-top: 0.5rem"
+            ></p>
           </div>
-          <p
-            id="raad-login-error"
-            style="color: #b7173d; margin-top: 0.5rem"
-          ></p>
+          
         </div>
 
         <!-- ADMIN-INNHOLD, VISER SEG ETTER LOGIN -->

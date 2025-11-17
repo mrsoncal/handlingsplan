@@ -1589,3 +1589,55 @@ object-fit: contain;
   background: #ceecf4;
   padding: 1rem 1.5rem;
 }
+
+.login-module {
+  margin-top: 1rem;
+  background: #ceecf4;
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.login-module .input {
+  width: 25rem;
+  max-width: 100%;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  background: #ffffff;
+  border: none;
+}
+
+.login-module .btn {
+  width: 10rem;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000000;
+  background: #ffcc00;
+  border: none;
+  border-radius: 9999px;
+}
+
+.login-module .btn:hover {
+  background: #efbf00;
+  cursor: pointer;
+}
+
+.login-module .form-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.login-module label {
+  font-size: large;
+}
