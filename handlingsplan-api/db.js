@@ -116,7 +116,7 @@ async function createCouncil({ name, password }) {
 async function getCouncilById(id) {
   const result = await pool.query(
     `
-      SELECT id, name, year, created_at, handlingsplan_path
+      SELECT id, name, year, created_at, handlingsplan_path, logo_path
       FROM councils
       WHERE id = $1
     `,
@@ -132,9 +132,11 @@ async function getCouncilById(id) {
     year: row.year,
     created_at: row.created_at,
     handlingsplan_path: row.handlingsplan_path || null,
+    logo_path: row.logo_path || null,
     display_name: row.name,
   };
 }
+
 
 // used internally, we do NOT expose password via API
 async function getCouncilWithPassword(id) {
