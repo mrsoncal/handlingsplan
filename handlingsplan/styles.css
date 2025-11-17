@@ -1647,7 +1647,153 @@ object-fit: contain;
   background: #ceecf4;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 10rem;
+  gap: 10rem;
+}
+
+#admin-section .form-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.upload-logo {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  background: #005260;
+  color: #ffffff;
+  cursor: pointer;
+  margin-right: 8px;
+  width: 20rem;
+}
+
+.upload-logo:hover {
+  background: #004855;
+}
+
+.admin-section-part {
+  margin-bottom: 4rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-section-part .input {
+  max-width: 20rem;
+  padding: 0.75rem 1.5rem;
+  margin-top: 0.5rem;
+  border: none;
+}
+
+.admin-section-part p {
+  margin: 0px;
+  margin-bottom: 0.5rem;
+}
+
+.btn-upload {
+  width: auto;
+  padding: 0.75rem 1.5rem;
+  margin-left: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #000000;
+  background: #ffcc00;
+  border: none;
+  border-radius: 9999px;
+}
+
+.btn-upload:hover {
+  background: #efbf00;
+  cursor: pointer;
+}
+
+.btn-delete {
+  width: auto;
+  padding: 0.75rem 1rem;
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #B7173D;
+  border: none;
+  border-radius: 9999px;
+}
+
+.btn-delete:hover{
+  background: #8e1230;
+  cursor: pointer;
+}
+
+
+
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+
+
+
+/* --- Unified styled file input -------------------------- */
+
+/* Wrap the file input in a styled container */
+.file-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: #005260;         /* same teal as .upload-logo */
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 20rem;                 /* matches your .upload-logo width */
+}
+
+/* Hide the ugly native button */
+.file-input-wrapper input[type="file"] {
+  display: none;
+}
+
+/* Fake “Velg fil” button */
+.file-input-label {
+  background: #007aa3;          /* a brighter teal button */
+  color: white;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* File name text */
+.file-input-name {
+  color: #ffffff;
+  opacity: 0.85;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Hover states */
+.file-input-wrapper:hover {
+  background: #004855;
+}
+
+.file-input-label:hover {
+  background: #006589;
 }

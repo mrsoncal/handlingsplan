@@ -283,7 +283,7 @@ function renderTemaList() {
     // Slett-knapp
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
-    deleteBtn.className = "btn";
+    deleteBtn.className = "btn-delete";
     deleteBtn.textContent = "Slett";
     deleteBtn.style.fontSize = "0.8rem";
     deleteBtn.addEventListener("click", () => {
@@ -409,28 +409,6 @@ async function saveConfig() {
   }
 }
 
-function updateHeaderBrand(council) {
-  if (!council) return;
-
-  const brandImg =
-    document.getElementById("raadBrandLogo") ||
-    document.querySelector(".header .brand");
-  if (!brandImg) return;
-
-  const name = council.display_name || council.name || "Ungdomsråd";
-
-  // Default logo
-  let logoSrc = "../TU-logov2.png";
-
-  // If this råd has its own logo, use that (same logic as in raad-oversikt.js)
-  if (council.logo_path) {
-    logoSrc = `${API_BASE}${council.logo_path}`;
-  }
-
-  brandImg.src = logoSrc;
-  brandImg.alt = `Logo for ${name}`;
-}
-
 // ---------- init ----------
 
 function initButtons() {
@@ -445,55 +423,20 @@ function initButtons() {
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
 }
 
-async function init() {
-  const id = getCouncilIdFromUrl();
-  const heading = document.getElementById("councilHeading");
-  const container = document.getElementById("raadContent");
-
-  setupOpenFormsButton(id);
-
-  if (!id) {
-    if (heading) heading.textContent = "Ingen ungdomsråd valgt";
-    if (container) {
-      container.innerHTML =
-        "<p>Ingen ungdomsråd er valgt. Gå tilbake til oversikten.</p>";
-    }
-    return;
-  }
-
-    try {
-        let council = await fetchCouncil(id);
-
-        const title = council.display_name || council.name || "Ukjent ungdomsråd";
-        if (heading) heading.textContent = `Handlingsplan – ${title}`;
-        document.title = `Handlingsplan – ${title}`;
-
-        updateHeaderBrand(council);
-
-        // Koble Handlingsplan-knappen til opplastet fil (hvis finnes)
-        setupHandlingsplanLink(council);
-
-        // Admin-opplasting: etter opplasting oppdatere lenken
-        setupAdminOverlay(id, (updatedCouncil) => {
-        council = updatedCouncil;
-        setupHandlingsplanLink(council);
-        });
-
-        // Hent og vis innspill for dette rådet
-        const innspill = await fetchInnspill(id);
-        renderInnspillCarousel(innspill);
-    } catch (err) {
-        console.error(err);
-        if (heading) heading.textContent = "Feil ved henting av ungdomsråd";
-
-        if (container) {
-        container.innerHTML =
-            "<p>Det oppstod en feil ved henting av ungdomsrådet. Prøv igjen, eller gå tilbake til oversikten.</p>";
-        }
-  }
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+  $("raad-logo").addEventListener("change", () => {
+    $("logoFileName").textContent =
+      $("raad-logo").files[0]?.name || "Ingen fil valgt";
+  });
+
+  $("raad-handlingsplan").addEventListener("change", () => {
+    $("hpFileName").textContent =
+      $("raad-handlingsplan").files[0]?.name || "Ingen fil valgt";
+  });
+
+
   initBackLink();
   await fetchCouncil();
   initLogin();
