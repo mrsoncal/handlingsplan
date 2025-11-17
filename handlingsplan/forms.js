@@ -4,6 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const actionRadios = Array.from(
     document.querySelectorAll('input[name="actionType"]')
   );
+
+  loadTema();
+
   const temaSelect = document.getElementById("tema");
   const punktNrInput = document.getElementById("punktNr");
   const underpunktInput = document.getElementById("underpunktNr");
@@ -14,13 +17,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const sectionChange = document.getElementById("section-change");
   const sectionRemove = document.getElementById("section-remove");
   const submitBtn = document.getElementById("submitBtn");
+  
 
   // --- Koble formen til et spesifikt ungdomsråd --------------------------
 
   const urlParams = new URLSearchParams(window.location.search);
   const councilId = urlParams.get("raadId") || urlParams.get("councilId") || null;
 
-  const API_BASE = window.HP_API_BASE || "";
+  const API_BASE = window.HP_API_BASE;
+  const raadId = new URLSearchParams(location.search).get("id");
+
 
   // Juster "Tilbake"-lenken til å peke tilbake til dette rådet
   const backLink = document.getElementById("backLink");
@@ -37,6 +43,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (value === "" || value == null) return allowEmpty;
     const n = Number(value);
     return Number.isInteger(n) && n > 0;
+  }
+
+  async function loadTema() {
+    const res = await fetch(`${API_BASE}/api/ungdomsrad/${raadId}`);
+    const raad = await res.json();
+
+    const temaSelect = document.getElementById("tema");
+    temaSelect.innerHTML = "";
+
+    raad.temaer.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.name;
+      opt.textContent = t.name;
+      temaSelect.appendChild(opt);
+    });
   }
 
   function updateVisibilityAndValidity() {

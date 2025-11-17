@@ -4,26 +4,25 @@ let raadData = null;
 
 document.getElementById("back-link").href = `raad.html?id=${raadId}`;
 
-// --- AUTH HEADER ---
 function authHeader() {
   const t = localStorage.getItem("token");
   return t ? { "Authorization": "Bearer " + t } : {};
 }
 
-// --- UPLOAD FILE ---
 async function uploadFile(file) {
   const fd = new FormData();
   fd.append("file", file);
+
   const res = await fetch(`${API_BASE}/api/upload`, {
     method: "POST",
     body: fd,
     headers: authHeader()
   });
+
   const data = await res.json();
   return data.path;
 }
 
-// --- FETCH SINGLE RÅD ---
 async function fetchRaad() {
   const res = await fetch(`${API_BASE}/api/ungdomsrad/${raadId}`, {
     headers: authHeader()
@@ -31,10 +30,14 @@ async function fetchRaad() {
   raadData = await res.json();
 }
 
-// --- RENDER TEMA-LISTE ---
+function safeUrl(path) {
+  return path.startsWith("http") ? path : `${API_BASE}${path}`;
+}
+
 function renderTemaList() {
   const list = document.getElementById("tema-list");
   list.innerHTML = "";
+
   raadData.temaer.forEach((t, i) => {
     const c = document.createElement("div");
     c.className = "card";
@@ -47,9 +50,13 @@ function renderTemaList() {
       <div class="tema-body" style="display:none;margin-top:.5rem;">
         <label>Navn:</label>
         <input class="tema-name" data-i="${i}" value="${t.name}">
+        
         <label>Farge:</label>
         <input type="color" class="tema-color" data-i="${i}" value="${t.color || "#cccccc"}">
-        <button class="btn del-tema" data-i="${i}" style="background:#b7173d;color:white;margin-top:.5rem;">Slett</button>
+        
+        <button class="btn del-tema" data-i="${i}" style="background:#b7173d;color:white;margin-top:.5rem;">
+          Slett
+        </button>
       </div>
     `;
 
@@ -62,7 +69,6 @@ function renderTemaList() {
   });
 }
 
-// --- INIT ADMIN ---
 async function initAdmin() {
   await fetchRaad();
 
@@ -70,7 +76,7 @@ async function initAdmin() {
 
   if (raadData.logo_path) {
     const prev = document.getElementById("logo-preview");
-    prev.src = `${API_BASE}${raadData.logo_path}`;
+    prev.src = safeUrl(raadData.logo_path);
     prev.style.display = "block";
   }
 
@@ -81,29 +87,26 @@ async function initAdmin() {
   renderTemaList();
 }
 
-// --- LOGO PREVIEW ---
 document.getElementById("raad-logo").onchange = e => {
   const prev = document.getElementById("logo-preview");
   prev.src = URL.createObjectURL(e.target.files[0]);
   prev.style.display = "block";
 };
 
-// --- ADD TEMA ---
 document.getElementById("add-tema-btn").onclick = () => {
   raadData.temaer.push({ name: "Nytt tema", color: "#cccccc" });
   renderTemaList();
 };
 
-// --- DELETE TEMA ---
-document.addEventListener("click", (e) => {
+document.addEventListener("click", e => {
   if (e.target.classList.contains("del-tema")) {
-    if (!confirm("Slette tema?")) return;
-    raadData.temaer.splice(+e.target.dataset.i, 1);
-    renderTemaList();
+    if (confirm("Slette tema?")) {
+      raadData.temaer.splice(+e.target.dataset.i, 1);
+      renderTemaList();
+    }
   }
 });
 
-// --- LOGIN ---
 document.getElementById("login-btn").onclick = async () => {
   const pw = document.getElementById("admin-password").value;
 
@@ -127,7 +130,6 @@ document.getElementById("login-btn").onclick = async () => {
   initAdmin();
 };
 
-// --- SAVE ---
 document.getElementById("save-btn").onclick = async () => {
   const status = document.getElementById("save-status");
   status.innerText = "Lagrer...";

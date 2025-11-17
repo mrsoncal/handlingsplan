@@ -5,7 +5,7 @@ loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const password = passwordInput.value;
 
-  const response = await fetch("https://handlingsplan-backend.onrender.com/login", {
+  const response = await fetch("https://handlingsplan-backend.onrender.com/api/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password }),
@@ -14,14 +14,14 @@ loginForm.addEventListener("submit", async (e) => {
   const data = await response.json();
 
   if (response.ok) {
-    // Save token globally (localStorage or cookie)
     localStorage.setItem("token", data.token);
-    window.location.reload(); // This will now show the main content
+    window.location.reload();
   } else {
     alert("Incorrect password.");
   }
 });
 
+// Password toggle (unchanged)
 document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("password");
   const togglePasswordBtn = document.getElementById("togglePassword");
