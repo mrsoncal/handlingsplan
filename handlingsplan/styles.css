@@ -898,7 +898,7 @@ object-fit: contain;
   flex-direction: row;
   max-width: 1140px;
   width: 100%;
-  min-height: clamp(3rem, 6vw, 3.5rem);
+  min-height: clamp(2.75rem, 6vw, 3.25rem);
 }
 
 /* Floating TU logo */
