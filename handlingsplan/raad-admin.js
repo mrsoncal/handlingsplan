@@ -409,6 +409,28 @@ async function saveConfig() {
   }
 }
 
+function updateHeaderBrand(council) {
+  if (!council) return;
+
+  const brandImg =
+    document.getElementById("raadBrandLogo") ||
+    document.querySelector(".header .brand");
+  if (!brandImg) return;
+
+  const name = council.display_name || council.name || "Ungdomsråd";
+
+  // Default logo
+  let logoSrc = "../TU-logov2.png";
+
+  // If this råd has its own logo, use that (same logic as in raad-oversikt.js)
+  if (council.logo_path) {
+    logoSrc = `${API_BASE}${council.logo_path}`;
+  }
+
+  brandImg.src = logoSrc;
+  brandImg.alt = `Logo for ${name}`;
+}
+
 // ---------- init ----------
 
 function initButtons() {
@@ -422,6 +444,8 @@ function initButtons() {
   if (addTemaBtn) addTemaBtn.addEventListener("click", addTema);
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
 }
+
+updateHeaderBrand(council);
 
 document.addEventListener("DOMContentLoaded", async () => {
   initBackLink();

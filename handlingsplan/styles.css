@@ -1641,3 +1641,13 @@ object-fit: contain;
 .login-module label {
   font-size: large;
 }
+
+#admin-section {
+  margin-top: 1rem;
+  background: #ceecf4;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
