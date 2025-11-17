@@ -126,21 +126,19 @@
           <div class="admin-section-part">
             <h3>Temaer i skjemaet</h3>
             <p class="help-text">
-              Her styrer du hvilke temaer som er tilgjengelige i skjemaet, farger
-              på hvert tema, og om det er mulig å <strong>legge til</strong>,
-              <strong>endre</strong> og <strong>fjerne</strong> punkt innenfor
+              Legg til eller fjern temaer. Velg om man kan <strong>legge til</strong>,
+              <strong>endre</strong> eller <strong>fjerne</strong> forslag innenfor
               temaet.
             </p>
 
             <div
               id="tema-header-row"
-              class="form-row"
+              class="form-row tema-grid-row"
             >
-              <div>Tema-navn</div>
-              <div>Farge</div>
-              <div>Legge til</div>
-              <div>Endre</div>
-              <div>Fjerne</div>
+              <div class="tema-navn"></div>
+              <div class="tema-sjekk">Legge til</div>
+              <div class="tema-sjekk">Endre</div>
+              <div class="tema-sjekk">Fjerne</div>
               <div></div>
             </div>
 
@@ -160,13 +158,13 @@
 
 
           <!-- LAGRE-KNAPP -->
-          <div class="admin-section-part">
+          <div class="admin-section-part" id="save-button">
             <button
               id="save-btn"
               class="btn"
               type="button"
             >
-              Lagre navn og tema-oppsett
+              Lagre
             </button>
             <p id="save-status"></p>
           </div>

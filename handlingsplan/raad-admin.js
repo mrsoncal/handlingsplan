@@ -220,12 +220,7 @@ function renderTemaList() {
 
   temaState.forEach((t, index) => {
     const row = document.createElement("div");
-    row.className = "form-row";
-    row.style.display = "grid";
-    row.style.gridTemplateColumns = "2fr auto repeat(3, auto) auto";
-    row.style.columnGap = "0.5rem";
-    row.style.alignItems = "center";
-    row.style.marginBottom = "0.25rem";
+    row.className = "form-row tema-grid-row";
 
     // Navn
     const nameInput = document.createElement("input");
@@ -286,22 +281,12 @@ function renderTemaList() {
     deleteBtn.className = "btn-delete";
     deleteBtn.textContent = "Slett";
     deleteBtn.style.fontSize = "0.8rem";
-    deleteBtn.addEventListener("click", () => {
-      if (
-        !confirm(
-          `Er du sikker på at du vil fjerne temaet "${t.name || ""}"?`
-        )
-      ) {
-        return;
-      }
-      temaState.splice(index, 1);
-      renderTemaList();
-    });
     row.appendChild(deleteBtn);
 
     container.appendChild(row);
   });
 }
+
 
 function addTema() {
   temaState.push({
