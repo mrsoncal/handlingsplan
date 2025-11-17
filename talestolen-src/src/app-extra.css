@@ -49,13 +49,13 @@
   display: block;
 }
 
+/* Header / nav copied from Talestolen admin */
 .header {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0 auto;
-  max-width: 100%;
-  width: 100vw;
+  width: 100%;        /* was 100vw */
 }
 
 .nav-container {
@@ -64,31 +64,13 @@
   align-items: center;
   justify-content: center;
   background: #dad5af;
-  max-width: 100vw;
-  width: 100%;
-}
-
-.navigation-bar {
-  display: flex;
-  flex-direction: row;
-  max-width: 1140px;
-  width: 100%;
-  min-height: 54px;
-}
-
-/* Floating TU logo */
-.nav-container .brand {
-  position: absolute;
-  left: 50%;
-  bottom: -11vh;
-  transform: translateX(-50%);
-  height: 16vh;
+  width: 100%;        /* drop max-width: 100vw */
 }
 
 .header-space-container {
+  margin-bottom: 2rem;
   padding-top: 32px;
-  max-width: 100vw;
-  width: 100%;
+  width: 100%;        /* drop max-width: 100vw */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,11 +78,76 @@
   border-bottom: 2px solid #dad5af;
 }
 
+.navigation-bar,
 .header-space {
-  flex: 1;
   max-width: 1140px;
   width: 100%;
-  min-height: 10vh;
+}
+
+.header-space {
+  flex: 1;
+  max-width: 1140px; /* or your chosen max width */
+  width: 100%;
+  min-height: clamp(3rem, 9vw, 3.5rem);
+  padding: 0.1rem;
+}
+
+.navigation-bar {
+  display: flex;
+  flex-direction: row;
+  width: 80vw;
+  min-height: clamp(2.5rem, 6vw, 3rem);
+  max-width: 1250px;
+  padding: 0 1rem;
+}
+
+/* Floating TU logo */
+.nav-container .brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: clamp(3.5rem, 12vw, 6rem); /* shrinks on small screens, caps on large */
+  bottom: calc(-0.7 * clamp(3.5rem, 12vw, 6rem));
+}
+
+.btn.nav, .btn.nav-r { 
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: #1e1e1e;
+  background: transparent;
+  border:none !important; 
+  max-width: fit-content;
+  padding-bottom: .625rem !important;
+  padding-top: .625rem !important;
+  cursor: pointer;
+}
+
+.btn.nav:hover { 
+  color: #a69939;
+}
+
+.nav { 
+  display: flex; 
+  text-align: left;
+  max-width: 1140px;
+  width: 50%;
+  gap: 30px; 
+  padding-top: 4px; 
+  padding-bottom: 4px; 
+  text-decoration: none !important;
+  align-items: center;
+}
+.nav-r { 
+  display: flex; 
+  text-align: right;
+  justify-content: right;
+  max-width: 1140px;
+  width: 50%;
+  gap: 30px; 
+  padding-top: 4px; 
+  padding-bottom: 4px; 
+  text-decoration: none !important;
+  align-items: center;
 }
 
 .queue {
