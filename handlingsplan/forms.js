@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('input[name="actionType"]')
   );
 
-  loadTema();
-
   const temaSelect = document.getElementById("tema");
   const punktNrInput = document.getElementById("punktNr");
   const underpunktInput = document.getElementById("underpunktNr");
@@ -24,8 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const councilId = urlParams.get("raadId") || urlParams.get("councilId") || null;
 
-  const API_BASE = window.HP_API_BASE;
+  const API_BASE = window.HP_API_BASE || "";
   const raadId = new URLSearchParams(location.search).get("id");
+  let currentCouncil = null;
+
 
 
   // Juster "Tilbake"-lenken til å peke tilbake til dette rådet
@@ -33,6 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (backLink && councilId) {
     backLink.href = `raad.html?id=${encodeURIComponent(councilId)}`;
   }
+
+  
+
+  loadTema();
+  fetchCouncilForForm();
+
+
 
   function getSelectedAction() {
     const checked = actionRadios.find((r) => r.checked);
@@ -45,22 +52,142 @@ document.addEventListener("DOMContentLoaded", () => {
     return Number.isInteger(n) && n > 0;
   }
 
+  function updateHeaderFromCouncil(raad) {
+    const name = raad.display_name || raad.name || "Ungdomsråd";
+
+    // Oppdater logo
+    const brandImg =
+      document.getElementById("raadBrandLogo") ||
+      document.querySelector(".brand");
+    if (brandImg) {
+      if (raad.logo_path) {
+        brandImg.src = `${API_BASE}${raad.logo_path}`;
+      }
+      brandImg.alt = name;
+    }
+
+    // Valgfritt: hvis du legger inn <span id="raadName"> i tittelen,
+    // kan vi vise navnet her også:
+    const nameSpan = document.getElementById("raadName");
+    if (nameSpan) {
+      nameSpan.textContent = name;
+    }
+  }
+
+
   async function loadTema() {
     if (!councilId) return;
 
-    const res = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}`);
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}`
+    );
     const raad = await res.json();
+
+    // ⬅️ oppdater header-logo + ev. navn
+    updateHeaderFromCouncil(raad);
 
     const temaSelect = document.getElementById("tema");
     temaSelect.innerHTML = "";
 
-    (raad.temaer || []).forEach(t => {
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Velg et tema";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    temaSelect.appendChild(placeholder);
+
+    (raad.temaer || []).forEach((t) => {
+      if (!t || !t.name) return;
       const opt = document.createElement("option");
       opt.value = t.name;
       opt.textContent = t.name;
       temaSelect.appendChild(opt);
     });
+
+    if (!(raad.temaer || []).length) {
+      placeholder.textContent = "Ingen temaer er definert enda";
+    }
   }
+
+
+  async function fetchCouncilForForm() {
+    if (!raadId) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}`
+      );
+      if (!res.ok) {
+        throw new Error("Kunne ikke hente ungdomsråd.");
+      }
+
+      const council = await res.json();
+      currentCouncil = council;
+
+      // 1) Oppdater header-logo/tittel (se neste seksjon for header-struktur)
+      updateHeaderFromCouncil(council);
+
+      // 2) Fyll ut selectTema fra tema-listen
+      populateTemaSelectFromCouncil(council);
+    } catch (err) {
+      console.error("Feil ved henting av ungdomsråd:", err);
+    }
+  }
+
+  function populateTemaSelectFromCouncil(council) {
+    const select = document.getElementById("tema");
+    if (!select) return;
+
+    const temaer = Array.isArray(council.temaer) ? council.temaer : [];
+
+    // Hvis du vil beholde en "Velg tema" default:
+    select.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Velg et tema";
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+
+    temaer.forEach((t) => {
+      if (!t || !t.name) return;
+
+      const option = document.createElement("option");
+      option.value = t.name;
+      option.textContent = t.name;
+
+      // valgfritt: lagre farge så du kan bruke den i UI-styling
+      if (t.color) {
+        option.dataset.color = t.color;
+      }
+
+      select.appendChild(option);
+    });
+
+    // fallback hvis ingen temaer er definert
+    if (!temaer.length) {
+      placeholder.textContent = "Ingen temaer er definert enda";
+    }
+  }
+
+  function updateHeaderFromCouncil(council) {
+    const name = council.display_name || council.name || "Ungdomsråd";
+    const titleSpan = document.getElementById("raad-name");
+    if (titleSpan) {
+      titleSpan.textContent = name;
+    }
+
+    const brandImg = document.querySelector(".brand");
+    if (brandImg) {
+      if (council.logo_path) {
+        // backend returnerer f.eks. "/uploads/xyz"
+        brandImg.src = `${API_BASE}${council.logo_path}`;
+      }
+      brandImg.alt = name;
+    }
+  }
+
+
 
 
   function updateVisibilityAndValidity() {
