@@ -44,7 +44,7 @@ async function init() {
     ADD COLUMN IF NOT EXISTS handlingsplan_path TEXT;
   `);
 
-    // Innspill per ungdomsråd
+  // Innspill per ungdomsråd
   await pool.query(`
     CREATE TABLE IF NOT EXISTS innspill (
       id SERIAL PRIMARY KEY,
@@ -59,6 +59,33 @@ async function init() {
       endre_til TEXT
     );
   `);
+
+  // Allow a separate display_name (visningsnavn)
+  await pool.query(`
+    ALTER TABLE councils
+    ADD COLUMN IF NOT EXISTS display_name TEXT;
+  `);
+
+  // Make sure we have logo_path (har du det fra før, gjør IF NOT EXISTS at det ikke krasjer)
+  await pool.query(`
+    ALTER TABLE councils
+    ADD COLUMN IF NOT EXISTS logo_path TEXT;
+  `);
+
+  // Tema-oppsett per råd
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS council_tema (
+      id SERIAL PRIMARY KEY,
+      council_id INTEGER NOT NULL REFERENCES councils(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      color TEXT,
+      allow_add BOOLEAN NOT NULL DEFAULT TRUE,
+      allow_change BOOLEAN NOT NULL DEFAULT TRUE,
+      allow_remove BOOLEAN NOT NULL DEFAULT TRUE,
+      position INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+
 
 
   console.log("[db] ensured councils table & columns exist");
@@ -256,6 +283,104 @@ async function getInnspillForCouncil(councilId) {
   return result.rows;
 }
 
+async function getTemaerForCouncil(councilId) {
+  const result = await pool.query(
+    `
+      SELECT
+        id,
+        council_id,
+        name,
+        color,
+        allow_add,
+        allow_change,
+        allow_remove,
+        position
+      FROM council_tema
+      WHERE council_id = $1
+      ORDER BY position ASC, id ASC
+    `,
+    [councilId]
+  );
+
+  // Map DB-column names -> API shape
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    color: row.color,
+    allowAdd: row.allow_add,
+    allowChange: row.allow_change,
+    allowRemove: row.allow_remove,
+    position: row.position,
+  }));
+}
+
+async function saveTemaerForCouncil(councilId, temaer) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Slett eksisterende
+    await client.query(
+      "DELETE FROM council_tema WHERE council_id = $1",
+      [councilId]
+    );
+
+    const insertSql = `
+      INSERT INTO council_tema (
+        council_id,
+        name,
+        color,
+        allow_add,
+        allow_change,
+        allow_remove,
+        position
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `;
+
+    for (const t of temaer || []) {
+      const name = (t.name || "").trim();
+      if (!name) continue;
+
+      const color = t.color || null;
+      const allowAdd = t.allowAdd !== false;
+      const allowChange = t.allowChange !== false;
+      const allowRemove = t.allowRemove !== false;
+      const position =
+        typeof t.position === "number" ? t.position : 0;
+
+      await client.query(insertSql, [
+        councilId,
+        name,
+        color,
+        allowAdd,
+        allowChange,
+        allowRemove,
+        position,
+      ]);
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function updateCouncilDisplayName(id, displayName) {
+  await pool.query(
+    `
+      UPDATE councils
+      SET display_name = $2
+      WHERE id = $1
+    `,
+    [id, displayName || null]
+  );
+}
+
+
 
 module.exports = {
   init,
@@ -268,4 +393,7 @@ module.exports = {
   setCouncilLogoPath,
   createInnspill,
   getInnspillForCouncil,
+  getTemaerForCouncil,
+  saveTemaerForCouncil,
+  updateCouncilDisplayName,
 };

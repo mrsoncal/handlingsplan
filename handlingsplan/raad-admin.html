@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html lang="no">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ungdomsråd – Admin</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script>
-    // Husk å peke på riktig backend
-    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
-  </script>
-</head>
-<body>
-  <div class="page">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ungdomsråd – Admin</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      // Sett dette til backend URL-en din
+      window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+    </script>
+  </head>
+  <body>
     <header class="header">
       <div class="nav-container">
-        <a id="back-link" class="btn nav">← Tilbake</a>
+        <a id="back-link" class="btn" style="margin-right: 1rem">← Tilbake</a>
         <img class="brand" src="/TU-logov2.png" alt="TU" />
       </div>
       <div class="header-space-container">
@@ -22,17 +20,23 @@
       </div>
     </header>
 
-    <main class="container">
+    <div class="container">
       <section class="card main-card">
         <h1>Admin for <span id="raad-name">…</span></h1>
-        <p>Her administrerer du logo og handlingsplan for dette ungdomsrådet.</p>
+        <p>
+          Her kan du endre navn, logo, handlingsplan og temaer for dette
+          ungdomsrådet.
+        </p>
 
-        <!-- Råd-spesifikk innlogging -->
-        <div id="login-section" style="margin-top:1rem;">
+        <!-- RÅD-SPESIFIKT LOGIN -->
+        <div id="login-section" style="margin-top: 1.5rem">
           <label for="raad-password" class="field-label">
             Admin-passord for dette ungdomsrådet
           </label>
-          <div class="form-row" style="gap:0.5rem; align-items:center;">
+          <div
+            class="form-row"
+            style="gap: 0.5rem; align-items: center; margin-top: 0.25rem"
+          >
             <input
               id="raad-password"
               type="password"
@@ -41,36 +45,126 @@
             />
             <button id="raad-login-btn" class="btn">Logg inn</button>
           </div>
-          <p id="raad-login-error" style="color:#b7173d; margin-top:0.5rem;"></p>
+          <p
+            id="raad-login-error"
+            style="color: #b7173d; margin-top: 0.5rem"
+          ></p>
         </div>
 
-        <!-- Selve admin-innholdet, skjules til man har skrevet inn passord -->
-        <div id="admin-section" style="display:none; margin-top:2rem;">
-          <h2>Logo</h2>
-          <div class="form-row" style="gap:0.5rem; align-items:center;">
+        <!-- ADMIN-INNHOLD, VISER SEG ETTER LOGIN -->
+        <div id="admin-section" style="display: none; margin-top: 2rem">
+          <!-- Navn -->
+          <h2>Grunninformasjon</h2>
+          <label for="raad-name-input" class="field-label">
+            Navn på ungdomsråd
+          </label>
+          <input
+            id="raad-name-input"
+            class="input"
+            type="text"
+            placeholder="Navn på ungdomsråd"
+            style="margin-top: 0.25rem; max-width: 400px"
+          />
+
+          <hr style="margin: 2rem 0" />
+
+          <!-- Logo -->
+          <h2>Logo / ikon</h2>
+          <p class="help-text">
+            Logoen vises på kortet i oversikten og i headeren på sidan til
+            ungdomsrådet.
+          </p>
+          <div
+            class="form-row"
+            style="gap: 0.5rem; align-items: center; margin-top: 0.5rem"
+          >
             <input id="raad-logo" type="file" accept="image/*" />
             <button id="upload-logo-btn" class="btn">Last opp logo</button>
           </div>
-          <p id="logo-status" style="margin-top:0.5rem;"></p>
+          <p id="logo-status" style="margin-top: 0.5rem"></p>
 
-          <hr style="margin:2rem 0;" />
+          <hr style="margin: 2rem 0" />
 
+          <!-- Handlingsplan -->
           <h2>Handlingsplan</h2>
-          <div class="form-row" style="gap:0.5rem; align-items:center;">
-            <input id="raad-handlingsplan" type="file" accept="application/pdf,image/*" />
-            <button id="upload-hp-btn" class="btn">Last opp handlingsplan</button>
+          <p class="help-text">
+            Last opp gjeldende handlingsplan (PDF eller bilde).
+          </p>
+          <div
+            class="form-row"
+            style="gap: 0.5rem; align-items: center; margin-top: 0.5rem"
+          >
+            <input
+              id="raad-handlingsplan"
+              type="file"
+              accept="application/pdf,image/*"
+            />
+            <button id="upload-hp-btn" class="btn">
+              Last opp handlingsplan
+            </button>
           </div>
-          <p id="hp-status" style="margin-top:0.5rem;"></p>
+          <p id="hp-status" style="margin-top: 0.5rem"></p>
 
-          <!-- Her kan vi senere legge til:
-               - endre navn
-               - tema-konfig / farger
-          -->
+          <hr style="margin: 2rem 0" />
+
+          <!-- Temaer -->
+          <h2>Temaer i skjemaet</h2>
+          <p class="help-text">
+            Her styrer du hvilke temaer som er tilgjengelige i skjemaet, farger
+            på hvert tema, og om det er mulig å <strong>legge til</strong>,
+            <strong>endre</strong> og <strong>fjerne</strong> punkt innenfor
+            temaet.
+          </p>
+
+          <div
+            id="tema-header-row"
+            class="form-row"
+            style="
+              font-size: 0.9rem;
+              opacity: 0.8;
+              display: grid;
+              grid-template-columns: 2fr auto repeat(3, auto) auto;
+              column-gap: 0.5rem;
+              margin-top: 1rem;
+            "
+          >
+            <div>Tema-navn</div>
+            <div>Farge</div>
+            <div>Legge til</div>
+            <div>Endre</div>
+            <div>Fjerne</div>
+            <div></div>
+          </div>
+
+          <div id="tema-list" class="tema-list" style="margin-top: 0.5rem">
+            <!-- fylles av JS -->
+          </div>
+
+          <button
+            id="add-tema-btn"
+            class="btn"
+            type="button"
+            style="margin-top: 0.75rem"
+          >
+            + Legg til tema
+          </button>
+
+          <hr style="margin: 2rem 0" />
+
+          <!-- LAGRE-KNAPP -->
+          <button
+            id="save-btn"
+            class="btn"
+            type="button"
+            style="margin-top: 0.5rem"
+          >
+            Lagre navn og tema-oppsett
+          </button>
+          <p id="save-status" style="margin-top: 0.5rem"></p>
         </div>
       </section>
-    </main>
-  </div>
+    </div>
 
-  <script src="raad-admin.js"></script>
-</body>
+    <script src="raad-admin.js"></script>
+  </body>
 </html>

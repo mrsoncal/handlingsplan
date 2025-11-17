@@ -14,9 +14,14 @@ const {
   getCouncilWithPassword,
   deleteCouncil,
   setCouncilHandlingsplanPath,
+  setCouncilLogoPath,
   createInnspill,
   getInnspillForCouncil,
+  getTemaerForCouncil,
+  saveTemaerForCouncil,
+  updateCouncilDisplayName,
 } = require("./db");
+
 
 dotenv.config();
 
@@ -141,22 +146,33 @@ app.post("/api/admin/login", (req, res) => {
 });
 
 
-// GET /api/ungdomsrad/:id  -> fetch single council (no password)
+// GET /api/ungdomsrad/:id  -> fetch single council
 app.get("/api/ungdomsrad/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const council = await getCouncilById(id);
 
+    const council = await getCouncilById(id);
     if (!council) {
-      return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+      return res
+        .status(404)
+        .json({ error: "Ungdomsråd ikke funnet." });
     }
 
-    res.json(council);
+    const temaer = await getTemaerForCouncil(id);
+
+    // Slå sammen council og temaer til ett svar
+    res.json({
+      ...council,
+      temaer,
+    });
   } catch (err) {
-    console.error("Error getting council by id:", err);
-    res.status(500).json({ error: "Kunne ikke hente ungdomsråd." });
+    console.error("Error fetching council:", err);
+    res
+      .status(500)
+      .json({ error: "Kunne ikke hente ungdomsråd." });
   }
 });
+
 
 // GET /api/ungdomsrad/:id/innspill  -> alle innspill for ett ungdomsråd
 app.get("/api/ungdomsrad/:id/innspill", async (req, res) => {
@@ -317,6 +333,72 @@ app.post("/api/ungdomsrad/:id/innspill", async (req, res) => {
     res.status(500).json({ error: "Kunne ikke lagre innspill." });
   }
 });
+
+// POST /api/ungdomsrad/:id/admin-config
+// - endrer display_name
+// - lagrer tema-oppsett (navn, farger, tillatelser)
+app.post("/api/ungdomsrad/:id/admin-config", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { password, displayName, temaer } = req.body || {};
+
+    if (!password) {
+      return res
+        .status(400)
+        .json({ error: "Passord er påkrevd." });
+    }
+
+    // Sjekk at passordet stemmer for dette rådet
+    const council = await getCouncilWithPassword(id, password);
+    if (!council) {
+      return res
+        .status(403)
+        .json({ error: "Feil passord for dette ungdomsrådet." });
+    }
+
+    // Oppdater visningsnavn hvis sendt
+    if (typeof displayName === "string") {
+      await updateCouncilDisplayName(id, displayName.trim() || null);
+    }
+
+    // Normaliser temaer-array (i tilfelle klient sender tull)
+    const cleanedTemaer = Array.isArray(temaer)
+      ? temaer.map((t, index) => {
+          const name = (t.name || "").trim();
+          if (!name) return null;
+
+          return {
+            name,
+            color: t.color || null,
+            allowAdd: t.allowAdd !== false,
+            allowChange: t.allowChange !== false,
+            allowRemove: t.allowRemove !== false,
+            position:
+              typeof t.position === "number" ? t.position : index,
+          };
+        }).filter(Boolean)
+      : [];
+
+    await saveTemaerForCouncil(id, cleanedTemaer);
+
+    // Hent oppdatert council + temaer og send tilbake
+    const updatedCouncil = await getCouncilById(id);
+    const updatedTemaer = await getTemaerForCouncil(id);
+
+    res.json({
+      ...updatedCouncil,
+      temaer: updatedTemaer,
+    });
+  } catch (err) {
+    console.error("Error saving admin-config:", err);
+    res
+      .status(500)
+      .json({ error: "Kunne ikke lagre admin-oppsett." });
+  }
+});
+
+
+
 
 // Start server only after DB init
 init()

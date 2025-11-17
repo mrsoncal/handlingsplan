@@ -5,8 +5,9 @@ const raadId = new URLSearchParams(location.search).get("id");
 
 let raadData = null;
 let raadPassword = "";
+let temaState = [];
 
-// ---- Basic helpers ----
+// ---------- helpers ----------
 
 function $(id) {
   return document.getElementById(id);
@@ -17,28 +18,9 @@ function setText(id, text) {
   if (el) el.textContent = text;
 }
 
-// ---- Init ----
+function ensurePassword() {
+  if (raadPassword) return true;
 
-async function fetchCouncil() {
-  if (!raadId) return;
-
-  try {
-    const res = await fetch(
-      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}`
-    );
-    if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd.");
-    raadData = await res.json();
-
-    const name =
-      raadData.display_name || raadData.name || "Ukjent ungdomsråd";
-    setText("raad-name", name);
-  } catch (err) {
-    console.error(err);
-    alert("Kunne ikke hente data for dette ungdomsrådet.");
-  }
-}
-
-function getPasswordFromInput() {
   const pwInput = $("raad-password");
   const errorEl = $("raad-login-error");
   const pw = pwInput ? pwInput.value.trim() : "";
@@ -48,41 +30,82 @@ function getPasswordFromInput() {
       errorEl.textContent =
         "Skriv inn admin-passordet som ble satt da ungdomsrådet ble opprettet.";
     }
-    return null;
+    return false;
   }
 
+  raadPassword = pw;
   if (errorEl) errorEl.textContent = "";
-  return pw;
+  return true;
 }
 
+// ---------- initial data ----------
+
+async function fetchCouncil() {
+  if (!raadId) return;
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}`
+    );
+    if (!res.ok) {
+      throw new Error("Kunne ikke hente ungdomsråd.");
+    }
+
+    raadData = await res.json();
+
+    const displayName =
+      raadData.display_name || raadData.name || "Ukjent ungdomsråd";
+
+    setText("raad-name", displayName);
+
+    const nameInput = $("raad-name-input");
+    if (nameInput) nameInput.value = displayName;
+
+    // Bygg tema-state
+    const fromApi = Array.isArray(raadData.temaer) ? raadData.temaer : [];
+    temaState = fromApi.map((t, idx) => ({
+      id: t.id || idx + 1,
+      name: t.name || "",
+      color: t.color || "#0088cc",
+      allowAdd: t.allowAdd !== false,
+      allowChange: t.allowChange !== false,
+      allowRemove: t.allowRemove !== false,
+      position:
+        typeof t.position === "number" ? t.position : idx,
+    }));
+
+    renderTemaList();
+  } catch (err) {
+    console.error(err);
+    alert("Kunne ikke hente data for dette ungdomsrådet.");
+  }
+}
+
+function initBackLink() {
+  const backLink = $("back-link");
+  if (backLink && raadId) {
+    backLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
+  }
+}
+
+// ---------- login ----------
+
 function initLogin() {
+  const loginBtn = $("raad-login-btn");
   const loginSection = $("login-section");
   const adminSection = $("admin-section");
-  const loginBtn = $("raad-login-btn");
 
   if (!loginBtn) return;
 
   loginBtn.addEventListener("click", () => {
-    const pw = getPasswordFromInput();
-    if (!pw) return;
+    if (!ensurePassword()) return;
 
-    raadPassword = pw;
     if (loginSection) loginSection.style.display = "none";
     if (adminSection) adminSection.style.display = "block";
   });
 }
 
-function ensurePassword() {
-  if (raadPassword) return true;
-
-  const pw = getPasswordFromInput();
-  if (!pw) return false;
-
-  raadPassword = pw;
-  return true;
-}
-
-// ---- Upload logo ----
+// ---------- logo & handlingsplan ----------
 
 async function uploadLogo() {
   if (!ensurePassword()) return;
@@ -103,9 +126,7 @@ async function uploadLogo() {
 
   try {
     const res = await fetch(
-      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
-        raadId
-      )}/logo`,
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/logo`,
       {
         method: "POST",
         body: fd,
@@ -131,8 +152,6 @@ async function uploadLogo() {
     alert("Det oppstod en feil ved opplasting av logo.");
   }
 }
-
-// ---- Upload handlingsplan ----
 
 async function uploadHandlingsplan() {
   if (!ensurePassword()) return;
@@ -183,21 +202,225 @@ async function uploadHandlingsplan() {
   }
 }
 
-// ---- Hooks & start-up ----
+// ---------- tema-editor ----------
+
+function renderTemaList() {
+  const container = $("tema-list");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (!temaState.length) {
+    const empty = document.createElement("p");
+    empty.textContent = "Ingen temaer definert enda.";
+    empty.style.opacity = "0.7";
+    container.appendChild(empty);
+    return;
+  }
+
+  temaState.forEach((t, index) => {
+    const row = document.createElement("div");
+    row.className = "form-row";
+    row.style.display = "grid";
+    row.style.gridTemplateColumns = "2fr auto repeat(3, auto) auto";
+    row.style.columnGap = "0.5rem";
+    row.style.alignItems = "center";
+    row.style.marginBottom = "0.25rem";
+
+    // Navn
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "input";
+    nameInput.value = t.name || "";
+    nameInput.placeholder = "Tema (f.eks. Skole)";
+    nameInput.addEventListener("input", (e) => {
+      temaState[index].name = e.target.value;
+    });
+    row.appendChild(nameInput);
+
+    // Farge
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.value = t.color || "#0088cc";
+    colorInput.addEventListener("input", (e) => {
+      temaState[index].color = e.target.value;
+    });
+    row.appendChild(colorInput);
+
+    // Legge til
+    const addLabel = document.createElement("label");
+    const addCheckbox = document.createElement("input");
+    addCheckbox.type = "checkbox";
+    addCheckbox.checked = t.allowAdd !== false;
+    addCheckbox.addEventListener("change", (e) => {
+      temaState[index].allowAdd = e.target.checked;
+    });
+    addLabel.appendChild(addCheckbox);
+    row.appendChild(addLabel);
+
+    // Endre
+    const changeLabel = document.createElement("label");
+    const changeCheckbox = document.createElement("input");
+    changeCheckbox.type = "checkbox";
+    changeCheckbox.checked = t.allowChange !== false;
+    changeCheckbox.addEventListener("change", (e) => {
+      temaState[index].allowChange = e.target.checked;
+    });
+    changeLabel.appendChild(changeCheckbox);
+    row.appendChild(changeLabel);
+
+    // Fjerne
+    const removeLabel = document.createElement("label");
+    const removeCheckbox = document.createElement("input");
+    removeCheckbox.type = "checkbox";
+    removeCheckbox.checked = t.allowRemove !== false;
+    removeCheckbox.addEventListener("change", (e) => {
+      temaState[index].allowRemove = e.target.checked;
+    });
+    removeLabel.appendChild(removeCheckbox);
+    row.appendChild(removeLabel);
+
+    // Slett-knapp
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn";
+    deleteBtn.textContent = "Slett";
+    deleteBtn.style.fontSize = "0.8rem";
+    deleteBtn.addEventListener("click", () => {
+      if (
+        !confirm(
+          `Er du sikker på at du vil fjerne temaet "${t.name || ""}"?`
+        )
+      ) {
+        return;
+      }
+      temaState.splice(index, 1);
+      renderTemaList();
+    });
+    row.appendChild(deleteBtn);
+
+    container.appendChild(row);
+  });
+}
+
+function addTema() {
+  temaState.push({
+    id: Date.now(),
+    name: "",
+    color: "#0088cc",
+    allowAdd: true,
+    allowChange: true,
+    allowRemove: true,
+    position: temaState.length,
+  });
+  renderTemaList();
+}
+
+// ---------- lagre navn + tema-oppsett ----------
+
+async function saveConfig() {
+  if (!ensurePassword()) return;
+
+  const statusEl = $("save-status");
+  const saveBtn = $("save-btn");
+
+  if (statusEl) statusEl.textContent = "Lagrer…";
+  if (saveBtn) saveBtn.disabled = true;
+
+  const nameInput = $("raad-name-input");
+  const displayName = (nameInput?.value || "").trim();
+
+  const cleanedTemaer = temaState
+    .map((t, index) => {
+      const name = (t.name || "").trim();
+      if (!name) return null;
+      return {
+        name,
+        color: t.color || null,
+        allowAdd: t.allowAdd !== false,
+        allowChange: t.allowChange !== false,
+        allowRemove: t.allowRemove !== false,
+        position:
+          typeof t.position === "number" ? t.position : index,
+      };
+    })
+    .filter(Boolean);
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+        raadId
+      )}/admin-config`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: raadPassword,
+          displayName,
+          temaer: cleanedTemaer,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      let msg = "Kunne ikke lagre oppsettet.";
+      try {
+        const err = await res.json();
+        if (err && err.error) msg = err.error;
+      } catch (_) {}
+      if (statusEl) statusEl.textContent = msg;
+      alert(msg);
+      return;
+    }
+
+    const updated = await res.json();
+    raadData = updated;
+
+    // Oppdater visning basert på svar fra backend
+    const newName =
+      updated.display_name || updated.name || displayName;
+    setText("raad-name", newName);
+    if (nameInput) nameInput.value = newName;
+
+    const fromApi = Array.isArray(updated.temaer)
+      ? updated.temaer
+      : [];
+    temaState = fromApi.map((t, idx) => ({
+      id: t.id || idx + 1,
+      name: t.name || "",
+      color: t.color || "#0088cc",
+      allowAdd: t.allowAdd !== false,
+      allowChange: t.allowChange !== false,
+      allowRemove: t.allowRemove !== false,
+      position:
+        typeof t.position === "number" ? t.position : idx,
+    }));
+    renderTemaList();
+
+    if (statusEl) statusEl.textContent = "Lagret!";
+  } catch (err) {
+    console.error(err);
+    if (statusEl) statusEl.textContent = "Feil ved lagring.";
+    alert("Det oppstod en feil ved lagring.");
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+// ---------- init ----------
 
 function initButtons() {
   const logoBtn = $("upload-logo-btn");
   const hpBtn = $("upload-hp-btn");
+  const addTemaBtn = $("add-tema-btn");
+  const saveBtn = $("save-btn");
 
   if (logoBtn) logoBtn.addEventListener("click", uploadLogo);
   if (hpBtn) hpBtn.addEventListener("click", uploadHandlingsplan);
-}
-
-function initBackLink() {
-  const backLink = $("back-link");
-  if (backLink && raadId) {
-    backLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
-  }
+  if (addTemaBtn) addTemaBtn.addEventListener("click", addTema);
+  if (saveBtn) saveBtn.addEventListener("click", saveConfig);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
