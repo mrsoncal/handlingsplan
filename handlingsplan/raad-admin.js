@@ -1,169 +1,208 @@
-const API_BASE = window.HP_API_BASE;
+// handlingsplan/raad-admin.js
+
+const API_BASE = window.HP_API_BASE || "";
 const raadId = new URLSearchParams(location.search).get("id");
+
 let raadData = null;
+let raadPassword = "";
 
-document.getElementById("back-link").href = `raad.html?id=${raadId}`;
+// ---- Basic helpers ----
 
-function authHeader() {
-  const t = localStorage.getItem("token");
-  return t ? { "Authorization": "Bearer " + t } : {};
+function $(id) {
+  return document.getElementById(id);
 }
 
-async function uploadFile(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-
-  const res = await fetch(`${API_BASE}/api/upload`, {
-    method: "POST",
-    body: fd,
-    headers: authHeader()
-  });
-
-  const data = await res.json();
-  return data.path;
+function setText(id, text) {
+  const el = $(id);
+  if (el) el.textContent = text;
 }
 
-async function fetchRaad() {
-  const res = await fetch(`${API_BASE}/api/ungdomsrad/${raadId}`, {
-    headers: authHeader()
-  });
-  raadData = await res.json();
-}
+// ---- Init ----
 
-function safeUrl(path) {
-  return path.startsWith("http") ? path : `${API_BASE}${path}`;
-}
+async function fetchCouncil() {
+  if (!raadId) return;
 
-function renderTemaList() {
-  const list = document.getElementById("tema-list");
-  list.innerHTML = "";
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}`
+    );
+    if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd.");
+    raadData = await res.json();
 
-  raadData.temaer.forEach((t, i) => {
-    const c = document.createElement("div");
-    c.className = "card";
-    c.style.marginBottom = "1rem";
-
-    c.innerHTML = `
-      <div class="tema-header" style="cursor:pointer;">
-        <strong>${t.name}</strong>
-      </div>
-      <div class="tema-body" style="display:none;margin-top:.5rem;">
-        <label>Navn:</label>
-        <input class="tema-name" data-i="${i}" value="${t.name}">
-        
-        <label>Farge:</label>
-        <input type="color" class="tema-color" data-i="${i}" value="${t.color || "#cccccc"}">
-        
-        <button class="btn del-tema" data-i="${i}" style="background:#b7173d;color:white;margin-top:.5rem;">
-          Slett
-        </button>
-      </div>
-    `;
-
-    list.appendChild(c);
-
-    c.querySelector(".tema-header").onclick = () => {
-      const b = c.querySelector(".tema-body");
-      b.style.display = b.style.display === "none" ? "block" : "none";
-    };
-  });
-}
-
-async function initAdmin() {
-  await fetchRaad();
-
-  document.getElementById("raad-name").value = raadData.name;
-
-  if (raadData.logo_path) {
-    const prev = document.getElementById("logo-preview");
-    prev.src = safeUrl(raadData.logo_path);
-    prev.style.display = "block";
+    const name =
+      raadData.display_name || raadData.name || "Ukjent ungdomsråd";
+    setText("raad-name", name);
+  } catch (err) {
+    console.error(err);
+    alert("Kunne ikke hente data for dette ungdomsrådet.");
   }
-
-  document.getElementById("chk-legge-til").checked = raadData.edit_permissions?.legge_til;
-  document.getElementById("chk-endre").checked = raadData.edit_permissions?.endre;
-  document.getElementById("chk-fjerne").checked = raadData.edit_permissions?.fjerne;
-
-  renderTemaList();
 }
 
-document.getElementById("raad-logo").onchange = e => {
-  const prev = document.getElementById("logo-preview");
-  prev.src = URL.createObjectURL(e.target.files[0]);
-  prev.style.display = "block";
-};
+function getPasswordFromInput() {
+  const pwInput = $("raad-password");
+  const errorEl = $("raad-login-error");
+  const pw = pwInput ? pwInput.value.trim() : "";
 
-document.getElementById("add-tema-btn").onclick = () => {
-  raadData.temaer.push({ name: "Nytt tema", color: "#cccccc" });
-  renderTemaList();
-};
-
-document.addEventListener("click", e => {
-  if (e.target.classList.contains("del-tema")) {
-    if (confirm("Slette tema?")) {
-      raadData.temaer.splice(+e.target.dataset.i, 1);
-      renderTemaList();
+  if (!pw) {
+    if (errorEl) {
+      errorEl.textContent =
+        "Skriv inn admin-passordet som ble satt da ungdomsrådet ble opprettet.";
     }
+    return null;
   }
-});
 
-document.getElementById("login-btn").onclick = async () => {
-  const pw = document.getElementById("admin-password").value;
+  if (errorEl) errorEl.textContent = "";
+  return pw;
+}
 
-  const res = await fetch(`${API_BASE}/api/admin/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password: pw })
+function initLogin() {
+  const loginSection = $("login-section");
+  const adminSection = $("admin-section");
+  const loginBtn = $("raad-login-btn");
+
+  if (!loginBtn) return;
+
+  loginBtn.addEventListener("click", () => {
+    const pw = getPasswordFromInput();
+    if (!pw) return;
+
+    raadPassword = pw;
+    if (loginSection) loginSection.style.display = "none";
+    if (adminSection) adminSection.style.display = "block";
   });
+}
 
-  if (!res.ok) {
-    alert("Feil passord");
+function ensurePassword() {
+  if (raadPassword) return true;
+
+  const pw = getPasswordFromInput();
+  if (!pw) return false;
+
+  raadPassword = pw;
+  return true;
+}
+
+// ---- Upload logo ----
+
+async function uploadLogo() {
+  if (!ensurePassword()) return;
+
+  const fileInput = $("raad-logo");
+  const statusEl = $("logo-status");
+
+  if (!fileInput || !fileInput.files.length) {
+    alert("Velg en logofil først.");
     return;
   }
 
-  const data = await res.json();
-  localStorage.setItem("token", data.token);
+  if (statusEl) statusEl.textContent = "Laster opp logo…";
 
-  document.getElementById("login-section").style.display = "none";
-  document.getElementById("admin-section").style.display = "block";
+  const fd = new FormData();
+  fd.append("file", fileInput.files[0]);
+  fd.append("password", raadPassword);
 
-  initAdmin();
-};
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+        raadId
+      )}/logo`,
+      {
+        method: "POST",
+        body: fd,
+      }
+    );
 
-document.getElementById("save-btn").onclick = async () => {
-  const status = document.getElementById("save-status");
-  status.innerText = "Lagrer...";
-  document.getElementById("save-btn").disabled = true;
+    if (!res.ok) {
+      let msg = "Kunne ikke laste opp logo.";
+      try {
+        const err = await res.json();
+        if (err && err.error) msg = err.error;
+      } catch (_) {}
+      if (statusEl) statusEl.textContent = msg;
+      alert(msg);
+      return;
+    }
 
-  const logoFile = document.getElementById("raad-logo").files[0];
-  if (logoFile) raadData.logo_path = await uploadFile(logoFile);
+    raadData = await res.json();
+    if (statusEl) statusEl.textContent = "Logo lagret.";
+  } catch (err) {
+    console.error(err);
+    if (statusEl) statusEl.textContent = "Feil ved opplasting av logo.";
+    alert("Det oppstod en feil ved opplasting av logo.");
+  }
+}
 
-  const hpFile = document.getElementById("raad-handlingsplan").files[0];
-  if (hpFile) raadData.handlingsplan_path = await uploadFile(hpFile);
+// ---- Upload handlingsplan ----
 
-  document.querySelectorAll(".tema-name").forEach(inp => {
-    raadData.temaer[inp.dataset.i].name = inp.value.trim();
-  });
+async function uploadHandlingsplan() {
+  if (!ensurePassword()) return;
 
-  document.querySelectorAll(".tema-color").forEach(inp => {
-    raadData.temaer[inp.dataset.i].color = inp.value;
-  });
+  const fileInput = $("raad-handlingsplan");
+  const statusEl = $("hp-status");
 
-  raadData.edit_permissions = {
-    legge_til: document.getElementById("chk-legge-til").checked,
-    endre: document.getElementById("chk-endre").checked,
-    fjerne: document.getElementById("chk-fjerne").checked
-  };
+  if (!fileInput || !fileInput.files.length) {
+    alert("Velg en fil for handlingsplanen først.");
+    return;
+  }
 
-  const res = await fetch(`${API_BASE}/api/ungdomsrad/${raadId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeader()
-    },
-    body: JSON.stringify(raadData)
-  });
+  if (statusEl) statusEl.textContent = "Laster opp handlingsplan…";
 
-  status.innerText = res.ok ? "Lagret!" : "Feil ved lagring";
-  document.getElementById("save-btn").disabled = false;
-};
+  const fd = new FormData();
+  fd.append("file", fileInput.files[0]);
+  fd.append("password", raadPassword);
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+        raadId
+      )}/handlingsplan`,
+      {
+        method: "POST",
+        body: fd,
+      }
+    );
+
+    if (!res.ok) {
+      let msg = "Kunne ikke laste opp handlingsplan.";
+      try {
+        const err = await res.json();
+        if (err && err.error) msg = err.error;
+      } catch (_) {}
+      if (statusEl) statusEl.textContent = msg;
+      alert(msg);
+      return;
+    }
+
+    raadData = await res.json();
+    if (statusEl) statusEl.textContent = "Handlingsplan lagret.";
+  } catch (err) {
+    console.error(err);
+    if (statusEl) statusEl.textContent =
+      "Feil ved opplasting av handlingsplan.";
+    alert("Det oppstod en feil ved opplasting av handlingsplanen.");
+  }
+}
+
+// ---- Hooks & start-up ----
+
+function initButtons() {
+  const logoBtn = $("upload-logo-btn");
+  const hpBtn = $("upload-hp-btn");
+
+  if (logoBtn) logoBtn.addEventListener("click", uploadLogo);
+  if (hpBtn) hpBtn.addEventListener("click", uploadHandlingsplan);
+}
+
+function initBackLink() {
+  const backLink = $("back-link");
+  if (backLink && raadId) {
+    backLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  initBackLink();
+  await fetchCouncil();
+  initLogin();
+  initButtons();
+});
