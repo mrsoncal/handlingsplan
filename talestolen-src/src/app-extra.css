@@ -150,6 +150,14 @@
   align-items: center;
 }
 
+.container {
+  position: relative;
+  max-width: 1140px;   /* match header */
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+
 .queue {
   margin-top: 0;
   padding-top: 0;
