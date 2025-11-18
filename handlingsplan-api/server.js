@@ -308,36 +308,19 @@ app.delete("/api/ungdomsrad/:id", requireAdmin, async (req, res) => {
 });
 
 
-// POST /api/ungdomsrad/:id/handlingsplan -> upload PDF/image for a council
-// expects multipart/form-data with fields:
-//  - password (admin password for this råd)
-//  - file (PDF/image)
 app.post(
   "/api/ungdomsrad/:id/handlingsplan",
   upload.single("handlingsplan"),
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { password } = req.body || {};
       const file = req.file;
 
       if (!file) {
         return res.status(400).json({ error: "Ingen fil lastet opp." });
       }
 
-      // sjekk passord
-      const council = await getCouncilWithPassword(id);
-      if (
-        !council ||
-        !council.admin_password ||
-        council.admin_password.trim() !== (password || "").trim()
-      ) {
-        return res
-          .status(403)
-          .json({ error: "Feil passord for dette ungdomsrådet." });
-      }
-
-      // lagre filen i databasen
+      // Ikke passord-sjekk her lenger – hvem som helst som treffer endepunktet kan laste opp
       await updateCouncilHandlingsplanFile(
         id,
         file.buffer,
@@ -349,37 +332,28 @@ app.post(
       res.json(updated);
     } catch (err) {
       console.error("Feil ved opplasting av handlingsplan:", err);
-      res.status(500).json({ error: "Kunne ikke lagre handlingsplan." });
+      res
+        .status(500)
+        .json({ error: "Det oppstod en feil ved opplasting av handlingsplan." });
     }
   }
 );
 
 
-// POST /api/ungdomsrad/:id/logo -> upload logo image for a council
+
 app.post(
   "/api/ungdomsrad/:id/logo",
   upload.single("logo"),
   async (req, res) => {
     try {
       const { id } = req.params;
-      const { password } = req.body || {};
       const file = req.file;
 
       if (!file) {
         return res.status(400).json({ error: "Ingen fil lastet opp." });
       }
 
-      const council = await getCouncilWithPassword(id);
-      if (
-        !council ||
-        !council.admin_password ||
-        council.admin_password.trim() !== (password || "").trim()
-      ) {
-        return res
-          .status(403)
-          .json({ error: "Feil passord for dette ungdomsrådet." });
-      }
-
+      // Ingen passord-sjekk her heller
       await updateCouncilLogoFile(
         id,
         file.buffer,
@@ -391,10 +365,13 @@ app.post(
       res.json(updated);
     } catch (err) {
       console.error("Feil ved opplasting av logo:", err);
-      res.status(500).json({ error: "Kunne ikke lagre logo." });
+      res
+        .status(500)
+        .json({ error: "Det oppstod en feil ved opplasting av logo." });
     }
   }
 );
+
 
 
 

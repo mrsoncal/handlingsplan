@@ -1945,3 +1945,53 @@ input[type="color"]::-webkit-color-swatch {
   cursor: pointer;
 }
 
+/* --- Innspill-editor: faste kolonnebredder --- */
+
+#innspill-table-wrapper .innspill-table {
+  width: 100%;
+  table-layout: fixed; /* respekter bredder */
+}
+
+/* 1: Tema */
+#innspill-table-wrapper .innspill-table th:nth-child(1),
+#innspill-table-wrapper .innspill-table td:nth-child(1) {
+  width: 14%;
+}
+
+/* 2: Hva vil du gjøre? */
+#innspill-table-wrapper .innspill-table th:nth-child(2),
+#innspill-table-wrapper .innspill-table td:nth-child(2) {
+  width: 14%;
+}
+
+/* 3: Punkt (nr) – smal, sentrert */
+#innspill-table-wrapper .innspill-table th:nth-child(3),
+#innspill-table-wrapper .innspill-table td:nth-child(3) {
+  width: 4%;
+  text-align: center;
+}
+
+/* 4: Formuler punktet – bred hovedkolonne */
+#innspill-table-wrapper .innspill-table th:nth-child(4),
+#innspill-table-wrapper .innspill-table td:nth-child(4) {
+  width: 18%;
+}
+
+/* 5: Endre fra */
+#innspill-table-wrapper .innspill-table th:nth-child(5),
+#innspill-table-wrapper .innspill-table td:nth-child(5) {
+  width: 18%;
+}
+
+/* 6: Endre til */
+#innspill-table-wrapper .innspill-table th:nth-child(6),
+#innspill-table-wrapper .innspill-table td:nth-child(6) {
+  width: 18%;
+}
+
+/* 7: Handlinger – kompakt, knappesone */
+#innspill-table-wrapper .innspill-table th:nth-child(7),
+#innspill-table-wrapper .innspill-table td:nth-child(7) {
+  width: 14%;
+  white-space: nowrap; /* ikke brekk knappene */
+}

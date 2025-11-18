@@ -310,7 +310,6 @@ function renderInnspillCarousel(innspill) {
       // Legg på en liten grønn "Vedtatt"-badge i første kolonne
       if (isVedtatt) {
         const badge = document.createElement("span");
-        badge.className = "vedtatt-label";
         badge.textContent = "Vedtatt";
         tdAction.appendChild(badge);
       }
