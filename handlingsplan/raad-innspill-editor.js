@@ -114,6 +114,41 @@ function updateHeaderBrand(council) {
   brandImg.alt = `Logo for ${name}`;
 }
 
+// --- Tema-rekkefølge (samme som i karusellen på råd-siden) ---
+
+let CURRENT_TEMA_ORDER = [];
+
+function setTemaOrderFromCouncil(council) {
+  const temaer = Array.isArray(council?.temaer) ? council.temaer : [];
+
+  if (temaer.length > 0) {
+    CURRENT_TEMA_ORDER = [];
+    temaer.forEach((t) => {
+      const name = t.name || "";
+      if (!name) return;
+      CURRENT_TEMA_ORDER.push(name);
+    });
+  } else {
+    // Fallback til samme standardrekkefølge som råd-siden
+    CURRENT_TEMA_ORDER = [
+      "Ungdomsdemokrati og Medvirkning",
+      "Samferdsel",
+      "Utdanning og Kompetanse",
+      "Folkehelse",
+      "Klima og Miljø",
+      "Kultur",
+    ];
+  }
+}
+
+function getTemaSortIndex(tema) {
+  if (!CURRENT_TEMA_ORDER.length) return 0;
+  const idx = CURRENT_TEMA_ORDER.indexOf(tema || "");
+  // Ukjente/gamle temaer havner til slutt
+  return idx === -1 ? CURRENT_TEMA_ORDER.length + 1 : idx;
+}
+
+
 function formatAction(actionType) {
   const actionMap = {
     add: "Legge til punkt",
@@ -235,6 +270,99 @@ function setEditing(id) {
   renderInnspillTable();
 }
 
+async function handleVedtattToggleClick(id, nextState) {
+  if (!ensurePassword()) return;
+
+  try {
+    const res = await fetch(INNSPILL_ITEM_URL(raadId, id), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password: raadPassword,
+        // prøver å støtte begge varianter backend kan ha
+        vedtatt: nextState,
+        status: nextState ? "vedtatt" : "ny",
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const msg =
+        data && data.error
+          ? data.error
+          : "Det oppstod en feil ved oppdatering av vedtatt-status.";
+      alert(msg);
+      return;
+    }
+
+    const updated = await res.json();
+
+    // Oppdater lokal state
+    innspillState = innspillState.map((item) =>
+      item.id === id ? { ...item, ...updated } : item
+    );
+
+    renderInnspillTable();
+  } catch (err) {
+    console.error(err);
+    alert("Det oppstod en teknisk feil ved oppdatering av vedtatt-status.");
+  }
+}
+
+async function handleVedtattToggleClick(id, nextIsVedtatt) {
+  if (!ensurePassword()) return;
+
+  // Finn eksisterende innspill i state, så vi kan sende full pakke til backend
+  const current = innspillState.find((item) => item.id === id);
+  if (!current) return;
+
+  const nextStatus = nextIsVedtatt ? "vedtatt" : "ny";
+
+  try {
+    const res = await fetch(INNSPILL_ITEM_URL(raadId, id), {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password: raadPassword,
+        tema: current.tema,
+        punktNr: current.punkt_nr,
+        underpunktNr: current.underpunkt_nr,
+        formulerPunkt: current.formuler_punkt,
+        endreFra: current.endre_fra,
+        endreTil: current.endre_til,
+        status: nextStatus,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const msg =
+        data && data.error
+          ? data.error
+          : "Det oppstod en feil ved oppdatering av vedtatt-status.";
+      alert(msg);
+      return;
+    }
+
+    const updated = await res.json();
+
+    // Oppdater lokal state (inkludert status)
+    innspillState = innspillState.map((item) =>
+      item.id === id ? { ...item, ...updated } : item
+    );
+
+    renderInnspillTable();
+  } catch (err) {
+    console.error(err);
+    alert("Det oppstod en teknisk feil ved oppdatering av vedtatt-status.");
+  }
+}
+
+
 async function handleSaveClick(id) {
   if (!ensurePassword()) return;
 
@@ -345,23 +473,25 @@ function renderInnspillTable() {
     return;
   }
 
-  // Sorter på tema, punkt, underpunkt, created_at
-  const sorted = innspillState.slice().sort((a, b) => {
-    const temaCmp = (a.tema || "").localeCompare(b.tema || "", "nb");
-    if (temaCmp !== 0) return temaCmp;
+    // Sorter på tema-rekkefølge (samme som karusell), punkt, underpunkt, created_at
+    const sorted = innspillState.slice().sort((a, b) => {
+        const idxA = getTemaSortIndex(a.tema || "");
+        const idxB = getTemaSortIndex(b.tema || "");
+        if (idxA !== idxB) return idxA - idxB;
 
-    const pA = a.punkt_nr ?? 0;
-    const pB = b.punkt_nr ?? 0;
-    if (pA !== pB) return pA - pB;
+        const pA = a.punkt_nr ?? 0;
+        const pB = b.punkt_nr ?? 0;
+        if (pA !== pB) return pA - pB;
 
-    const uA = a.underpunkt_nr ?? 0;
-    const uB = b.underpunkt_nr ?? 0;
-    if (uA !== uB) return uA - uB;
+        const uA = a.underpunkt_nr ?? 0;
+        const uB = b.underpunkt_nr ?? 0;
+        if (uA !== uB) return uA - uB;
 
-    const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
-    const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
-    return tA - tB;
-  });
+        const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return tA - tB;
+    });
+
 
   wrapper.innerHTML = "";
 
@@ -379,7 +509,6 @@ function renderInnspillTable() {
     "Formuler punktet",
     "Endre fra",
     "Endre til",
-    "Registrert",
     "Handlinger",
   ].forEach((label) => {
     const th = document.createElement("th");
@@ -396,6 +525,17 @@ function renderInnspillTable() {
     const isEditing = editingId === s.id;
     const tr = document.createElement("tr");
     tr.dataset.innspillId = s.id;
+
+    const isVedtatt =
+      s.status === "vedtatt" ||
+      s.vedtatt === true ||
+      s.vedtatt === "true";
+
+    if (isVedtatt) {
+      tr.classList.add("vedtatt");
+      tr.dataset.status = "vedtatt";
+    }
+
 
     // Tema
     const tdTema = document.createElement("td");
@@ -467,14 +607,26 @@ function renderInnspillTable() {
     }
     tr.appendChild(tdEndreTil);
 
-    // Registrert
-    const tdCreated = document.createElement("td");
-    tdCreated.textContent = formatCreatedAt(s.created_at);
-    tr.appendChild(tdCreated);
-
     // Handlinger
     const tdActions = document.createElement("td");
-    tdActions.className = "button-cell innspill-actions";
+    tdActions.className = "button-cell";
+
+    const actionsWrap = document.createElement("div");
+    actionsWrap.className = "innspill-actions";
+
+    // ✅ Grønn vedtatt-knapp med "✓"
+    const vedtattBtn = document.createElement("button");
+    vedtattBtn.type = "button";
+    vedtattBtn.className = "btn btn-vedta";
+    vedtattBtn.textContent = "✓";
+    vedtattBtn.title = isVedtatt
+      ? "Fjern vedtatt-status"
+      : "Marker innspillet som vedtatt";
+
+    vedtattBtn.addEventListener("click", () =>
+      handleVedtattToggleClick(s.id, !isVedtatt)
+    );
+    actionsWrap.appendChild(vedtattBtn);
 
     const editBtn = document.createElement("button");
     editBtn.type = "button";
@@ -487,16 +639,19 @@ function renderInnspillTable() {
         setEditing(s.id);
       }
     });
-    tdActions.appendChild(editBtn);
+    actionsWrap.appendChild(editBtn);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "btn btn-delete";
-    deleteBtn.textContent = "Slett";
+    deleteBtn.textContent = "X";
     deleteBtn.addEventListener("click", () => handleDeleteClick(s.id));
-    tdActions.appendChild(deleteBtn);
+    actionsWrap.appendChild(deleteBtn);
 
+    tdActions.appendChild(actionsWrap);
     tr.appendChild(tdActions);
+
+
 
     tbody.appendChild(tr);
   });
@@ -524,9 +679,11 @@ async function init() {
       nameSpan.textContent = council.display_name || council.name || "";
     }
     updateHeaderBrand(council);
+    setTemaOrderFromCouncil(council);
 
     innspillState = await fetchInnspill(raadId);
     renderInnspillTable();
+
   } catch (err) {
     console.error(err);
     const wrapper = $("innspill-table-wrapper");

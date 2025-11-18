@@ -175,7 +175,7 @@ app.get("/api/ungdomsrad/:id/innspill", async (req, res) => {
   }
 });
 
-// PUT /api/ungdomsrad/:councilId/innspill/:innspillId  -> oppdaterer ett innspill
+// PUT /api/ungdomsrad/:councilId/innspill/:innspillId
 app.put("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {
   try {
     const councilId = req.params.councilId;
@@ -188,19 +188,18 @@ app.put("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {
       formulerPunkt,
       endreFra,
       endreTil,
+      status,         // ← ADD THIS
     } = req.body || {};
 
     if (!password) {
       return res
         .status(400)
-        .json({ error: "Passord er påkrevd." });
+        .json({ error: "Admin-passord er påkrevd for å endre innspill." });
     }
 
     const council = await getCouncilWithPassword(councilId, password);
     if (!council) {
-      return res
-        .status(403)
-        .json({ error: "Feil passord for dette ungdomsrådet." });
+      return res.status(403).json({ error: "Feil passord for dette ungdomsrådet." });
     }
 
     const updated = await updateInnspill(councilId, innspillId, {
@@ -210,6 +209,7 @@ app.put("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {
       formulerPunkt,
       endreFra,
       endreTil,
+      status,        // ← PASS IT THROUGH
     });
 
     if (!updated) {
@@ -222,6 +222,7 @@ app.put("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {
     res.status(500).json({ error: "Kunne ikke oppdatere innspill." });
   }
 });
+
 
 // DELETE /api/ungdomsrad/:councilId/innspill/:innspillId  -> sletter ett innspill
 app.delete("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {

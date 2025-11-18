@@ -56,8 +56,15 @@ async function init() {
       underpunkt_nr INTEGER,
       formuler_punkt TEXT,
       endre_fra TEXT,
-      endre_til TEXT
+      endre_til TEXT,
+      status TEXT DEFAULT 'ny'
     );
+  `);
+
+  // Make sure older DBs also get status-column
+  await pool.query(`
+    ALTER TABLE innspill
+    ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'ny';
   `);
 
   // Allow a separate display_name (visningsnavn)
@@ -353,16 +360,18 @@ async function getInnspillForCouncil(councilId) {
         underpunkt_nr,
         formuler_punkt,
         endre_fra,
-        endre_til
+        endre_til,
+        status
       FROM innspill
       WHERE council_id = $1
-      ORDER BY tema ASC, punkt_nr ASC, created_at ASC
+      ORDER BY created_at ASC
     `,
     [councilId]
   );
 
   return result.rows;
 }
+
 
 async function getTemaerForCouncil(councilId) {
   const result = await pool.query(
@@ -461,24 +470,30 @@ async function updateCouncilDisplayName(id, displayName) {
   );
 }
 
-async function updateInnspill(councilId, innspillId, {
-  tema,
-  punktNr,
-  underpunktNr,
-  formulerPunkt,
-  endreFra,
-  endreTil,
-}) {
+async function updateInnspill(
+  councilId,
+  innspillId,
+  {
+    tema,
+    punktNr,
+    underpunktNr,
+    formulerPunkt,
+    endreFra,
+    endreTil,
+    status,
+  }
+) {
   const result = await pool.query(
     `
       UPDATE innspill
       SET
-        tema = $3,
-        punkt_nr = $4,
-        underpunkt_nr = $5,
-        formuler_punkt = $6,
-        endre_fra = $7,
-        endre_til = $8
+        tema            = $3,
+        punkt_nr        = $4,
+        underpunkt_nr   = $5,
+        formuler_punkt  = $6,
+        endre_fra       = $7,
+        endre_til       = $8,
+        status          = COALESCE($9, status)
       WHERE id = $1 AND council_id = $2
       RETURNING
         id,
@@ -490,7 +505,8 @@ async function updateInnspill(councilId, innspillId, {
         underpunkt_nr,
         formuler_punkt,
         endre_fra,
-        endre_til
+        endre_til,
+        status
     `,
     [
       innspillId,
@@ -501,11 +517,13 @@ async function updateInnspill(councilId, innspillId, {
       formulerPunkt || null,
       endreFra || null,
       endreTil || null,
+      status || null,   // null = "don’t change status"
     ]
   );
 
   return result.rows[0] || null;
 }
+
 
 async function deleteInnspill(councilId, innspillId) {
   await pool.query(

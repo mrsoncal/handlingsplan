@@ -160,7 +160,7 @@ async function fetchAll() {
         suggestion_id: s.id,   // old naming expected by render()
         raadId: councilId,
         raadNavn: council.display_name || council.name || `Råd #${councilId}`,
-        status: "ny", // no status yet → default
+        status: s.status || "ny",
         updated_at: s.created_at,
         payload,
       });

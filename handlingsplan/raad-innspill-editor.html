@@ -9,7 +9,7 @@
       window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
     </script>
   </head>
-  <body>
+  <body id="raad-innspill-editor-body">
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
@@ -23,53 +23,57 @@
           src="../UFR-logo.png"
           alt="Ungdomsrådsverktøy"
         />
-      </div>
-      <div class="header-space-container">
-        <div class="header-space"></div>
-      </div>
+        </div>
+        <div class="header-space-container">
+            <div class="header-space"></div>
+        </div>
     </header>
-
-    <!-- RÅD-SPESIFIKT LOGIN -->
-    <div id="login-section">
-        <div class="login-module">
-        <div
-            class="form-row"
-        >
-            <label for="raad-password" class="field-label">
-            Skriv inn passord for å redigere ungdomsrådet.
-            </label>
-            <input
-            id="raad-password"
-            type="password"
-            class="input"
-            placeholder="Passord"
-            />
-            <button id="raad-login-btn" class="btn">Logg inn</button>
-        </div>
-        <p
-            id="raad-login-error"
-            style="color: #b7173d; margin-top: 0.5rem"
-        ></p>
-        </div>
-        
-    </div>
-
-
-    <div id="admin-section" style="display: none">
-        <div class="container">
-            <section class="card main-card">
-            <h2>Innspill for <span id="raad-name">…</span></h2>
-            <p class="help-text">
-                Her ser du alle innsendte innspill i tabellform. Tabellen er sortert på
-                <strong>tema</strong> og deretter <strong>punktnummer</strong>.
-            </p>
-
-            <div id="innspill-table-wrapper" class="table-wrapper">
-                <!-- Fylles av JavaScript -->
+    <div class="container">
+        <section class="card main-card">
+            <!-- RÅD-SPESIFIKT LOGIN -->
+            <div id="login-section">
+                <div class="login-module">
+                <div
+                    class="form-row"
+                >
+                    <label for="raad-password" class="field-label">
+                    Skriv inn passord for å redigere ungdomsrådet.
+                    </label>
+                    <input
+                    id="raad-password"
+                    type="password"
+                    class="input"
+                    placeholder="Passord"
+                    />
+                    <button id="raad-login-btn" class="btn">Logg inn</button>
+                </div>
+                <p
+                    id="raad-login-error"
+                    style="color: #b7173d; margin-top: 0.5rem"
+                ></p>
+                </div>
+                
             </div>
-            </section>
-        </div>
+
+
+            <div id="admin-section" style="display: none">
+                <div class="container">
+                    <section class="card main-card">
+                    <h2>Innspill for <span id="raad-name">…</span></h2>
+                    <p class="help-text">
+                        Her ser du alle innsendte innspill i tabellform. Tabellen er sortert på
+                        <strong>tema</strong> og deretter <strong>punktnummer</strong>.
+                    </p>
+
+                    <div id="innspill-table-wrapper" class="table-wrapper">
+                        <!-- Fylles av JavaScript -->
+                    </div>
+                    </section>
+                </div>
+            </div>
+        </section>
     </div>
+    
     
 
     <script src="raad-innspill-editor.js"></script>
