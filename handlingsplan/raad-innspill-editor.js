@@ -52,18 +52,19 @@ function $(id) {
 }
 
 function updateLoginVisibility() {
-  const loginBox = $("innspill-login");
-  const wrapper = $("innspill-table-wrapper");
-  if (!loginBox || !wrapper) return;
+  const loginSection = $("login-section");
+  const adminSection = $("admin-section");
+  if (!loginSection || !adminSection) return;
 
   if (isLoggedIn) {
-    loginBox.classList.add("hidden");
-    wrapper.classList.remove("hidden");
+    loginSection.style.display = "none";
+    adminSection.style.display = "block";
   } else {
-    loginBox.classList.remove("hidden");
-    wrapper.classList.add("hidden");
+    loginSection.style.display = "block";
+    adminSection.style.display = "none";
   }
 }
+
 
 // ---- API helpers ----
 
@@ -167,9 +168,9 @@ function formatCreatedAt(createdAt) {
 // ---- LOGIN LOGIC ----
 
 function initLoginModule() {
-  const loginBtn = $("innspill-login-btn");
-  const pwInput = $("innspill-password");
-  const errorEl = $("innspill-login-error");
+  const loginBtn = $("raad-login-btn");
+  const pwInput = $("raad-password");
+  const errorEl = $("raad-login-error");
 
   // 1) Sjekk cookie først – hvis vi har pw der, auto-logg inn
   const cookiePw = getPasswordFromCookie();
@@ -201,6 +202,7 @@ function initLoginModule() {
   }
 }
 
+
 function ensurePassword() {
   // Hvis allerede satt i minnet og vi anser oss som innlogget
   if (raadPassword && isLoggedIn) return true;
@@ -215,7 +217,7 @@ function ensurePassword() {
   }
 
   // Ellers: be brukeren logge inn
-  const errorEl = $("innspill-login-error");
+  const errorEl = $("raad-login-error");
   if (errorEl) {
     errorEl.textContent =
       "Du må logge inn med admin-passord for å endre eller slette innspill.";
@@ -224,6 +226,7 @@ function ensurePassword() {
   updateLoginVisibility();
   return false;
 }
+
 
 // ---- EDIT / DELETE HANDLERS ----
 
