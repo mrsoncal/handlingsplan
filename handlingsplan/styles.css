@@ -619,12 +619,13 @@ transition: none !important;
 
   
 
-/* Make the 'Punkt (nr)' column narrower */
+/* Make the 'Punkt (nr)' column narrower and right-aligned */
 .carousel-slide table th:nth-child(2),
 .carousel-slide table td:nth-child(2) {
-  width: 8%;   /* narrow column since it’s just digits */
-  text-align: center;
+  width: 8%;          /* narrow column since it’s just digits */
+  text-align: right;  /* number on the right */
 }
+
 
 /* Make first column (Hva vil du gjøre?) just wide enough for the tag */
 .carousel-slide table th:nth-child(1),
@@ -2097,7 +2098,7 @@ body.raad-admin .container {
 }
 
 .hp-table{
-  
+
 }
 
 .admin-section-part .input {
@@ -2211,5 +2212,232 @@ input[type="color"] {
 .tema-grid-row {
   column-gap: 0.6rem;
 }
+
+/* Skjul header-raden på mobil */
+.hp-table thead {
+  display: none;
+}
+
+.hp-table {
+  border-collapse: separate;
+  border-spacing: 0 0.5rem;
+}
+
+.hp-table tbody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hp-table tbody tr {
+  display: block;
+  background: var(--accent);
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.hp-table td {
+  border: none;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+/* Sammendraget som alltid vises: kolonne 1 og 2 */
+.hp-table td:nth-child(1),
+.hp-table td:nth-child(2) {
+  display: block;
+}
+
+.hp-table td:nth-child(1) {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.hp-table td:nth-child(2) {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* Som standard vises 'Formuler punktet' (kolonne 3) for alle rader */
+.hp-table td:nth-child(3) {
+  display: block;
+  margin-top: 0.15rem;
+  font-weight: 600;
+}
+
+/* På LEGG-TIL- og ENDRE-kort ønsker vi at 'Formuler punktet' er en del av foldingen */
+.hp-table tr.hp-add-row td:nth-child(3),
+.hp-table tr.hp-change-row td:nth-child(3) {
+  display: none;
+}
+
+.hp-table tr.hp-add-row.expanded td:nth-child(3),
+.hp-table tr.hp-change-row.expanded td:nth-child(3) {
+  display: block;
+}
+
+.hp-table tr.hp-add-row.expanded td:nth-child(3)::before,
+.hp-table tr.hp-change-row.expanded td:nth-child(3)::before {
+  content: "Formuler punktet:";
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+
+/* Detaljer (Endre fra / Endre til) – skjult til raden er ekspandert */
+.hp-table td:nth-child(4),
+.hp-table td:nth-child(5) {
+  display: none;
+  border-top: 1px solid #e5e7eb;
+}
+
+.hp-table tr.expanded td:nth-child(4),
+.hp-table tr.expanded td:nth-child(5) {
+  display: block;
+}
+
+.hp-table tr.expanded td:nth-child(4)::before,
+.hp-table tr.expanded td:nth-child(5)::before {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.hp-table tr.expanded td:nth-child(4)::before {
+  content: "Endre fra:";
+}
+
+.hp-table tr.expanded td:nth-child(5)::before {
+  content: "Endre til:";
+}
+
+/* Sørg for at rader kan vokse med innholdet */
+.hp-table tr {
+  height: auto !important;
+}
+
+/* Skjul footer-stripen på mobil, accordion-layouten er "kortene" */
+.hp-table tfoot {
+  display: none;
+}
+
+.hp-table tr.hp-add-row td:nth-child(4),
+.hp-table tr.hp-add-row td:nth-child(5) {
+  display: none !important;
+  border-top: none;
+}
+
+.hp-table tr.hp-add-row.expanded td:nth-child(4)::before,
+.hp-table tr.hp-add-row.expanded td:nth-child(5)::before {
+  content: "";
+}
+
+.hp-add-row td {
+  width: 100% !important;
+  min-height: 4.5rem !important;
+  color: #ffffff;
+}
+
+.hp-change-row td {
+  width: 100% !important;
+  min-height: 4.5rem !important;
+  color: #ffffff;
+}
+
+/* Only flex the first td inside hp-add-row */
+.hp-add-row td:first-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;       /* vertical center */
+  min-height: 4rem;
+  color: #ffffff;
+}
+
+.hp-add-row .hp-header-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; /* text left, number right */
+  width: 100%;
+  color: #ffffff;
+}
+
+/* Only flex the first td inside hp-add-row */
+.hp-change-row td:first-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;       /* vertical center */
+  min-height: 4rem;
+  color: #ffffff;
+}
+
+.hp-change-row .hp-header-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; /* text left, number right */
+  width: 100%;
+  color: #ffffff;
+}
+
+
+
+.carousel-slide {
+  background:#ffffff;
+  padding-right: 1rem;
+  padding-left: 1rem;
+}
+
+.punkt-nummer {
+  color: #ffffff;
+  font-size: 1rem !important;
+  font-weight: 600;
+}
+
+/* Kombinert headercelle: "Hva vil du gjøre?" + Punkt (nr) */
+.hp-header-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hp-action-label {
+  font-weight: 500;
+}
+
+/* Liten inline badge for vedtatt-tekst */
+.vedtatt-label-inline {
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 9999px;
+  background-color: #28a745;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Vi bruker nå første kolonne til både tekst + nummer, så skjul den gamle "Punkt (nr)"-kolonnen */
+.hp-table th:nth-child(2),
+.hp-table td:nth-child(2) {
+  display: none;
+}
+
+/* Base: alle vanlige rader får en lys blanding av accent */
+.carousel-slide .hp-table tbody tr:not(.vedtatt):not(.filler-row) td {
+  background-color: var(--accent);
+}
+
+/* Partallsrader: litt mørkere variant av accent */
+.carousel-slide .hp-table tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td {
+  background-color: color-mix(in srgb, var(--accent) 75%, #000000 25%);
+}
+
 
 }

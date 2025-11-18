@@ -291,37 +291,55 @@ function renderInnspillCarousel(innspill) {
     const tbody = document.createElement("tbody");
 
     group.forEach((s) => {
-      const tr = document.createElement("tr");
+            const tr = document.createElement("tr");
 
-      // Finn ut om innspillet er vedtatt (støtter både status og vedtatt-boolean)
+      // Finn ut om innspillet er vedtatt (status eller vedtatt-boolean)
       const isVedtatt =
         s.status === "vedtatt" ||
         s.status === "VEDTATT" ||
         s.vedtatt === true;
 
       if (isVedtatt) {
-        // Gir grønn bakgrunn på raden (bruker eksisterende .vedtatt CSS)
         tr.classList.add("vedtatt");
       }
 
-      const tdAction = document.createElement("td");
-      tdAction.textContent = actionMap[s.action_type] || s.action_type || "";
+      const actionLabel = actionMap[s.action_type] || s.action_type || "";
 
-      // Legg på en liten grønn "Vedtatt"-badge i første kolonne
-      if (isVedtatt) {
-        const badge = document.createElement("span");
-        badge.textContent = "Vedtatt";
-        tdAction.appendChild(badge);
+      // === Kombinert headercelle: "Legge til punkt" + "2.1" i samme div ===
+      const tdHeader = document.createElement("td");
+      const headerFlex = document.createElement("div");
+      headerFlex.className = "hp-header-cell"; // flex container
+
+      const actionSpan = document.createElement("span");
+      actionSpan.className = "hp-action-label";
+      actionSpan.textContent = actionLabel;
+
+      // Marker radtype for evt. annen styling
+      if (/^Legge til/i.test(actionLabel)) {
+        tr.classList.add("hp-add-row");
+      } else if (/^Endre/i.test(actionLabel)) {
+        tr.classList.add("hp-change-row");
       }
 
-      tr.appendChild(tdAction);
+      // Liten "Vedtatt"-badge inne i teksten
+      if (isVedtatt) {
+        const badge = document.createElement("span");
+        badge.className = "vedtatt-label-inline";
+        badge.textContent = "Vedtatt";
+        actionSpan.appendChild(badge);
+      }
 
-      const tdPunkt = document.createElement("td");
-      tdPunkt.textContent =
+      const punktSpan = document.createElement("span");
+      punktSpan.className = "punkt-nummer";
+      punktSpan.textContent =
         s.underpunkt_nr != null && s.underpunkt_nr !== ""
           ? `${s.punkt_nr}.${s.underpunkt_nr}`
           : s.punkt_nr ?? "";
-      tr.appendChild(tdPunkt);
+
+      headerFlex.appendChild(actionSpan);
+      headerFlex.appendChild(punktSpan);
+      tdHeader.appendChild(headerFlex);
+      tr.appendChild(tdHeader);
 
       const tdFormuler = document.createElement("td");
       tdFormuler.textContent = s.formuler_punkt || "";
@@ -335,7 +353,13 @@ function renderInnspillCarousel(innspill) {
       tdTil.textContent = s.endre_til || "";
       tr.appendChild(tdTil);
 
+      // Mobil-vennlig accordion: klikk på raden for å vise/skjule detaljer (Endre fra / Endre til)
+      tr.addEventListener("click", () => {
+        tr.classList.toggle("expanded");
+      });
+
       tbody.appendChild(tr);
+
     });
 
       // Etter at alle rader er lagt til i tbody ...
