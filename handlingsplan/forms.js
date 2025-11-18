@@ -20,11 +20,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Koble formen til et spesifikt ungdomsråd --------------------------
 
   const urlParams = new URLSearchParams(window.location.search);
-  const councilId = urlParams.get("raadId") || urlParams.get("councilId") || null;
+
+  // Støtt både ?raadId=, ?councilId= og ?id=
+  const councilId =
+    urlParams.get("raadId") ||
+    urlParams.get("councilId") ||
+    urlParams.get("id") ||
+    null;
 
   const API_BASE = window.HP_API_BASE || "";
-  const raadId = new URLSearchParams(location.search).get("id");
+
+  // Bruk samme id til å hente råd-info (for logo + tema)
+  const raadId = councilId;
+
   let currentCouncil = null;
+
 
 
 

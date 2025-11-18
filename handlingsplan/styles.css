@@ -1995,3 +1995,18 @@ input[type="color"]::-webkit-color-swatch {
   width: 14%;
   white-space: nowrap; /* ikke brekk knappene */
 }
+
+/* HP-tabell på raad-siden: header og footer deler samme accent-farge */
+.hp-table thead tr th {
+  background-color: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+/* Footer-rad: tynn farget stripe nederst */
+.hp-table tfoot tr.hp-footer-row td {
+  background-color: var(--accent);
+  height: 0.75rem;
+  padding: 0;
+  border: none;
+}

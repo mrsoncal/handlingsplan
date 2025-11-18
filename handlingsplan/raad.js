@@ -338,6 +338,26 @@ function renderInnspillCarousel(innspill) {
       tbody.appendChild(tr);
     });
 
+      // Etter at alle rader er lagt til i tbody ...
+
+      // Lag en footer-rad nederst i tabellen
+      const tfoot = document.createElement("tfoot");
+      const footerRow = document.createElement("tr");
+      footerRow.className = "hp-footer-row";
+
+      const footerCell = document.createElement("td");
+      footerCell.colSpan = 5; // samme antall kolonner som headeren
+      footerCell.textContent = ""; // bare en farget bar
+
+      footerRow.appendChild(footerCell);
+      tfoot.appendChild(footerRow);
+      table.appendChild(tfoot);
+
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      slide.appendChild(wrapper);
+
+
 
     table.appendChild(tbody);
     wrapper.appendChild(table);
