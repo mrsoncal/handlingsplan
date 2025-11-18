@@ -2,8 +2,6 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const path = require("path");
-const fs = require("fs");
 const multer = require("multer");
 const crypto = require("crypto");
 const {
@@ -13,8 +11,6 @@ const {
   getCouncilById,
   getCouncilWithPassword,
   deleteCouncil,
-  setCouncilHandlingsplanPath,
-  setCouncilLogoPath,
   createInnspill,
   getInnspillForCouncil,
   getTemaerForCouncil,
@@ -65,9 +61,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Middlewares
 app.use(cors());
 app.use(express.json());
-
-// Serve uploaded files
-app.use("/uploads", express.static(uploadsDir));
 
 // Simple health check
 app.get("/health", (req, res) => {
