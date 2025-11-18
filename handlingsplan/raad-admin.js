@@ -80,6 +80,18 @@ function ensurePassword() {
   return true;
 }
 
+function autoLoginFromCookie() {
+  const loginSection = $("login-section");
+  const adminSection = $("admin-section");
+  const cookiePw = getPasswordFromCookie();
+  if (!cookiePw) return;
+
+  // Bruk passordet fra cookie uten å vise feilmelding
+  raadPassword = cookiePw;
+  if (loginSection) loginSection.style.display = "none";
+  if (adminSection) adminSection.style.display = "block";
+}
+
 
 
 // ---------- initial data ----------
@@ -502,6 +514,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initBackLink();
   await fetchCouncil();
+  autoLoginFromCookie();
   initLogin();
   initButtons();
 });
