@@ -293,8 +293,28 @@ function renderInnspillCarousel(innspill) {
     group.forEach((s) => {
       const tr = document.createElement("tr");
 
+      // Finn ut om innspillet er vedtatt (støtter både status og vedtatt-boolean)
+      const isVedtatt =
+        s.status === "vedtatt" ||
+        s.status === "VEDTATT" ||
+        s.vedtatt === true;
+
+      if (isVedtatt) {
+        // Gir grønn bakgrunn på raden (bruker eksisterende .vedtatt CSS)
+        tr.classList.add("vedtatt");
+      }
+
       const tdAction = document.createElement("td");
       tdAction.textContent = actionMap[s.action_type] || s.action_type || "";
+
+      // Legg på en liten grønn "Vedtatt"-badge i første kolonne
+      if (isVedtatt) {
+        const badge = document.createElement("span");
+        badge.className = "vedtatt-label";
+        badge.textContent = "Vedtatt";
+        tdAction.appendChild(badge);
+      }
+
       tr.appendChild(tdAction);
 
       const tdPunkt = document.createElement("td");
@@ -318,6 +338,7 @@ function renderInnspillCarousel(innspill) {
 
       tbody.appendChild(tr);
     });
+
 
     table.appendChild(tbody);
     wrapper.appendChild(table);
