@@ -20,7 +20,10 @@ const {
   updateCouncilLogoFile,
   getCouncilHandlingsplanFile,
   getCouncilLogoFile,
+  updateInnspill,
+  deleteInnspill,
 } = require("./db");
+
 
 
 dotenv.config();
@@ -171,6 +174,83 @@ app.get("/api/ungdomsrad/:id/innspill", async (req, res) => {
     res.status(500).json({ error: "Kunne ikke hente innspill." });
   }
 });
+
+// PUT /api/ungdomsrad/:councilId/innspill/:innspillId  -> oppdaterer ett innspill
+app.put("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {
+  try {
+    const councilId = req.params.councilId;
+    const innspillId = req.params.innspillId;
+    const {
+      password,
+      tema,
+      punktNr,
+      underpunktNr,
+      formulerPunkt,
+      endreFra,
+      endreTil,
+    } = req.body || {};
+
+    if (!password) {
+      return res
+        .status(400)
+        .json({ error: "Passord er påkrevd." });
+    }
+
+    const council = await getCouncilWithPassword(councilId, password);
+    if (!council) {
+      return res
+        .status(403)
+        .json({ error: "Feil passord for dette ungdomsrådet." });
+    }
+
+    const updated = await updateInnspill(councilId, innspillId, {
+      tema,
+      punktNr,
+      underpunktNr,
+      formulerPunkt,
+      endreFra,
+      endreTil,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ error: "Innspill ikke funnet." });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    console.error("Error updating innspill:", err);
+    res.status(500).json({ error: "Kunne ikke oppdatere innspill." });
+  }
+});
+
+// DELETE /api/ungdomsrad/:councilId/innspill/:innspillId  -> sletter ett innspill
+app.delete("/api/ungdomsrad/:councilId/innspill/:innspillId", async (req, res) => {
+  try {
+    const councilId = req.params.councilId;
+    const innspillId = req.params.innspillId;
+    const { password } = req.body || {};
+
+    if (!password) {
+      return res
+        .status(400)
+        .json({ error: "Passord er påkrevd." });
+    }
+
+    const council = await getCouncilWithPassword(councilId, password);
+    if (!council) {
+      return res
+        .status(403)
+        .json({ error: "Feil passord for dette ungdomsrådet." });
+    }
+
+    await deleteInnspill(councilId, innspillId);
+    res.status(204).send();
+  } catch (err) {
+    console.error("Error deleting innspill:", err);
+    res.status(500).json({ error: "Kunne ikke slette innspill." });
+  }
+});
+
 
 app.get("/api/ungdomsrad/:id/handlingsplan-file", async (req, res) => {
   try {

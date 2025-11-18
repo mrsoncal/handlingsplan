@@ -461,6 +461,62 @@ async function updateCouncilDisplayName(id, displayName) {
   );
 }
 
+async function updateInnspill(councilId, innspillId, {
+  tema,
+  punktNr,
+  underpunktNr,
+  formulerPunkt,
+  endreFra,
+  endreTil,
+}) {
+  const result = await pool.query(
+    `
+      UPDATE innspill
+      SET
+        tema = $3,
+        punkt_nr = $4,
+        underpunkt_nr = $5,
+        formuler_punkt = $6,
+        endre_fra = $7,
+        endre_til = $8
+      WHERE id = $1 AND council_id = $2
+      RETURNING
+        id,
+        council_id,
+        created_at,
+        action_type,
+        tema,
+        punkt_nr,
+        underpunkt_nr,
+        formuler_punkt,
+        endre_fra,
+        endre_til
+    `,
+    [
+      innspillId,
+      councilId,
+      tema || null,
+      punktNr || null,
+      underpunktNr || null,
+      formulerPunkt || null,
+      endreFra || null,
+      endreTil || null,
+    ]
+  );
+
+  return result.rows[0] || null;
+}
+
+async function deleteInnspill(councilId, innspillId) {
+  await pool.query(
+    `
+      DELETE FROM innspill
+      WHERE id = $1 AND council_id = $2
+    `,
+    [innspillId, councilId]
+  );
+}
+
 
 
 module.exports = {
@@ -481,4 +537,7 @@ module.exports = {
   updateCouncilLogoFile,
   getCouncilHandlingsplanFile,
   getCouncilLogoFile,
+  updateInnspill,
+  deleteInnspill,
 };
+

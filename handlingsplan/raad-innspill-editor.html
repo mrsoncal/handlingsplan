@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Innspill – Tabellvisning</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      // Samme base-URL som de andre håndlingsplan-sidene
+      window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+    </script>
+  </head>
+  <body>
+    <header class="header">
+      <div class="nav-container">
+        <div class="navigation-bar">
+          <nav class="nav">
+            <a class="btn nav" id="back-link">Til admin</a>
+          </nav>
+        </div>
+        <img
+          class="brand"
+          id="raadBrandLogo"
+          src="../UFR-logo.png"
+          alt="Ungdomsrådsverktøy"
+        />
+      </div>
+      <div class="header-space-container">
+        <div class="header-space"></div>
+      </div>
+    </header>
+
+    <div id="innspill-login" class="login-module">
+        <label for="innspill-password">Admin-passord for dette ungdomsrådet</label>
+        <input
+            type="password"
+            id="innspill-password"
+            placeholder="Skriv inn admin-passordet"
+        />
+        <p id="innspill-login-error" class="error-message"></p>
+        </div>
+
+        <div id="innspill-table-wrapper" class="table-wrapper">
+        <!-- fylles av JS -->
+    </div>
+
+
+    <div class="container">
+      <section class="card main-card">
+        <h2>Innspill for <span id="raad-name">…</span></h2>
+        <p class="help-text">
+          Her ser du alle innsendte innspill i tabellform. Tabellen er sortert på
+          <strong>tema</strong> og deretter <strong>punktnummer</strong>.
+        </p>
+
+        <div id="innspill-table-wrapper" class="table-wrapper">
+          <!-- Fylles av JavaScript -->
+        </div>
+      </section>
+    </div>
+
+    <script src="raad-innspill-editor.js"></script>
+  </body>
+</html>

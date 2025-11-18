@@ -426,12 +426,21 @@ function initButtons() {
   const hpBtn = $("upload-hp-btn");
   const addTemaBtn = $("add-tema-btn");
   const saveBtn = $("save-btn");
+  const innspillEditorBtn = $("open-innspill-editor-btn");
 
   if (logoBtn) logoBtn.addEventListener("click", uploadLogo);
   if (hpBtn) hpBtn.addEventListener("click", uploadHandlingsplan);
   if (addTemaBtn) addTemaBtn.addEventListener("click", addTema);
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
+  if (innspillEditorBtn && raadId) {
+    innspillEditorBtn.addEventListener("click", () => {
+      window.location.href = `raad-innspill-editor.html?id=${encodeURIComponent(
+        raadId
+      )}`;
+    });
+  }
 }
+
 
 
 document.addEventListener("DOMContentLoaded", async () => {

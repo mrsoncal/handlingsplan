@@ -284,17 +284,6 @@ color: white;
   border: none;
 }
 
-/* ---- TOP (unchanged except more robust) ---- */
-.table-wrapper table thead tr:first-child th:first-child {
-  border-top-left-radius: 12px;
-}
-
-/* Round the true last header cell (public: last is data; admin: action column) */
-.table-wrapper table thead tr:first-child > th:last-child {
-  border-top-right-radius: 12px;
-}
-
-/* ---- BOTTOM ---- */
 
 /* Align action column without killing its backgrounds */
 thead tr th.button-header {
@@ -308,20 +297,12 @@ tbody tr td.button-cell {
   padding-right: 1.5rem;
 }
 
-/* When admin is logged in, show a narrow header to align the column */
-body.logged-in th.button-header {
-  display: table-cell;
-  width: 110px;             /* tweak if you want a thinner/wider action column */
-  text-align: right;
-  padding-right: 1.5rem;
-}
 
 /* Filler row: full-width colored bar */
 .table-wrapper table tbody tr.filler-row td {
   background: var(--accent);  /* your colors */
   height: 12px;
   padding: 0;
-  border: 0;
 }
 
 /* Ensure the action column cell on this row also stays filled */
@@ -329,17 +310,9 @@ body.logged-in th.button-header {
   background: var(--accent);
 }
 
-/* Rounded bottom corners (left & right) */
-.table-wrapper table tbody tr.filler-row td:first-child {
-  border-bottom-left-radius: 12px;
-}
-.table-wrapper table tbody tr.filler-row td:last-child {
-  border-bottom-right-radius: 12px;
-}
-
 .table-wrapper {
-  border-radius: 12px;
   overflow: hidden;
+  margin-bottom: 10rem !important;
 }
 
 tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td:not(.button-cell) {
@@ -1879,4 +1852,25 @@ input[type="color"]::-webkit-color-swatch {
 #save-button .btn:hover {
   background: #8e1230;
   cursor: pointer;
+}
+
+#open-innspill-editor-btn {
+  background: #ffcc00;
+  width: 20rem;
+  height: 3rem;
+  padding: 0.75rem 1.5rem;
+  margin-right: 2rem;
+  border: none;
+  color: #2b2b2b;
+
+}
+
+
+#open-innspill-editor-btn:hover {
+  background: #efbf00;
+  cursor: pointer;
+}
+
+.innspill-table-header {
+  background: #ceecf4;
 }
