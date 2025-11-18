@@ -110,17 +110,47 @@ function setupAdminOverlay(councilId) {
   });
 }
 
-
 // === Innspill-visning: tema-farger & karusell ===
 
-const TEMA_ACCENTS = new Map([
-  ["Ungdomsdemokrati og Medvirkning", "#DD1367"],
-  ["Samferdsel", "#FF6A18"],
-  ["Utdanning og Kompetanse", "#C5182C"],
-  ["Folkehelse", "#52A23E"],
-  ["Klima og Miljø", "#1C7A23"],
-  ["Kultur", "#DD1367"],
-]);
+// Map fra tema-navn -> farge for ungdomsrådet.
+// Fylles fra council.temaer (raad-admin) i init().
+const TEMA_ACCENTS = new Map();
+let CURRENT_TEMA_ORDER = [];
+
+/*
+  Oppdater tema-farger og rekkefølge basert på council.temaer.
+  Faller tilbake til gamle hardkodede farger dersom ingen temaer er lagret.
+*/
+function setTemaConfigFromCouncil(council) {
+  const temaer = Array.isArray(council?.temaer) ? council.temaer : [];
+
+  if (temaer.length > 0) {
+    TEMA_ACCENTS.clear();
+    CURRENT_TEMA_ORDER = [];
+
+    temaer.forEach((t) => {
+      const name = t.name || "";
+      if (!name) return;
+      if (t.color) {
+        TEMA_ACCENTS.set(name, t.color);
+      }
+      CURRENT_TEMA_ORDER.push(name);
+    });
+  } else {
+    // Fallback til gamle standardfarger om det ikke finnes temaer i databasen
+    TEMA_ACCENTS.clear();
+    const defaults = [
+      ["Ungdomsdemokrati og Medvirkning", "#DD1367"],
+      ["Samferdsel", "#FF6A18"],
+      ["Utdanning og Kompetanse", "#C5182C"],
+      ["Folkehelse", "#52A23E"],
+      ["Klima og Miljø", "#1C7A23"],
+      ["Kultur", "#DD1367"],
+    ];
+    CURRENT_TEMA_ORDER = defaults.map(([name]) => name);
+    defaults.forEach(([name, color]) => TEMA_ACCENTS.set(name, color));
+  }
+}
 
 let currentSlide = 0;
 
@@ -130,6 +160,7 @@ function applySlideAccent(slideEl, tema) {
   slideEl.dataset.tema = tema;
 }
 
+
 function sortAndGroupInnspill(items) {
   const grouped = {};
   for (const it of items) {
@@ -137,39 +168,49 @@ function sortAndGroupInnspill(items) {
     (grouped[tema] ||= []).push(it);
   }
 
-  const temaOrder = [
-    "Ungdomsdemokrati og Medvirkning",
-    "Samferdsel",
-    "Utdanning og Kompetanse",
-    "Folkehelse",
-    "Klima og Miljø",
-    "Kultur",
-  ];
-
   const actionOrder = { add: 0, change: 1, remove: 2 };
 
+  // Sorter innspill innenfor hvert tema
   for (const tema in grouped) {
     grouped[tema].sort((a, b) => {
       const nA = a.punkt_nr || 0;
       const nB = b.punkt_nr || 0;
       if (nA !== nB) return nA - nB;
+
       const oA = actionOrder[a.action_type] ?? 99;
       const oB = actionOrder[b.action_type] ?? 99;
-      return oA - oB;
+      if (oA !== oB) return oA - oB;
+
+      const uA = a.underpunkt_nr || 0;
+      const uB = b.underpunkt_nr || 0;
+      return uA - uB;
     });
   }
 
+  // Bruk rekkefølgen fra CURRENT_TEMA_ORDER dersom den finnes (fra raad-admin)
+  const temaOrder =
+    Array.isArray(CURRENT_TEMA_ORDER) && CURRENT_TEMA_ORDER.length
+      ? CURRENT_TEMA_ORDER
+      : [];
+
   const sortedGroups = [];
-  for (const tema of temaOrder) {
-    if (grouped[tema]) sortedGroups.push([tema, grouped[tema]]);
+
+  if (temaOrder.length) {
+    for (const tema of temaOrder) {
+      if (grouped[tema]) sortedGroups.push([tema, grouped[tema]]);
+    }
   }
+
+  // Legg til temaer som ikke ligger i CURRENT_TEMA_ORDER (f.eks. gamle/ukjente tema)
   for (const tema of Object.keys(grouped)) {
     if (!temaOrder.includes(tema)) {
       sortedGroups.push([tema, grouped[tema]]);
     }
   }
+
   return sortedGroups;
 }
+
 
 function updateCarousel() {
   const track = document.getElementById("carousel-track");
@@ -324,34 +365,38 @@ async function init() {
   }
 
     try {
-        let council = await fetchCouncil(id);
+      let council = await fetchCouncil(id);
 
-        const title = council.display_name || council.name || "Ukjent ungdomsråd";
-        if (heading) heading.textContent = `Handlingsplan – ${title}`;
-        document.title = `Handlingsplan – ${title}`;
+      // Oppdater tema-farger basert på raad-admin-innstillinger
+      setTemaConfigFromCouncil(council);
 
-        updateHeaderBrand(council);
+      const title = council.display_name || council.name || "Ukjent ungdomsråd";
 
-        // Koble Handlingsplan-knappen til opplastet fil (hvis finnes)
-        setupHandlingsplanLink(council);
+      if (heading) heading.textContent = `Handlingsplan – ${title}`;
+      document.title = `Handlingsplan – ${title}`;
 
-        // Admin-opplasting: etter opplasting oppdatere lenken
-        setupAdminOverlay(id, (updatedCouncil) => {
-        council = updatedCouncil;
-        setupHandlingsplanLink(council);
-        });
+      updateHeaderBrand(council);
 
-        // Hent og vis innspill for dette rådet
-        const innspill = await fetchInnspill(id);
-        renderInnspillCarousel(innspill);
+      // Koble Handlingsplan-knappen til opplastet fil (hvis finnes)
+      setupHandlingsplanLink(council);
+
+      // Admin-opplasting: etter opplasting oppdatere lenken
+      setupAdminOverlay(id, (updatedCouncil) => {
+      council = updatedCouncil;
+      setupHandlingsplanLink(council);
+      });
+
+      // Hent og vis innspill for dette rådet
+      const innspill = await fetchInnspill(id);
+      renderInnspillCarousel(innspill);
     } catch (err) {
-        console.error(err);
-        if (heading) heading.textContent = "Feil ved henting av ungdomsråd";
+      console.error(err);
+      if (heading) heading.textContent = "Feil ved henting av ungdomsråd";
 
-        if (container) {
+      if (container) {
         container.innerHTML =
-            "<p>Det oppstod en feil ved henting av ungdomsrådet. Prøv igjen, eller gå tilbake til oversikten.</p>";
-        }
+          "<p>Det oppstod en feil ved henting av ungdomsrådet. Prøv igjen, eller gå tilbake til oversikten.</p>";
+      }
   }
 }
 

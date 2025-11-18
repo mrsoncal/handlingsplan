@@ -335,12 +335,12 @@ async function handleNewCouncil(event) {
 
     const created = await res.json();
 
-    // Hvis vi har valgt en logo-fil, last den opp som med handlingsplanen
+
     if (logoFile) {
       try {
         const fd = new FormData();
         fd.append("password", password);
-        fd.append("file", logoFile);
+        fd.append("logo", logoFile);
 
         const uploadRes = await fetch(
           `${COUNCILS_URL}/${encodeURIComponent(created.id)}/logo`,
