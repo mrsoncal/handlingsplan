@@ -80,7 +80,7 @@ function updateHeaderBrand(council) {
 
   const name = council.display_name || council.name || "Ungdomsråd";
 
-  let logoSrc = "../TU-logov2.png";
+  let logoSrc = "../UFR-logo.png";
 
   if (council.has_logo) {
     logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(

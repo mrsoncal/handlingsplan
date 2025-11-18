@@ -197,21 +197,24 @@ function renderCouncils() {
     const iconWrap = document.createElement("div");
     iconWrap.className = "raad-card-icon-wrap";
 
-   const icon = document.createElement("img");
+    const icon = document.createElement("img");
 
-    let logoSrc = "../TU-logov2.png"; // correct relative path from raad-oversikt.html
+    // Default logo when no custom logo is uploaded
+    let logoSrc = "../UFR-logo.png";
 
-    if (council.logo_path) {
-    // logo_path comes from the backend, e.g. "/uploads/abcd.png"
-    logoSrc = `${API_BASE}${council.logo_path}`;
+    // If this council has a stored logo in the DB, use the logo-file endpoint
+    if (council.has_logo) {
+      logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+        council.id
+      )}/logo-file?cacheBust=${Date.now()}`;
     }
 
     icon.src = logoSrc;
     icon.alt = `Logo for ${name}`;
     icon.className = "raad-card-icon";
 
-
     iconWrap.appendChild(icon);
+
 
     // === RIGHT DIV: TITLE + META + ACTIONS ===
     const body = document.createElement("div");

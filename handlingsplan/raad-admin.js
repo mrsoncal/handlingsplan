@@ -123,7 +123,7 @@ async function uploadLogo() {
   if (statusEl) statusEl.textContent = "Laster opp logo…";
 
   const fd = new FormData();
-  fd.append("file", fileInput.files[0]);
+  fd.append("logo", fileInput.files[0]);
   fd.append("password", raadPassword);
 
   try {
@@ -170,7 +170,7 @@ async function uploadHandlingsplan() {
   if (statusEl) statusEl.textContent = "Laster opp handlingsplan…";
 
   const fd = new FormData();
-  fd.append("file", fileInput.files[0]);
+  fd.append("handlingsplan", fileInput.files[0]);
   fd.append("password", raadPassword);
 
   try {
@@ -300,7 +300,7 @@ function updateHeaderBrand(council) {
 
   const name = council.display_name || council.name || "Ungdomsråd";
 
-  let logoSrc = "../TU-logov2.png";
+  let logoSrc = "../UFR-logo.png";
 
   if (council.has_logo) {
     logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
