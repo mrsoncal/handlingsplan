@@ -1809,10 +1809,8 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 
-
-
 .tema-list input[type="checkbox"] {
-  width: 3.4rem !important;
+  width: 3.4rem;
   height: 18px;
   accent-color: #004855;     
   color: white;
@@ -2009,4 +2007,209 @@ input[type="color"]::-webkit-color-swatch {
   height: 0.75rem;
   padding: 0;
   border: none;
+}
+
+/* --------------- SKALERING FOR TELEFONER --------------- */
+@media (max-width: 600px) {
+
+
+.header-space {
+  flex: 1;
+  max-width: 1140px; 
+  width: 100%;
+  min-height: clamp(2rem, 6vw, 2.5rem);
+  padding: 0.1rem;
+}
+
+.brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  height: clamp(5rem, 14vw, 7rem) !important; 
+  width: auto;
+  bottom: calc(-0.7 * clamp(4.5rem, 14vw, 7rem)) !important;
+}
+
+.footer-logo {
+  height: auto !important;
+  width: 16rem !important; 
+  max-width: 100% !important;
+  object-fit: contain !important;
+}
+
+.footer-bottom {
+  gap: 0;
+}
+
+.footer-col svg {
+  display: none;
+}
+
+.navigation-bar {
+  padding: 0;
+}
+
+.btn.nav {
+  font-size: 0.75rem !important;
+  width: 6rem;
+}
+
+.raadSearch {
+  width: 100% !important;
+}
+
+.hp-inline {
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-inline div {
+  margin-top: 0.5rem;
+}
+
+.hp-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hp-submit {
+  padding: 1.5rem 3rem;
+}
+
+.container {
+  width: 95% !important;
+  max-width: 100vw !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+body.raad-admin .container {
+  width: 95% !important;
+  max-width: 100vw !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+.carousel-slide {
+  margin: 0;
+  padding: 0;
+}
+
+.hp-table{
+  
+}
+
+.admin-section-part .input {
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+.hp-table tr {
+  height: 3rem !important;
+}
+
+.file-input-wrapper {
+  width: 15rem !important;
+}
+
+#upload-logo-btn {
+  font-size: 1rem;        
+  position: relative;
+  color: transparent;        
+  width: 6rem;
+  height: 4rem;
+  margin-left: 1rem;
+}
+
+#upload-logo-btn::after {
+  content: "Lagre";              /* new text */
+  color: #000;               /* or whatever color your button text uses */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#upload-hp-btn {
+  font-size: 1rem;        
+  position: relative;
+  color: transparent;        
+  width: 6rem;
+  height: 4rem;
+  margin-left: 1rem;
+}
+
+#upload-hp-btn::after {
+  content: "Lagre";              /* new text */
+  color: #000;               /* or whatever color your button text uses */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tema-list input[type="checkbox"] {
+  width: 1.5rem;
+  height: 1.5rem;
+  accent-color: #004855;     
+  color: white;
+  cursor: pointer;
+  margin: 0;
+}
+
+.btn-delete {
+  font-size: 1rem;        
+  position: relative;
+  color: transparent;        
+  width: 3rem;
+  height: 2rem;
+}
+
+.btn-delete::after {
+  content: "X";              /* new text */
+  color: #ffffff;               /* or whatever color your button text uses */
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  cursor: pointer;
+  height: 3rem;
+  width: 3rem !important;
+}
+
+#add-tema-btn {
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+#open-innspill-editor-btn {
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+.tema-navn {
+  width: 11rem !important;
+}
+
+.tema-sjekk {
+  width: 1.5rem !important;
+  font-size: 0.6rem;
+}
+
+.tema-grid-row {
+  column-gap: 0.6rem;
+}
+
 }

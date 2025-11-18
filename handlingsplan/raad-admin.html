@@ -2,6 +2,7 @@
 <html lang="no">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ungdomsråd – Admin</title>
     <link rel="stylesheet" href="styles.css" />
     <script>
@@ -9,7 +10,7 @@
       window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
     </script>
   </head>
-  <body>
+  <body class="raad-admin">
 
     <header class="header">
       <div class="nav-container">
@@ -22,7 +23,7 @@
           class="brand"
           id="raadBrandLogo"
           src="../UFR-logo.png"
-          alt="Telemark Ungdomsråd"
+          alt="Ungdomsråd"
         />
       </div>
       <div class="header-space-container">
@@ -63,7 +64,7 @@
         <!-- ADMIN-INNHOLD, VISER SEG ETTER LOGIN -->
         <div id="admin-section" style="display: none">
           <!-- Navn -->
-          <div class="admin-section-part">
+          <div class="admin-section-part" id="section-1">
             <h3>Grunninformasjon</h3>
             <label for="raad-name-input" class="field-label">
               Navn på ungdomsråd
