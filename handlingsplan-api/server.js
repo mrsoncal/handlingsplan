@@ -20,10 +20,15 @@ const {
   getTemaerForCouncil,
   saveTemaerForCouncil,
   updateCouncilDisplayName,
+  updateCouncilHandlingsplanFile,
+  updateCouncilLogoFile,
+  getCouncilHandlingsplanFile,
+  getCouncilLogoFile,
 } = require("./db");
 
 
 dotenv.config();
+
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 if (!ADMIN_PASSWORD) {
@@ -55,25 +60,7 @@ function requireAdmin(req, res, next) {
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-
-// Multer storage: keep correct file extension so browser knows type
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname) || "";
-    cb(null, unique + ext);
-  },
-});
-
-// Multer for file uploads
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Middlewares
 app.use(cors());
@@ -192,6 +179,47 @@ app.get("/api/ungdomsrad/:id/innspill", async (req, res) => {
   }
 });
 
+app.get("/api/ungdomsrad/:id/handlingsplan-file", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = await getCouncilHandlingsplanFile(id);
+    if (!file) {
+      return res.status(404).send("Ingen handlingsplan funnet.");
+    }
+
+    res.setHeader("Content-Type", file.mimeType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${file.originalName}"`
+    );
+    res.send(file.data);
+  } catch (err) {
+    console.error("Feil ved henting av handlingsplan:", err);
+    res.status(500).send("Kunne ikke hente handlingsplan.");
+  }
+});
+
+app.get("/api/ungdomsrad/:id/logo-file", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = await getCouncilLogoFile(id);
+    if (!file) {
+      return res.status(404).send("Ingen logo funnet.");
+    }
+
+    res.setHeader("Content-Type", file.mimeType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${file.originalName}"`
+    );
+    res.send(file.data);
+  } catch (err) {
+    console.error("Feil ved henting av logo:", err);
+    res.status(500).send("Kunne ikke hente logo.");
+  }
+});
+
+
 
 // DELETE /api/ungdomsrad/:id  -> delete a council (global admin only)
 app.delete("/api/ungdomsrad/:id", requireAdmin, async (req, res) => {
@@ -212,79 +240,88 @@ app.delete("/api/ungdomsrad/:id", requireAdmin, async (req, res) => {
 //  - file (PDF/image)
 app.post(
   "/api/ungdomsrad/:id/handlingsplan",
-  upload.single("file"),
+  upload.single("handlingsplan"),
   async (req, res) => {
     try {
-      const id = req.params.id;
+      const { id } = req.params;
       const { password } = req.body || {};
+      const file = req.file;
 
-      const council = await getCouncilWithPassword(id);
-      if (!council) {
-        return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+      if (!file) {
+        return res.status(400).json({ error: "Ingen fil lastet opp." });
       }
 
-      if (!password || password.trim() !== (council.admin_password || "").trim()) {
+      // sjekk passord
+      const council = await getCouncilWithPassword(id);
+      if (
+        !council ||
+        !council.admin_password ||
+        council.admin_password.trim() !== (password || "").trim()
+      ) {
         return res
-          .status(401)
+          .status(403)
           .json({ error: "Feil passord for dette ungdomsrådet." });
       }
 
-      if (!req.file) {
-        return res
-          .status(400)
-          .json({ error: "Ingen fil ble lastet opp. Velg en PDF eller et bilde." });
-      }
-
-      const relativePath = `/uploads/${req.file.filename}`;
-      await setCouncilHandlingsplanPath(id, relativePath);
+      // lagre filen i databasen
+      await updateCouncilHandlingsplanFile(
+        id,
+        file.buffer,
+        file.mimetype,
+        file.originalname
+      );
 
       const updated = await getCouncilById(id);
       res.json(updated);
     } catch (err) {
-      console.error("Error uploading handlingsplan:", err);
-      res
-        .status(500)
-        .json({ error: "Kunne ikke laste opp handlingsplan for dette ungdomsrådet." });
+      console.error("Feil ved opplasting av handlingsplan:", err);
+      res.status(500).json({ error: "Kunne ikke lagre handlingsplan." });
     }
   }
 );
+
 
 // POST /api/ungdomsrad/:id/logo -> upload logo image for a council
 app.post(
   "/api/ungdomsrad/:id/logo",
-  upload.single("file"),
+  upload.single("logo"),
   async (req, res) => {
     try {
-      const id = req.params.id;
-      const password = req.body.password;
+      const { id } = req.params;
+      const { password } = req.body || {};
+      const file = req.file;
 
-      const council = await getCouncilWithPassword(id);
-      if (!council) {
-        return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+      if (!file) {
+        return res.status(400).json({ error: "Ingen fil lastet opp." });
       }
 
-      if (!password || password.trim() !== (council.admin_password || "").trim()) {
+      const council = await getCouncilWithPassword(id);
+      if (
+        !council ||
+        !council.admin_password ||
+        council.admin_password.trim() !== (password || "").trim()
+      ) {
         return res
-          .status(401)
+          .status(403)
           .json({ error: "Feil passord for dette ungdomsrådet." });
       }
 
-      if (!req.file) {
-        return res
-          .status(400)
-          .json({ error: "Ingen fil mottatt for logo-opplasting." });
-      }
+      await updateCouncilLogoFile(
+        id,
+        file.buffer,
+        file.mimetype,
+        file.originalname
+      );
 
-      const relativePath = `/uploads/${req.file.filename}`;
-      await setCouncilLogoPath(id, relativePath);
-
-      res.json({ logo_path: relativePath });
+      const updated = await getCouncilById(id);
+      res.json(updated);
     } catch (err) {
-      console.error("Error uploading logo:", err);
-      res.status(500).json({ error: "Kunne ikke laste opp logo." });
+      console.error("Feil ved opplasting av logo:", err);
+      res.status(500).json({ error: "Kunne ikke lagre logo." });
     }
   }
 );
+
 
 
 // POST /api/ungdomsrad/:id/innspill  -> lagre ett nytt innspill

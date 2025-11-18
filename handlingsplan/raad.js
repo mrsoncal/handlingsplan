@@ -52,11 +52,11 @@ function setupHandlingsplanLink(council) {
   const link = document.getElementById("handlingsplanLink");
   if (!link) return;
 
-  const path = council.handlingsplan_path;
+  if (council.has_handlingsplan) {
+    const url = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+      council.id
+    )}/handlingsplan-file`;
 
-  if (path) {
-    // Valid handlingsplan → show button and enable it
-    const url = `${API_BASE}${path}`;
     link.style.display = "inline-block";
     link.href = url;
     link.target = "_blank";
@@ -64,10 +64,11 @@ function setupHandlingsplanLink(council) {
     link.classList.remove("disabled");
     link.setAttribute("aria-disabled", "false");
   } else {
-    // No handlingsplan uploaded → hide the button completely
     link.style.display = "none";
   }
 }
+
+
 
 function updateHeaderBrand(council) {
   if (!council) return;
@@ -79,18 +80,17 @@ function updateHeaderBrand(council) {
 
   const name = council.display_name || council.name || "Ungdomsråd";
 
-  // Default logo
   let logoSrc = "../TU-logov2.png";
 
-  // If this råd has its own logo, use that (same logic as in raad-oversikt.js)
-  if (council.logo_path) {
-    logoSrc = `${API_BASE}${council.logo_path}`;
+  if (council.has_logo) {
+    logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+      council.id
+    )}/logo-file?cacheBust=${Date.now()}`;
   }
 
   brandImg.src = logoSrc;
   brandImg.alt = `Logo for ${name}`;
 }
-
 
 
 // === Admin-overlay for opplasting av handlingsplan ===

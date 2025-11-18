@@ -91,24 +91,71 @@ async function init() {
   console.log("[db] ensured councils table & columns exist");
 }
 
-async function getCouncils() {
+
+async function updateCouncilHandlingsplanFile(id, buffer, mimeType, originalName) {
+  await pool.query(
+    `
+      UPDATE councils
+      SET
+        handlingsplan_data = $2,
+        handlingsplan_mime_type = $3,
+        handlingsplan_original_name = $4
+      WHERE id = $1
+    `,
+    [id, buffer, mimeType || null, originalName || null]
+  );
+}
+
+async function updateCouncilLogoFile(id, buffer, mimeType, originalName) {
+  await pool.query(
+    `
+      UPDATE councils
+      SET
+        logo_data = $2,
+        logo_mime_type = $3,
+        logo_original_name = $4
+      WHERE id = $1
+    `,
+    [id, buffer, mimeType || null, originalName || null]
+  );
+}
+
+async function getCouncilHandlingsplanFile(id) {
   const result = await pool.query(
     `
-      SELECT id, name, year, created_at, handlingsplan_path, logo_path
+      SELECT handlingsplan_data, handlingsplan_mime_type, handlingsplan_original_name
       FROM councils
-      ORDER BY created_at ASC, id ASC
-    `
+      WHERE id = $1
+    `,
+    [id]
   );
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    year: row.year,
-    created_at: row.created_at,
-    handlingsplan_path: row.handlingsplan_path || null,
-    logo_path: row.logo_path || null,
-    // display_name if you have it
-  }));
+  if (result.rows.length === 0 || !result.rows[0].handlingsplan_data) return null;
+  const row = result.rows[0];
+  return {
+    data: row.handlingsplan_data,
+    mimeType: row.handlingsplan_mime_type || "application/octet-stream",
+    originalName: row.handlingsplan_original_name || "handlingsplan.pdf",
+  };
+}
+
+async function getCouncilLogoFile(id) {
+  const result = await pool.query(
+    `
+      SELECT logo_data, logo_mime_type, logo_original_name
+      FROM councils
+      WHERE id = $1
+    `,
+    [id]
+  );
+
+  if (result.rows.length === 0 || !result.rows[0].logo_data) return null;
+  const row = result.rows[0];
+  return {
+    data: row.logo_data,
+    mimeType: row.logo_mime_type || "image/png",
+    originalName: row.logo_original_name || "logo.png",
+  };
 }
 
 
@@ -143,7 +190,14 @@ async function createCouncil({ name, password }) {
 async function getCouncilById(id) {
   const result = await pool.query(
     `
-      SELECT id, name, year, created_at, handlingsplan_path, logo_path
+      SELECT
+        id,
+        name,
+        display_name,
+        year,
+        created_at,
+        handlingsplan_data IS NOT NULL AS has_handlingsplan,
+        logo_data IS NOT NULL AS has_logo
       FROM councils
       WHERE id = $1
     `,
@@ -158,10 +212,37 @@ async function getCouncilById(id) {
     name: row.name,
     year: row.year,
     created_at: row.created_at,
-    handlingsplan_path: row.handlingsplan_path || null,
-    logo_path: row.logo_path || null,
-    display_name: row.name,
+    display_name: row.display_name || row.name,
+    has_handlingsplan: row.has_handlingsplan,
+    has_logo: row.has_logo,
   };
+}
+
+async function getCouncils() {
+  const result = await pool.query(
+    `
+      SELECT
+        id,
+        name,
+        display_name,
+        year,
+        created_at,
+        handlingsplan_data IS NOT NULL AS has_handlingsplan,
+        logo_data IS NOT NULL AS has_logo
+      FROM councils
+      ORDER BY created_at ASC, id ASC
+    `
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    display_name: row.display_name || row.name,
+    year: row.year,
+    created_at: row.created_at,
+    has_handlingsplan: row.has_handlingsplan,
+    has_logo: row.has_logo,
+  }));
 }
 
 
@@ -396,4 +477,8 @@ module.exports = {
   getTemaerForCouncil,
   saveTemaerForCouncil,
   updateCouncilDisplayName,
+  updateCouncilHandlingsplanFile,
+  updateCouncilLogoFile,
+  getCouncilHandlingsplanFile,
+  getCouncilLogoFile,
 };

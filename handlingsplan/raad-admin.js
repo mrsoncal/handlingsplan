@@ -61,6 +61,8 @@ async function fetchCouncil() {
     const nameInput = $("raad-name-input");
     if (nameInput) nameInput.value = displayName;
 
+    updateHeaderBrand(raadData);
+
     // Bygg tema-state
     const fromApi = Array.isArray(raadData.temaer) ? raadData.temaer : [];
     temaState = fromApi.map((t, idx) => ({
@@ -145,6 +147,7 @@ async function uploadLogo() {
     }
 
     raadData = await res.json();
+    updateHeaderBrand(raadData);
     if (statusEl) statusEl.textContent = "Logo lagret.";
   } catch (err) {
     console.error(err);
@@ -285,6 +288,28 @@ function renderTemaList() {
 
     container.appendChild(row);
   });
+}
+
+function updateHeaderBrand(council) {
+  if (!council) return;
+
+  const brandImg =
+    document.getElementById("raadBrandLogo") ||
+    document.querySelector(".header .brand");
+  if (!brandImg) return;
+
+  const name = council.display_name || council.name || "Ungdomsråd";
+
+  let logoSrc = "../TU-logov2.png";
+
+  if (council.has_logo) {
+    logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+      council.id
+    )}/logo-file?cacheBust=${Date.now()}`;
+  }
+
+  brandImg.src = logoSrc;
+  brandImg.alt = `Logo for ${name}`;
 }
 
 
