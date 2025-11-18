@@ -7,6 +7,37 @@ let raadData = null;
 let raadPassword = "";
 let temaState = [];
 
+// ---- COOKIE HELPERS for per-råd-passord (deles med raad-innspill-editor) ----
+const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
+
+function setPasswordCookie(pw) {
+  if (!PW_COOKIE_NAME) return;
+  const days = 1;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${PW_COOKIE_NAME}=${encodeURIComponent(
+    pw
+  )}; expires=${expires}; path=/handlingsplan/`;
+}
+
+function getPasswordFromCookie() {
+  if (!PW_COOKIE_NAME) return "";
+  const name = PW_COOKIE_NAME + "=";
+  const parts = document.cookie.split(";");
+  for (const part of parts) {
+    const c = part.trim();
+    if (c.startsWith(name)) {
+      return decodeURIComponent(c.substring(name.length));
+    }
+  }
+  return "";
+}
+
+function clearPasswordCookie() {
+  if (!PW_COOKIE_NAME) return;
+  document.cookie = `${PW_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/handlingsplan/`;
+}
+
+
 // ---------- helpers ----------
 
 function $(id) {
@@ -21,8 +52,18 @@ function setText(id, text) {
 function ensurePassword() {
   if (raadPassword) return true;
 
-  const pwInput = $("raad-password");
   const errorEl = $("raad-login-error");
+
+  // 1) Prøv cookie først
+  const cookiePw = getPasswordFromCookie();
+  if (cookiePw) {
+    raadPassword = cookiePw;
+    if (errorEl) errorEl.textContent = "";
+    return true;
+  }
+
+  // 2) Ellers: les fra input-feltet
+  const pwInput = $("raad-password");
   const pw = pwInput ? pwInput.value.trim() : "";
 
   if (!pw) {
@@ -35,8 +76,11 @@ function ensurePassword() {
 
   raadPassword = pw;
   if (errorEl) errorEl.textContent = "";
+  setPasswordCookie(raadPassword); // viktig: lagre cookie
   return true;
 }
+
+
 
 // ---------- initial data ----------
 

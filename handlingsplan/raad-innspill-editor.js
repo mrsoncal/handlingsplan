@@ -14,10 +14,58 @@ const INNSPILL_ITEM_URL = (councilId, innspillId) =>
 let raadPassword = "";
 let innspillState = [];
 let editingId = null;
+let isLoggedIn = false;
 
+// ---- COOKIE HELPERS (deles med raad-admin) ----
+const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
+
+function setPasswordCookie(pw) {
+  if (!PW_COOKIE_NAME) return;
+  const days = 1;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${PW_COOKIE_NAME}=${encodeURIComponent(
+    pw
+  )}; expires=${expires}; path=/handlingsplan/`;
+}
+
+function getPasswordFromCookie() {
+  if (!PW_COOKIE_NAME) return "";
+  const name = PW_COOKIE_NAME + "=";
+  const parts = document.cookie.split(";");
+  for (const part of parts) {
+    const c = part.trim();
+    if (c.startsWith(name)) {
+      return decodeURIComponent(c.substring(name.length));
+    }
+  }
+  return "";
+}
+
+function clearPasswordCookie() {
+  if (!PW_COOKIE_NAME) return;
+  document.cookie = `${PW_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/handlingsplan/`;
+}
+
+// ---- DOM helpers ----
 function $(id) {
   return document.getElementById(id);
 }
+
+function updateLoginVisibility() {
+  const loginBox = $("innspill-login");
+  const wrapper = $("innspill-table-wrapper");
+  if (!loginBox || !wrapper) return;
+
+  if (isLoggedIn) {
+    loginBox.classList.add("hidden");
+    wrapper.classList.remove("hidden");
+  } else {
+    loginBox.classList.remove("hidden");
+    wrapper.classList.add("hidden");
+  }
+}
+
+// ---- API helpers ----
 
 async function fetchCouncil(id) {
   const res = await fetch(`${COUNCILS_URL}/${encodeURIComponent(id)}`);
@@ -116,25 +164,68 @@ function formatCreatedAt(createdAt) {
   });
 }
 
-function ensurePassword() {
-  if (raadPassword) return true;
+// ---- LOGIN LOGIC ----
 
+function initLoginModule() {
+  const loginBtn = $("innspill-login-btn");
   const pwInput = $("innspill-password");
   const errorEl = $("innspill-login-error");
-  const pw = pwInput ? pwInput.value.trim() : "";
 
-  if (!pw) {
-    if (errorEl) {
-      errorEl.textContent =
-        "Skriv inn admin-passordet for dette ungdomsrådet for å endre eller slette innspill.";
-    }
-    return false;
+  // 1) Sjekk cookie først – hvis vi har pw der, auto-logg inn
+  const cookiePw = getPasswordFromCookie();
+  if (cookiePw) {
+    raadPassword = cookiePw;
+    isLoggedIn = true;
+    if (pwInput) pwInput.value = "";
+    if (errorEl) errorEl.textContent = "";
+    updateLoginVisibility();
   }
 
-  raadPassword = pw;
-  if (errorEl) errorEl.textContent = "";
-  return true;
+  // 2) Manuell login
+  if (loginBtn && pwInput) {
+    loginBtn.addEventListener("click", () => {
+      const pw = pwInput.value.trim();
+      if (!pw) {
+        if (errorEl) {
+          errorEl.textContent = "Vennligst skriv inn passord.";
+        }
+        return;
+      }
+
+      raadPassword = pw;
+      isLoggedIn = true;
+      setPasswordCookie(pw);
+      if (errorEl) errorEl.textContent = "";
+      updateLoginVisibility();
+    });
+  }
 }
+
+function ensurePassword() {
+  // Hvis allerede satt i minnet og vi anser oss som innlogget
+  if (raadPassword && isLoggedIn) return true;
+
+  // Prøv cookie
+  const cookiePw = getPasswordFromCookie();
+  if (cookiePw) {
+    raadPassword = cookiePw;
+    isLoggedIn = true;
+    updateLoginVisibility();
+    return true;
+  }
+
+  // Ellers: be brukeren logge inn
+  const errorEl = $("innspill-login-error");
+  if (errorEl) {
+    errorEl.textContent =
+      "Du må logge inn med admin-passord for å endre eller slette innspill.";
+  }
+  isLoggedIn = false;
+  updateLoginVisibility();
+  return false;
+}
+
+// ---- EDIT / DELETE HANDLERS ----
 
 function setEditing(id) {
   editingId = id;
@@ -189,7 +280,7 @@ async function handleSaveClick(id) {
 
     const updated = await res.json();
 
-    // Oppdater local state
+    // Oppdater lokal state
     innspillState = innspillState.map((item) =>
       item.id === id ? { ...item, ...updated } : item
     );
@@ -238,6 +329,8 @@ async function handleDeleteClick(id) {
     alert("Det oppstod en teknisk feil ved sletting av innspillet.");
   }
 }
+
+// ---- RENDER TABELL ----
 
 function renderInnspillTable() {
   const wrapper = $("innspill-table-wrapper");
@@ -409,6 +502,8 @@ function renderInnspillTable() {
   wrapper.appendChild(table);
 }
 
+// ---- INIT ----
+
 async function init() {
   if (!raadId) {
     alert("Mangler id for ungdomsråd i URL-en.");
@@ -416,6 +511,8 @@ async function init() {
   }
 
   initBackLink();
+  initLoginModule();
+  updateLoginVisibility();
 
   try {
     const council = await fetchCouncil(raadId);
