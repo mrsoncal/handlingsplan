@@ -483,10 +483,12 @@ display: block;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  width: 25rem;
+  align-items: center;
 }
 
 #login-form h2 {
-  margin: 2rem;
+  margin: 1rem;
   text-align: center;
 }
 
@@ -498,18 +500,20 @@ display: block;
 }
 
 #login-form button[type="submit"] {
-  padding: 0.75rem;
-  font-size: 1rem;
-  background-color: #3f3f3f;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    width: auto;
+    padding: 1rem 4rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #000000;
+    background: #ffcc00;
+    border: none;
+    border-radius: 9999px;
+
 }
 
 #login-form button[type="submit"]:hover {
-  background-color: #007aa3;
+  background: #efbf00;
+  cursor: pointer;
 }
 
 @keyframes fadeIn {
@@ -575,6 +579,7 @@ display: block;
   -webkit-appearance: none;
   -moz-appearance: none;
 }
+
 
 /* Global kill switch for background updates */
 html.silent-update *, html.silent-update *::before, html.silent-update *::after {
@@ -1521,10 +1526,12 @@ object-fit: contain;
   gap: 1rem;
   align-items: left;
   justify-content: center;
+  width: 25rem;
 }
 
 .council-form h2 {
-  margin: 0px;
+  margin: 1rem;
+  text-align: center;
 }
 
 .council-form .btn {
@@ -1564,10 +1571,11 @@ object-fit: contain;
   max-width: 100%;
   margin-top: 0.75rem;
   margin-bottom: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 0.75rem !important;
   font-size: 1rem;
   background: #ffffff;
-  border: none;
+  border: none !important;
+  border-radius: 0px !important;
 }
 
 .logo-upload-row {
@@ -2648,6 +2656,93 @@ tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:f
   width: 90vw;
   height: 80vh;
 }
+
+/* Match council-form look */
+#login-section .login-box {
+    padding: 2rem;
+    border-radius: 0;
+    box-shadow: 0 0 20px rgba(0,0,0,0.25);
+    width: 420px;
+    max-width: 90%;
+    animation: popIn 0.3s ease;
+}
+
+#login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 90vw;
+    width: auto;
+}
+
+.council-form {
+  max-width: 90vw;
+  width: auto;
+}
+
+#login-form h2 {
+    margin: 0 0 0.5rem;
+    text-align: left;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+#login-form label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+#login-form input[type="password"],
+#login-form input[type="text"] {
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border-radius: 9999px;
+    border: none;
+    background: #fff;
+    font-size: 0.95rem;
+    transition: box-shadow 0.12s ease;
+}
+
+#login-form input:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+    background-color: #f9fbff;
+}
+
+/* Submit button – same yellow style */
+#login-form button[type="submit"] {
+    background: #ffcc00;
+    color: #000;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: none;
+}
+
+#login-form button[type="submit"]:hover {
+    background: #e4b700;
+    cursor: pointer;
+}
+
+/* Password wrapper alignment */
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none !important;
+    padding: 0;
+    cursor: pointer;
+}
+
 
 
 

@@ -428,3 +428,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchCouncils();
 });
+
+// CLOSE LOGIN WHEN CLICKING OUTSIDE THE BOX
+document.addEventListener("click", (e) => {
+  const overlay = document.getElementById("login-section");
+  if (!overlay) return;
+  if (overlay.style.display === "none") return;
+
+  const box = overlay.querySelector(".login-box");
+
+  // Don't treat clicks on the Admin button as "outside"
+  const loginBtn = document.getElementById("login-button");
+  if (loginBtn && (e.target === loginBtn || e.target.closest("#login-button"))) {
+    return;
+  }
+
+  // If click is outside the login box → close
+  if (box && !box.contains(e.target)) {
+    overlay.style.display = "none";
+    if (loginBtn) {
+      loginBtn.style.display = "inline-block";
+    }
+  }
+});
+
