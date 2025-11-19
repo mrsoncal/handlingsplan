@@ -531,26 +531,51 @@ display: block;
   to { opacity: 0; }
 }
 
-.password-toggle {
+.new-council-div {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: white;
 }
+
+
+.password-wrapper {
+    width: 100%;
+}
+
+.password-toggle-btn {
+  transform: none;
+  background: white;
+  border: none;
+  padding: 0;
+  padding-right: 0.75rem !important;
+  margin-left: 0.5rem !important;
+  margin: 0;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+}
+
+
+#togglePasswordIcon {
+  width: 1.5rem;
+  height: auto;
+  background: white;
+}
+
+#toggleCouncilPasswordIcon {
+  width: 1.5rem;
+  height: auto;
+  background: white;
+}
+
 
 /* Button itself: no border, no background, no effects */
 #togglePassword {
   all: unset; /* removes all default button styling */
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#togglePasswordIcon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  pointer-events: none;
 }
 
 /* Remove focus/hover outlines */
@@ -560,9 +585,6 @@ display: block;
   box-shadow: none;
 }
 
-#togglePassword:hover {
-  background: transparent;
-}
 
 .password-toggle input[type="password"],
 .password-toggle input[type="text"] {
@@ -1576,6 +1598,12 @@ object-fit: contain;
   background: #ffffff;
   border: none !important;
   border-radius: 0px !important;
+}
+
+.password-wrapper .new-council-input {
+  width: 100% auto !important;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .logo-upload-row {

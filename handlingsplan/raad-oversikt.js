@@ -81,10 +81,25 @@ function setupAuthUI() {
     togglePasswordBtn.addEventListener("click", () => {
       const isPassword = passwordInput.type === "password";
       passwordInput.type = isPassword ? "text" : "password";
-      togglePasswordIcon.src = isPassword ? "hidden.png" : "visible.png";
+      togglePasswordIcon.src = isPassword ? "../eye-open.svg" : "../eye-closed.svg";
       togglePasswordIcon.alt = isPassword ? "Skjul passord" : "Vis passord";
     });
   }
+
+  const councilPasswordInput = document.getElementById("councilPassword");
+  const toggleCouncilPasswordBtn = document.getElementById("toggleCouncilPassword");
+  const toggleCouncilPasswordIcon = document.getElementById("toggleCouncilPasswordIcon");
+
+  if (toggleCouncilPasswordBtn && councilPasswordInput && toggleCouncilPasswordIcon) {
+    toggleCouncilPasswordBtn.addEventListener("click", () => {
+      const isPassword = councilPasswordInput.type === "password";
+      councilPasswordInput.type = isPassword ? "text" : "password";
+      toggleCouncilPasswordIcon.src = isPassword ? "../eye-open.svg" : "../eye-closed.svg";
+      toggleCouncilPasswordIcon.alt = isPassword ? "Skjul passord" : "Vis passord";
+    });
+  }
+
+
 }
 
 // --- NAVIGASJON ---

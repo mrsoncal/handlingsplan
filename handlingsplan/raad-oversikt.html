@@ -37,6 +37,7 @@
 
           <div class="password-wrapper">
           <label for="password">Adminpassord</label>
+          <div class="new-council-div">
             <input
               class="new-council-input"
               id="password"
@@ -53,9 +54,10 @@
             >
               <img
                 id="togglePasswordIcon"
-                src="visible.png"
+                src="../eye-closed.svg"
                 alt="Vis passord"
               />
+          </div>
             </button>
           </div>
           <button class="login-btn" type="submit">Logg inn</button>
@@ -83,20 +85,35 @@
                 </label>
             </div>
 
-            <div>
-                <label for="councilPassword" class="form-row">
-                Passord
+            <div class="password-wrapper">
+              <label for="councilPassword">Passord</label>
+              <div class="new-council-div">
                 <input
-                    class="new-council-input"
-                    id="councilPassword"
-                    name="password"
-                    type="password"
-                    placeholder="Sett et passord"
-                    required
+                class="new-council-input"
+                id="councilPassword"
+                name="password"
+                type="password"
+                placeholder="Sett et passord"
+                required
+              />
+              <button
+                type="button"
+                id="toggleCouncilPassword"
+                class="password-toggle-btn"
+                aria-label="Vis eller skjul passord"
+              >
+                <img
+                  id="toggleCouncilPasswordIcon"
+                  src="../eye-closed.svg"
+                  alt="Vis passord"
                 />
-                <p class="warning">Dette passordet kan ikke endres. Pass på at alle fremtidige råd har dette passordet.</p>
-                </label>
+              </div>
+              </button>
+              <p class="warning">
+                Dette passordet kan ikke endres. Pass på at alle fremtidige råd har dette passordet.
+              </p>
             </div>
+
 
             <div class="form-row logo-upload-row">
                 <label for="councilLogoFile">
