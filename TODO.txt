@@ -1,0 +1,2 @@
+- tooltip for new raad that have just been created (how to set handlingsplan and forms-tema)
+- forgotten password site (this might require an email or phone number on creation)
