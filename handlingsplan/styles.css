@@ -2644,6 +2644,10 @@ tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:f
   margin-right: 0;         
 }
 
+.login-box {
+  width: 90vw;
+  height: 80vh;
+}
 
 
 
