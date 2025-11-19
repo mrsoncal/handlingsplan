@@ -269,9 +269,43 @@ function renderInnspillCarousel(innspill) {
     const wrapper = document.createElement("div");
     wrapper.className = "table-wrapper";
 
+    // Header row: [prevBtn]  <h3>tema</h3>  [nextBtn]
+    const headerRow = document.createElement("div");
+    headerRow.className = "hp-table-header-row";
+
+    const mobilePrev = document.createElement("button");
+    mobilePrev.type = "button";
+    mobilePrev.className = "carousel-nav mobile left";
+    mobilePrev.textContent = "❮";
+
     const h3 = document.createElement("h3");
     h3.textContent = tema;
-    wrapper.appendChild(h3);
+    h3.className = "hp-table-title";
+
+    const mobileNext = document.createElement("button");
+    mobileNext.type = "button";
+    mobileNext.className = "carousel-nav mobile right";
+    mobileNext.textContent = "❯";
+
+    // assemble header row
+    headerRow.appendChild(mobilePrev);
+    headerRow.appendChild(h3);
+    headerRow.appendChild(mobileNext);
+    wrapper.appendChild(headerRow);
+
+    // hook mobile buttons → same carousel logic
+    mobilePrev.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      currentSlide--;
+      updateCarousel();
+    });
+
+    mobileNext.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      currentSlide++;
+      updateCarousel();
+    });
+
 
     const table = document.createElement("table");
     table.className = "hp-table";
@@ -291,7 +325,12 @@ function renderInnspillCarousel(innspill) {
     const tbody = document.createElement("tbody");
 
     group.forEach((s) => {
-            const tr = document.createElement("tr");
+      const tr = document.createElement("tr");
+
+      if (s.underpunkt_nr != null && s.underpunkt_nr !== "") {
+        tr.classList.add("underpunkt-card");
+      }
+
 
       // Finn ut om innspillet er vedtatt (status eller vedtatt-boolean)
       const isVedtatt =
@@ -315,17 +354,24 @@ function renderInnspillCarousel(innspill) {
       actionSpan.textContent = actionLabel;
 
       // Marker radtype for evt. annen styling
-      if (/^Legge til/i.test(actionLabel)) {
+      const isAdd = /^Legge til/i.test(actionLabel);
+      const isChange = /^Endre/i.test(actionLabel);
+      const isRemove = /^Fjerne/i.test(actionLabel); 
+
+      if (isAdd) {
         tr.classList.add("hp-add-row");
-      } else if (/^Endre/i.test(actionLabel)) {
+      } else if (isChange) {
         tr.classList.add("hp-change-row");
+      } else if (isRemove) {
+        tr.classList.add("hp-delete-row");
       }
+
 
       // Liten "Vedtatt"-badge inne i teksten
       if (isVedtatt) {
         const badge = document.createElement("span");
         badge.className = "vedtatt-label-inline";
-        badge.textContent = "Vedtatt";
+        badge.textContent = "Vedtatt ✓";
         actionSpan.appendChild(badge);
       }
 
@@ -341,9 +387,15 @@ function renderInnspillCarousel(innspill) {
       tdHeader.appendChild(headerFlex);
       tr.appendChild(tdHeader);
 
+      // Egen "Punkt (nr)"-kolonne til desktop-visning
+      const tdPunkt = document.createElement("td");
+      tdPunkt.textContent = punktSpan.textContent || "";
+      tr.appendChild(tdPunkt);
+
       const tdFormuler = document.createElement("td");
       tdFormuler.textContent = s.formuler_punkt || "";
       tr.appendChild(tdFormuler);
+
 
       const tdFra = document.createElement("td");
       tdFra.textContent = s.endre_fra || "";
@@ -354,9 +406,12 @@ function renderInnspillCarousel(innspill) {
       tr.appendChild(tdTil);
 
       // Mobil-vennlig accordion: klikk på raden for å vise/skjule detaljer (Endre fra / Endre til)
-      tr.addEventListener("click", () => {
-        tr.classList.toggle("expanded");
-      });
+      if (!isRemove) {
+        tr.addEventListener("click", () => {
+          tr.classList.toggle("expanded");
+        });
+      }
+
 
       tbody.appendChild(tr);
 

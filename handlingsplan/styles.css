@@ -215,6 +215,10 @@ left: 1rem;
 right: 1rem;
 }
 
+.carousel-nav.mobile {
+  display: none;
+}
+
 th.id-col, td.id-col { display: none; }
 
 td:first-child {
@@ -337,9 +341,7 @@ tbody tr:nth-child(odd):not(.vedtatt):not(.filler-row)  td.button-cell { backgro
 tr:hover:not(.vedtatt):not(.filler-row) td.button-cell                 { background-color: #dfdfdf !important; }
 tbody tr.vedtatt td.button-cell                                        { background-color: #d4edda !important; }
 
-tr:hover:not(.vedtatt):not(.filler-row) td:not(.button-cell) {
-  background-color: #dfdfdf !important;
-}
+
 
 tbody tr.vedtatt:hover:not(.filler-row) td:not(.button-cell) {
   background-color: #afd3b4 !important;
@@ -668,7 +670,7 @@ body.logged-in .carousel-slide table td:last-child {
 }
 
 
-@media (max-width: 600px) {
+@media (max-width: 601px) {
 .page-header h1 {
     font-size: 1.25rem;
     padding: 0.5rem 0;
@@ -775,6 +777,66 @@ td.button-cell {
 }
 
 .carousel-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  display: flex;              /* center icon */
+  align-items: center;        /* center vertically */
+  justify-content: center;    /* center horizontally */
+  line-height: 1;             /* remove weird baseline offset */
+  cursor: pointer;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+}
+
+
+.carousel-nav.mobile {
+    display: inline-flex !important;
+    position: relative !important;
+    transform: none !important;
+    margin: 0;
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    background: #1a1a1a;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+/* Container next to <h3> */
+.mobile-arrows {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.5rem 0 1rem 0;
+    width: 100%;
+}
+
+.hp-table-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.hp-table-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+
+
+/* HIDE the desktop/fixed arrows */
+.carousel-nav:not(.mobile) {
     display: none !important;
 }
 
@@ -2011,7 +2073,7 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 /* --------------- SKALERING FOR TELEFONER --------------- */
-@media (max-width: 600px) {
+@media (max-width: 601px) {
 
 
 .header-space {
@@ -2095,10 +2157,6 @@ body.raad-admin .container {
 .carousel-slide {
   margin: 0;
   padding: 0;
-}
-
-.hp-table{
-
 }
 
 .admin-section-part .input {
@@ -2231,11 +2289,49 @@ input[type="color"] {
 
 .hp-table tbody tr {
   display: block;
-  background: var(--accent);
-  border-radius: 10px;
+  background: transparent;   /* color comes from the <td>s, not the row */
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;         /* allow stripe to stick out on the left */
+  padding-left: 0.6rem;         /* 👈 this is the “gap” between stripe and card */
+  position: relative;        /* needed for ::before positioning */
 }
+
+
+/* Reset all borders so we don’t get double edges */
+.hp-add-row,
+.hp-change-row,
+.hp-delete-row {
+    border: none !important;
+    position: relative; /* needed for pseudo element */
+}
+
+/* The colored standalone stripe */
+/* The colored standalone stripe */
+.hp-add-row::before,
+.hp-change-row::before,
+.hp-delete-row::before {
+    content: "";
+    position: absolute;
+    left: 0;             
+    top: 0;
+    bottom: 0;
+    width: 0.4rem;          /* thickness of the stripe */
+}
+
+
+.hp-add-row::before {
+    background-color: #28a745;   /* green */
+}
+
+.hp-change-row::before {
+    background-color: #ffb300;   /* yellow/orange */
+}
+
+.hp-delete-row::before {
+    background-color: #B7173D;   /* red */
+}
+
+
 
 .hp-table td {
   border: none;
@@ -2252,7 +2348,7 @@ input[type="color"] {
 .hp-table td:nth-child(1) {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #2563eb;
+  color: #000000;
 }
 
 .hp-table td:nth-child(2) {
@@ -2284,7 +2380,7 @@ input[type="color"] {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #000000;
 }
 
 
@@ -2292,7 +2388,7 @@ input[type="color"] {
 .hp-table td:nth-child(4),
 .hp-table td:nth-child(5) {
   display: none;
-  border-top: 1px solid #e5e7eb;
+  border: none;
 }
 
 .hp-table tr.expanded td:nth-child(4),
@@ -2305,7 +2401,7 @@ input[type="color"] {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #000000;
 }
 
 .hp-table tr.expanded td:nth-child(4)::before {
@@ -2337,9 +2433,45 @@ input[type="color"] {
   content: "";
 }
 
+/* ------ HP-ADD-ROW ------ */
+.hp-add-row td:first-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;       
+  min-height: 4rem;
+  color: #ffffff;
+}
+
+.hp-add-row .hp-header-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; 
+  width: 100%;
+  color: #ffffff;
+}
+
 .hp-add-row td {
   width: 100% !important;
   min-height: 4.5rem !important;
+  color: #ffffff;
+}
+
+/* ------ HP-CHANGE-ROW ------ */
+.hp-change-row td:first-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;     
+  min-height: 4rem;
+  color: #ffffff;
+}
+
+.hp-change-row .hp-header-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; 
+  width: 100%;
   color: #ffffff;
 }
 
@@ -2349,42 +2481,47 @@ input[type="color"] {
   color: #ffffff;
 }
 
-/* Only flex the first td inside hp-add-row */
-.hp-add-row td:first-child {
+/* ------ HP-DELETE-ROW ------ */
+.hp-delete-row td:nth-child(n+2) {
+  display: none !important;   
+  background: #000 !important;
+}
+
+.hp-delete-row td:first-child {
   display: flex;
   flex-direction: row;
-  align-items: center;       /* vertical center */
+  align-items: center;     
   min-height: 4rem;
   color: #ffffff;
 }
 
-.hp-add-row .hp-header-cell {
+.hp-delete-row .hp-header-cell {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between; /* text left, number right */
+  justify-content: space-between; 
   width: 100%;
   color: #ffffff;
 }
 
-/* Only flex the first td inside hp-add-row */
-.hp-change-row td:first-child {
-  display: flex;
-  flex-direction: row;
-  align-items: center;       /* vertical center */
-  min-height: 4rem;
+.hp-delete-row td {
+  width: 100% !important;
+  min-height: 4.5rem !important;
   color: #ffffff;
 }
 
-.hp-change-row .hp-header-cell {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between; /* text left, number right */
-  width: 100%;
-  color: #ffffff;
+/* Dropdown text inside expanded rows: always black */
+.carousel-slide .hp-table tbody tr.expanded td:nth-child(n+3) {
+  color: #000000 !important;
+  font-weight: 400;
 }
 
+/* Labels "Endre fra:" / "Endre til:" also black */
+.hp-table tr.expanded td:nth-child(4)::before,
+.hp-table tr.expanded td:nth-child(5)::before {
+  color: #000000;
+  font-weight: 600;
+}
 
 
 .carousel-slide {
@@ -2415,7 +2552,7 @@ input[type="color"] {
 /* Liten inline badge for vedtatt-tekst */
 .vedtatt-label-inline {
   margin-left: 0.5rem;
-  padding: 0.15rem 0.4rem;
+  padding: 0.6rem 1rem;
   border-radius: 9999px;
   background-color: #28a745;
   color: #fff;
@@ -2430,14 +2567,91 @@ input[type="color"] {
 }
 
 /* Base: alle vanlige rader får en lys blanding av accent */
-.carousel-slide .hp-table tbody tr:not(.vedtatt):not(.filler-row) td {
+.carousel-slide .hp-table tbody
+tr:not(.vedtatt):not(.filler-row):not(.expanded) td {
   background-color: var(--accent);
 }
 
-/* Partallsrader: litt mørkere variant av accent */
-.carousel-slide .hp-table tbody tr:nth-child(even):not(.vedtatt):not(.filler-row) td {
+/* Even rows: darken both the row AND the cells */
+/* Even rows: darken only the cells, not the row wrapper */
+.carousel-slide .hp-table tbody
+tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.expanded) td {
   background-color: color-mix(in srgb, var(--accent) 75%, #000000 25%);
 }
 
 
+/* Hide "Formuler punktet" (col 3) when hp-change-row is expanded */
+.carousel-slide .hp-table tbody tr.hp-change-row.expanded td:nth-child(3) {
+  display: none;
+}
+
+/* Also hide its header for visual consistency */
+.carousel-slide .hp-table thead tr th:nth-child(3) {
+  display: none;
+}
+
+
+/* When a card is expanded, keep the header (cols 1–2) in tema color */
+.carousel-slide .hp-table tbody tr.expanded td:nth-child(1),
+.carousel-slide .hp-table tbody tr.expanded td:nth-child(2) {
+  background-color: var(--accent);
+}
+
+/* …but make the folded-out content (cols 3+) light grey */
+.carousel-slide .hp-table tbody tr.expanded td:nth-child(n+3) {
+  background-color: color-mix(in srgb, var(--accent) 20%, white 80%) !important;
+}
+
+/* --- MOBILE ACCORDION COLORS --- */
+
+/* Keep the "card header" (first cell) in the tema color
+    even when the row is hovered/expanded */
+.carousel-slide .hp-table tbody
+tr:not(.vedtatt):not(.filler-row):not(.hp-delete-row).expanded td:first-child,
+.carousel-slide .hp-table tbody
+tr:not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:first-child {
+  background-color: var(--accent) !important;
+}
+
+/* Even rows use the darker accent – keep that when hovered/expanded */
+.carousel-slide .hp-table tbody
+tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row).expanded td:first-child,
+.carousel-slide .hp-table tbody
+tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:first-child {
+  background-color: color-mix(in srgb, var(--accent) 75%, #000000 25%) !important;
+}
+
+/* Disable ALL VEDTATT row background styling on mobile */
+.carousel-slide .hp-table tbody tr.vedtatt td {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Disable hover effects for VEDTATT rows on mobile */
+.carousel-slide .hp-table tbody tr.vedtatt:hover td {
+  background-color: inherit !important;
+}
+
+/* Ensure dropdown (expanded) stays normal mobile accordion style */
+.carousel-slide .hp-table tbody tr.vedtatt.expanded td:nth-child(n+3) {
+  background-color: color-mix(in srgb, var(--accent) 25%, white 75%) !important;
+  color: #000 !important;
+}
+
+.underpunkt-card {
+  width: 88%;              /* slightly narrower than full card */
+  margin-left: auto;       /* pushes it to the right */
+  margin-right: 0;         
+}
+
+
+
+
+}
+
+/* Desktop: bruk egen "Punkt (nr)"-kolonne og skjul inline-nummeret i første celle */
+@media (min-width: 601px) {
+  .hp-header-cell .punkt-nummer {
+    display: none;
+  }
 }
