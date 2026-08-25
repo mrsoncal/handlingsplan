@@ -127,7 +127,7 @@ export function addToQueueByDelegate({ delegateNumber, type }){
     type: t,
     requestedAt: nowMs()
   };
-  const next = bump({ ...state, queue: insertWithPriority(state.queue, item) });
+  const next = bump({ ...state, queue: insertWithPriority(state.queue, item, state.currentSpeaker) });
   publish(next);
 }
 
@@ -140,7 +140,7 @@ export function addToQueueDirect({ name, org, type }){
     type: normalizeType(type),
     requestedAt: nowMs()
   };
-  const next = bump({ ...state, queue: insertWithPriority(state.queue, item) });
+  const next = bump({ ...state, queue: insertWithPriority(state.queue, item, state.currentSpeaker) });
   publish(next);
 }
 
@@ -203,10 +203,15 @@ export function normalizeType(t){
 }
 
 // --- Priority insert helper (for queue ordering) ---
-function insertWithPriority(queue, item){
+function insertWithPriority(queue, item, currentSpeaker){
   const countReplikk = queue.filter(x => x.type === 'replikk').length;
   if (item.type === 'replikk' && countReplikk >= 2){
     return queue.slice(); // ignore extra replikk beyond 2
+  }
+  const hasSvarReplikk = currentSpeaker?.type === 'svar_replikk'
+    || queue.some(x => x.type === 'svar_replikk');
+  if (item.type === 'svar_replikk' && hasSvarReplikk){
+    return queue.slice();
   }
   const next = queue.concat([item]);
   const prio = { replikk: 0, svar_replikk: 1, innlegg: 2 };

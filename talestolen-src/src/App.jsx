@@ -55,6 +55,69 @@ function useTimerRerender(enabled) {
   }, [enabled]);
 }
 
+const speakingTypes = [
+  { value: "innlegg", label: "Innlegg" },
+  { value: "replikk", label: "Replikk" },
+];
+
+function TypeDropdown({ value, onChange, label }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const selected = speakingTypes.find((option) => option.value === value) || speakingTypes[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsideClick = (event) => {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  return (
+    <div className="type-select" ref={rootRef}>
+      <button
+        type="button"
+        className="type-select-trigger"
+        aria-label={label}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((isOpen) => !isOpen)}
+      >
+        <span>{selected.label}</span>
+        <span className="type-select-chevron" aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="type-select-menu" role="listbox" aria-label={label}>
+          {speakingTypes.map((option) => (
+            <button
+              type="button"
+              className="type-select-option"
+              role="option"
+              aria-selected={option.value === value}
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+            >
+              {option.label}
+              {option.value === value && <span aria-hidden="true">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ============================
    App (routes)
    ============================ */
@@ -209,6 +272,8 @@ function AdminView({ state }) {
   const delegate = state.delegates[String((num || "").trim())];
   const previewName = delegate?.name || (num ? `#${num}` : "");
   const previewOrg = delegate?.org || "";
+  const hasSvarReplikk = cur?.type === "svar_replikk"
+    || state.queue.some((item) => item.type === "svar_replikk");
 
   /* ---- LAN/P2P removed: keep a no-op stub so existing calls don't break ---- */
   const sendSync = () => { /* no-op */ };
@@ -370,14 +435,11 @@ function AdminView({ state }) {
                   value={num}
                   onChange={(e) => setNum(e.target.value)}
                 />
-                <select
-                  className="input"
+                <TypeDropdown
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
-                >
-                  <option value="innlegg">Innlegg</option>
-                  <option value="replikk">Replikk</option>
-                </select>
+                  onChange={setType}
+                  label="Velg taletype for delegat"
+                />
                 <button
                   className="btn"
                   onClick={handleAddByNum}
@@ -409,14 +471,11 @@ function AdminView({ state }) {
                   value={manualOrg}
                   onChange={(e) => setManualOrg(e.target.value)}
                 />
-                <select
-                  className="input"
+                <TypeDropdown
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
-                >
-                  <option value="innlegg">Innlegg</option>
-                  <option value="replikk">Replikk</option>
-                </select>
+                  onChange={setType}
+                  label="Velg taletype for manuell registrering"
+                />
                 <button
                   className="btn"
                   onClick={handleAddManual}
@@ -516,6 +575,7 @@ function AdminView({ state }) {
                 {cur && (normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk' && lastInnlegg ? (
                   <button
                     className="btn"
+                    disabled={hasSvarReplikk}
                     onClick={() => {
                       if (lastInnlegg.delegateNumber) {
                         addToQueueByDelegate({
@@ -530,7 +590,9 @@ function AdminView({ state }) {
                         });
                       }
                     }}
-                    title={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                    title={hasSvarReplikk
+                      ? 'Det er allerede lagt til en svar-replikk'
+                      : `Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
                   >
                   Svar-replikk → {lastInnlegg.name || 'innlegg-holder'}
                 </button>
