@@ -118,6 +118,48 @@ function TypeDropdown({ value, onChange, label }) {
   );
 }
 
+function TimeStepper({ label, value, onChange }) {
+  const numericValue = Number(value) || 10;
+  const update = (nextValue) => onChange(Math.max(10, nextValue));
+
+  return (
+    <div className="time-control">
+      <label className="time-label" htmlFor={`duration-${label}`}>{label}</label>
+      <div className="time-stepper">
+        <button
+          type="button"
+          className="time-stepper-button"
+          aria-label={`Reduser tid for ${label}`}
+          disabled={numericValue <= 10}
+          onClick={() => update(numericValue - 5)}
+        >
+          −
+        </button>
+        <div className="time-value-wrap">
+          <input
+            id={`duration-${label}`}
+            className="time-value"
+            type="number"
+            min="10"
+            step="5"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+          />
+          <span aria-hidden="true">sek</span>
+        </div>
+        <button
+          type="button"
+          className="time-stepper-button"
+          aria-label={`Øk tid for ${label}`}
+          onClick={() => update(numericValue + 5)}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ============================
    App (routes)
    ============================ */
@@ -243,6 +285,7 @@ function AdminView({ state }) {
   const [manualName, setManualName] = useState("");
   const [manualOrg, setManualOrg] = useState("");
   const [lastInnlegg, setLastInnlegg] = useState(null);
+  const [csvFileName, setCsvFileName] = useState("");
 
   // When current speaker switches to an innlegg, remember them
   useEffect(() => {
@@ -282,6 +325,7 @@ function AdminView({ state }) {
   function handleCSV(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setCsvFileName(file.name);
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -352,12 +396,22 @@ function AdminView({ state }) {
                     </div>
                   )}
 
-                  <input
-                    className="input wide"
-                    type="file"
-                    accept=".csv"
-                    onChange={handleCSV}
-                  />
+                  <div className="csv-upload">
+                    <input
+                      id="delegate-csv"
+                      className="csv-upload-input"
+                      type="file"
+                      accept=".csv,text/csv"
+                      onChange={handleCSV}
+                    />
+                    <label className="csv-upload-button" htmlFor="delegate-csv">
+                      <span className="csv-upload-icon" aria-hidden="true">↑</span>
+                      Velg CSV-fil
+                    </label>
+                    <span className={`csv-file-name ${csvFileName ? 'has-file' : ''}`}>
+                      {csvFileName || 'Ingen fil valgt'}
+                    </span>
+                  </div>
                   <div className="spacer"></div>
                   <div className="row">
                     <div className="muted">
@@ -370,54 +424,33 @@ function AdminView({ state }) {
             <div className="card time-defaults">
               <div className="title">Taletid (sekunder)</div>
               <div className="grid-3">
-                <div>
-                  <div className="muted">Innlegg</div>
-                  <input
-                    className="input input-time"
-                    type="number"
-                    min="10"
-                    step="5"
-                    value={dInnlegg}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                <TimeStepper
+                  label="Innlegg"
+                  value={dInnlegg}
+                  onChange={(val) => {
                       setDInnlegg(val);
                       setTypeDuration("innlegg", val);
                       sendSync("timer:setDurations", { innlegg: val });
-                    }}
-                  />
-                </div>
-                <div>
-                  <div className="muted">Replikk</div>
-                  <input
-                    className="input input-time"
-                    type="number"
-                    min="10"
-                    step="5"
-                    value={dReplikk}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                  }}
+                />
+                <TimeStepper
+                  label="Replikk"
+                  value={dReplikk}
+                  onChange={(val) => {
                       setDReplikk(val);
                       setTypeDuration("replikk", val);
                       sendSync("timer:setDurations", { replikk: val });
-                    }}
-                  />
-                </div>
-                <div>
-                  <div className="muted">Svar-replikk</div>
-                  <input
-                    className="input input-time"
-                    type="number"
-                    min="10"
-                    step="5"
-                    value={dSvar}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                  }}
+                />
+                <TimeStepper
+                  label="Svar-replikk"
+                  value={dSvar}
+                  onChange={(val) => {
                       setDSvar(val);
                       setTypeDuration("svar_replikk", val);
                       sendSync("timer:setDurations", { svar_replikk: val });
-                    }}
-                  />
-                </div>
+                  }}
+                />
               </div>
             </div>
           </div>
