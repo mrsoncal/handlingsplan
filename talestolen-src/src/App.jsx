@@ -528,13 +528,7 @@ function AdminView({ state }) {
               <div className="title">Snakker Nå</div>
               <div className="list">
                 {cur ? (
-                  <div
-                    className="row"
-                    style={{
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
+                  <div className="queue-item current-speaker-card">
                     <div>
                       <div className="big">
                         {cur.name}{" "}
