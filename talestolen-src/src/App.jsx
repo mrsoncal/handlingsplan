@@ -145,7 +145,6 @@ function TimeStepper({ label, value, onChange }) {
             value={value}
             onChange={(event) => onChange(event.target.value)}
           />
-          <span aria-hidden="true">sek</span>
         </div>
         <button
           type="button"
