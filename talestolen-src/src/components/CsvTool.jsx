@@ -203,7 +203,7 @@ export default function CsvTool() {
               </a>
             </nav>
           </div>
-          <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />
+          <img className="brand" src={`${import.meta.env.BASE_URL}TU-logov2.png`} alt="Telemark Ungdomsråd" />
         </div>
 
         <div className="header-space-container">
@@ -346,7 +346,7 @@ export default function CsvTool() {
                 className="footer-social-btn footer-social-facebook"
                 target="_blank" rel="noreferrer noopener">
                 <span className="footer-social-icon">
-                    <img src="../f.png" className="footer-social-img" />
+                    <img src={`${import.meta.env.BASE_URL}f.png`} className="footer-social-img" alt="Facebook" />
                 </span>
 
               </a>
@@ -355,7 +355,7 @@ export default function CsvTool() {
                 className="footer-social-btn footer-social-instagram"
                 target="_blank" rel="noreferrer noopener">
                 <span className="footer-social-icon">
-                    <img src="../ig.png" className="footer-social-img" />
+                    <img src={`${import.meta.env.BASE_URL}ig.png`} className="footer-social-img" alt="Instagram" />
                 </span>
 
               </a>
@@ -395,7 +395,7 @@ export default function CsvTool() {
 
           <div className="container footer-bottom">
             <div className="footer-logo-block">
-              <img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" class="footer-logo" />
+              <img src={`${import.meta.env.BASE_URL}TU-logo-bw-wide.png`} alt="Telemark Ungdomsråd" className="footer-logo" />
             </div>
             <ul className="footer-links">
               <p>© Sondre Callaerts — Frigitt til fri bruk</p>

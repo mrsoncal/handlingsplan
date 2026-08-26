@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { MessageSquareReply, Pause, Play, RotateCcw, Square, Trash2 } from "lucide-react";
 import {
   subscribe,
   getState,
@@ -60,7 +61,7 @@ const speakingTypes = [
   { value: "replikk", label: "Replikk" },
 ];
 
-function TypeDropdown({ value, onChange, label }) {
+function TypeDropdown({ value, onChange, label, id }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
   const selected = speakingTypes.find((option) => option.value === value) || speakingTypes[0];
@@ -84,6 +85,7 @@ function TypeDropdown({ value, onChange, label }) {
   return (
     <div className="type-select" ref={rootRef}>
       <button
+        id={id}
         type="button"
         className="type-select-trigger"
         aria-label={label}
@@ -278,10 +280,8 @@ function normalizeRow(row) {
    Admin
    ============================ */
 function AdminView({ state }) {
-  // Add by delegate number + type
-  const [num, setNum] = useState("");
+  const [speakerQuery, setSpeakerQuery] = useState("");
   const [type, setType] = useState("innlegg");
-  const [manualName, setManualName] = useState("");
   const [manualOrg, setManualOrg] = useState("");
   const [lastInnlegg, setLastInnlegg] = useState(null);
   const [csvFileName, setCsvFileName] = useState("");
@@ -311,9 +311,13 @@ function AdminView({ state }) {
 
   const cur = state.currentSpeaker;
   const remain = cur ? fmt(remainingSeconds(cur)) : "00:00";
-  const delegate = state.delegates[String((num || "").trim())];
-  const previewName = delegate?.name || (num ? `#${num}` : "");
-  const previewOrg = delegate?.org || "";
+  const delegates = useMemo(() => Object.values(state.delegates || {}), [state.delegates]);
+  const normalizedQuery = speakerQuery.trim().toLocaleLowerCase("no");
+  const matchedDelegate = delegates.find((delegate) =>
+    String(delegate.number || "").toLocaleLowerCase("no") === normalizedQuery
+    || String(delegate.name || "").toLocaleLowerCase("no") === normalizedQuery
+    || `${delegate.number} - ${delegate.name}`.toLocaleLowerCase("no") === normalizedQuery
+  );
   const hasSvarReplikk = cur?.type === "svar_replikk"
     || state.queue.some((item) => item.type === "svar_replikk");
 
@@ -343,15 +347,15 @@ function AdminView({ state }) {
     reader.onerror = (err) => console.error("[CSV] FileReader error:", err);
     reader.readAsText(file, "utf-8");
   }
-  function handleAddByNum() {
-    if (!num.trim()) return;
-    addToQueueByDelegate({ delegateNumber: num.trim(), type });
-    setNum("");
-  }
-  function handleAddManual() {
-    if (!manualName.trim()) return;
-    addToQueueDirect({ name: manualName.trim(), org: manualOrg.trim(), type });
-    setManualName("");
+  function handleAddSpeaker(event) {
+    event.preventDefault();
+    if (!speakerQuery.trim()) return;
+    if (matchedDelegate) {
+      addToQueueByDelegate({ delegateNumber: matchedDelegate.number, type });
+    } else {
+      addToQueueDirect({ name: speakerQuery.trim(), org: manualOrg.trim(), type });
+    }
+    setSpeakerQuery("");
     setManualOrg("");
   }
 
@@ -369,7 +373,7 @@ function AdminView({ state }) {
               <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">CSV Verktøy</a>
             </nav>
           </div>     
-            <img className="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />    
+            <img className="brand" src={`${import.meta.env.BASE_URL}TU-logov2.png`} alt="Telemark Ungdomsråd" />    
         </div>
 
         <div className="header-space-container">
@@ -384,7 +388,7 @@ function AdminView({ state }) {
           <div className="split">
 
             <div className="card">
-              <div className={`card ${Object.keys(state.delegates).length === 0 ? 'csv-alert' : ''}`}>
+              <div className={Object.keys(state.delegates).length === 0 ? 'csv-alert' : ''}>
                 <div className="title">Last opp delegater (CSV)</div>
 
                   {/* Show helper only when no delegates are loaded */}
@@ -417,8 +421,8 @@ function AdminView({ state }) {
                       Lastet inn <b>{Object.keys(state.delegates).length}</b> delegater
                     </div>
                   </div>
-                </div>
               </div>
+            </div>
 
             <div className="card time-defaults">
               <div className="title">Taletid (sekunder)</div>
@@ -456,67 +460,59 @@ function AdminView({ state }) {
 
           <div className="spacer"></div>
 
-          {/* Row: add by number + manual add */}
-          <div className="split">
-            <div className="card">
-              <div className="title">Legg til i talelista</div>
-              <div className="row">
+          <div className="card speaker-add-card">
+            <div className="title">Legg til i talelista</div>
+            <form className="speaker-add-form" onSubmit={handleAddSpeaker}>
+              <div className="form-field speaker-search-field">
+                <label htmlFor="speaker-search">Delegatnummer eller navn</label>
                 <input
+                  id="speaker-search"
                   className="input"
-                  placeholder="Delegatnummer"
-                  value={num}
-                  onChange={(e) => setNum(e.target.value)}
+                  list="delegate-options"
+                  autoComplete="off"
+                  placeholder="Søk etter delegat"
+                  value={speakerQuery}
+                  onChange={(event) => setSpeakerQuery(event.target.value)}
                 />
+                <datalist id="delegate-options">
+                  {delegates.map((delegate) => (
+                    <option key={delegate.number} value={`${delegate.number} - ${delegate.name}`} />
+                  ))}
+                </datalist>
+              </div>
+              {!matchedDelegate && speakerQuery.trim() && (
+                <div className="form-field">
+                  <label htmlFor="speaker-org">Organisasjon for ny deltaker</label>
+                  <input
+                    id="speaker-org"
+                    className="input"
+                    placeholder="Organisasjon"
+                    value={manualOrg}
+                    onChange={(event) => setManualOrg(event.target.value)}
+                  />
+                </div>
+              )}
+              <div className="form-field">
+                <label htmlFor="speaker-type">Taletype</label>
                 <TypeDropdown
+                  id="speaker-type"
                   value={type}
                   onChange={setType}
-                  label="Velg taletype for delegat"
+                  label="Velg taletype"
                 />
-                <button
-                  className="btn"
-                  onClick={handleAddByNum}
-                  disabled={!num.trim()}
-                >
-                  Legg til
-                </button>
               </div>
-              <div className="spacer"></div>
-              <div className="preview-row">
-                Preview: <b>{previewName}</b>
-                {previewOrg ? ` — ${previewOrg}` : ""} ·{" "}
-                <span className="preview">{labelFor(type)}</span>
+              <button className="btn speaker-add-button" type="submit" disabled={!speakerQuery.trim()}>
+                Legg til
+              </button>
+            </form>
+            {speakerQuery.trim() && (
+              <div className="speaker-preview" aria-live="polite">
+                <span>Forhåndsvisning:</span>{" "}
+                <strong>{matchedDelegate?.name || speakerQuery.trim()}</strong>
+                {(matchedDelegate?.org || manualOrg) ? ` — ${matchedDelegate?.org || manualOrg}` : ""}
+                {!matchedDelegate && <>{" "}<span className="muted manual-note">Ny deltaker</span></>}
               </div>
-            </div>
-
-            <div className="card">
-              <div className="title">Legg til manuelt</div>
-              <div className="row">
-                <input
-                  className="input"
-                  placeholder="Navn"
-                  value={manualName}
-                  onChange={(e) => setManualName(e.target.value)}
-                />
-                <input
-                  className="input"
-                  placeholder="Organisasjon"
-                  value={manualOrg}
-                  onChange={(e) => setManualOrg(e.target.value)}
-                />
-                <TypeDropdown
-                  value={type}
-                  onChange={setType}
-                  label="Velg taletype for manuell registrering"
-                />
-                <button
-                  className="btn"
-                  onClick={handleAddManual}
-                  disabled={!manualName.trim()}
-                >
-                  Legg til
-                </button>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="spacer"></div>
@@ -547,82 +543,90 @@ function AdminView({ state }) {
                   <div className="muted">Ingen snakker nå.</div>
                 )}
               </div>
-              <div className="row">
-                <button
-                  className="btn"
-                  onClick={() => {
-                    startNext();
-                    sendSync("timer:startNext");
-                  }}
-                  disabled={!!state.currentSpeaker || state.queue.length === 0}
-                >
-                  Start neste
-                </button>
-                <button
-                  className="btn secondary"
-                  onClick={() => {
-                    pauseTimer();
-                    sendSync("timer:pause");
-                  }}
-                  disabled={!cur || cur.paused}
-                >
-                  Pause
-                </button>
-                <button
-                  className="btn secondary"
-                  onClick={() => {
-                    resumeTimer();
-                    sendSync("timer:resume");
-                  }}
-                  disabled={!cur || !cur.paused}
-                >
-                  Fortsett
-                </button>
-                <button
-                  className="btn danger"
-                  onClick={() => {
-                    skipCurrent();
-                    sendSync("timer:reset");
-                  }}
-                  disabled={!cur}
-                >
-                  Skip
-                </button>
-                <button
-                  className="btn ghost"
-                  onClick={() => {
-                    resetTimer();
-                    sendSync("timer:reset");
-                  }}
-                  disabled={!cur}
-                >
-                  Reset
-                </button>
-                {cur && (normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk' && lastInnlegg ? (
+              <div className="row speaker-actions">
+                {!cur && (
                   <button
-                    className="btn"
-                    disabled={hasSvarReplikk}
+                    className="btn icon-button"
+                    aria-label="Start neste"
+                    title="Start neste"
                     onClick={() => {
-                      if (lastInnlegg.delegateNumber) {
-                        addToQueueByDelegate({
-                          delegateNumber: String(lastInnlegg.delegateNumber),
-                          type: 'svar_replikk',
-                        });
-                      } else {
-                        addToQueueDirect({
-                          name: lastInnlegg.name || '',
-                          org: lastInnlegg.org || '',
-                          type: 'svar_replikk',
-                        });
-                      }
+                      startNext();
+                      sendSync("timer:startNext");
                     }}
-                    title={hasSvarReplikk
-                      ? 'Det er allerede lagt til en svar-replikk'
-                      : `Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                    disabled={state.queue.length === 0}
                   >
-                  Svar-replikk → {lastInnlegg.name || 'innlegg-holder'}
-                </button>
-                ) : null}
+                    <Play aria-hidden="true" />
+                  </button>
+                )}
+                {cur && (
+                  <>
+                    <button
+                      className="btn secondary icon-button"
+                      aria-label={cur.paused ? "Fortsett" : "Pause"}
+                      title={cur.paused ? "Fortsett" : "Pause"}
+                      onClick={() => {
+                        if (cur.paused) {
+                          resumeTimer();
+                          sendSync("timer:resume");
+                        } else {
+                          pauseTimer();
+                          sendSync("timer:pause");
+                        }
+                      }}
+                    >
+                      {cur.paused ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+                    </button>
+                    <button
+                      className="btn danger icon-button"
+                      aria-label="Avslutt taler"
+                      title="Avslutt taler"
+                      onClick={() => {
+                        skipCurrent();
+                        sendSync("timer:reset");
+                      }}
+                    >
+                      <Square aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn ghost icon-button"
+                      aria-label="Nullstill tid"
+                      title="Nullstill tid"
+                      onClick={() => {
+                        resetTimer();
+                        sendSync("timer:reset");
+                      }}
+                    >
+                      <RotateCcw aria-hidden="true" />
+                    </button>
+                    {(normalizeType ? normalizeType(cur.type) : cur.type) === 'replikk'
+                      && lastInnlegg
+                      && !hasSvarReplikk && (
+                        <button
+                          type="button"
+                          className="btn icon-button"
+                          aria-label={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                          title={`Gi svar-replikk til ${lastInnlegg.name || 'innlegg-holder'}`}
+                          onClick={() => {
+                            if (lastInnlegg.delegateNumber) {
+                              addToQueueByDelegate({
+                                delegateNumber: String(lastInnlegg.delegateNumber),
+                                type: 'svar_replikk',
+                              });
+                            } else {
+                              addToQueueDirect({
+                                name: lastInnlegg.name || '',
+                                org: lastInnlegg.org || '',
+                                type: 'svar_replikk',
+                              });
+                            }
+                          }}
+                        >
+                          <MessageSquareReply aria-hidden="true" />
+                        </button>
+                      )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -649,19 +653,23 @@ function AdminView({ state }) {
                       </div>
                       <div className="col">
                         <button
-                          className="btn secondary"
+                          className="btn secondary icon-button"
+                          aria-label={`Start ${q.name}`}
+                          title="Start"
                           onClick={() => {
                             startSpecific(q.id);
                             sendSync("timer:startSpecific", { id: q.id });
                           }}
                         >
-                          Start
+                          <Play aria-hidden="true" />
                         </button>
                         <button
-                          className="btn danger"
+                          className="btn danger icon-button"
+                          aria-label={`Fjern ${q.name}`}
+                          title="Fjern"
                           onClick={() => removeFromQueue(q.id)}
                         >
-                          Fjern
+                          <Trash2 aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -684,7 +692,7 @@ function AdminView({ state }) {
                 className="footer-social-btn footer-social-facebook"
                 target="_blank" rel="noreferrer noopener">
                 <span className="footer-social-icon">
-                    <img src="../f.png" className="footer-social-img" />
+                    <img src={`${import.meta.env.BASE_URL}f.png`} className="footer-social-img" alt="Facebook" />
                 </span>
 
               </a>
@@ -693,7 +701,7 @@ function AdminView({ state }) {
                 className="footer-social-btn footer-social-instagram"
                 target="_blank" rel="noreferrer noopener">
                 <span className="footer-social-icon">
-                    <img src="../ig.png" className="footer-social-img" />
+                    <img src={`${import.meta.env.BASE_URL}ig.png`} className="footer-social-img" alt="Instagram" />
                 </span>
 
               </a>
@@ -733,7 +741,7 @@ function AdminView({ state }) {
 
           <div className="container footer-bottom">
             <div className="footer-logo-block">
-              <img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" className="footer-logo" />
+              <img src={`${import.meta.env.BASE_URL}TU-logo-bw-wide.png`} alt="Telemark Ungdomsråd" className="footer-logo" />
             </div>
             <ul className="footer-links">
               <p>© Sondre Callaerts — Frigitt til fri bruk</p>
@@ -758,8 +766,15 @@ function TimerFull({ state }) {
   const secs = cur ? remainingSeconds(cur) : 0;
   const text = fmt(secs);
   const typeLabel = cur ? labelFor(cur.type) : "";
+  const isExpired = Boolean(cur && secs <= 0);
+  const isPaused = Boolean(cur?.paused && !isExpired);
+  const timerStateClass = isExpired
+    ? "timer-state-expired"
+    : isPaused
+      ? "timer-state-paused"
+      : "";
   return (
-    <div id="timer" className="full">
+    <div id="timer" className={`full ${timerStateClass}`}>
       <div className="name">
         {cur
           ? `${cur.name} ${
@@ -770,9 +785,12 @@ function TimerFull({ state }) {
       <div className="name">{cur?.org || ""}</div>
       <div className="timer">{text}</div>
       <div className="status">
-        {cur
-          ? typeLabel + (cur.paused ? " · Pauset" : " · Live")
-          : "Venter på neste taler…"}
+        {isPaused && <Pause className="timer-state-icon" aria-hidden="true" />}
+        <span>
+          {cur
+            ? typeLabel + (isExpired ? " · Tiden er ute" : cur.paused ? " · Pauset" : " · Live")
+            : "Venter på neste taler…"}
+        </span>
       </div>
     </div>
   );
@@ -786,10 +804,17 @@ function QueueFull({ state }) {
     <div id="queue" className="full queuePage" style={{ alignItems: 'stretch' }}>
       <div className="queue">
         {cur ? (
-          <div className="queueRow queueNow">
-            <div className="big">
-              Nå: {cur.name}{" "}
-              {cur.delegateNumber ? `(#${cur.delegateNumber})` : ""}
+          <div
+            className="queueRow queueNow"
+            data-type={normalizeType ? normalizeType(cur.type) : cur.type}
+          >
+            <div className="queueRow-content">
+              <div className="big">
+                Nå: {cur.name}{" "}
+                {cur.delegateNumber ? `(#${cur.delegateNumber})` : ""}
+                <div className="muted">{cur.org || " "}</div>
+              </div>
+              <span className="label-pill">{labelFor(cur.type)}</span>
             </div>
           </div>
         ) : null}

@@ -41,8 +41,53 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
   height: 100vh;
   text-align: center;
+}
+
+#timer.timer-state-paused {
+  border: 8px solid #1677b8;
+}
+
+#timer.timer-state-expired {
+  border: 8px solid #b7173d;
+  background:
+    linear-gradient(90deg, rgba(183, 23, 61, 0.14), transparent 12%, transparent 88%, rgba(183, 23, 61, 0.14)),
+    linear-gradient(180deg, rgba(183, 23, 61, 0.12), transparent 12%, transparent 88%, rgba(183, 23, 61, 0.12)),
+    #ffffff;
+  animation: timer-expired-pulse 1.5s ease-in-out infinite;
+}
+
+#timer .status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.timer-state-icon {
+  width: 28px;
+  height: 28px;
+  color: #1677b8;
+  stroke-width: 2.5;
+}
+
+@keyframes timer-expired-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 18px rgba(183, 23, 61, 0.18), 0 0 0 rgba(183, 23, 61, 0);
+  }
+  50% {
+    box-shadow: inset 0 0 48px rgba(183, 23, 61, 0.34), 0 0 24px rgba(183, 23, 61, 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #timer.timer-state-expired {
+    animation: none;
+    box-shadow: inset 0 0 32px rgba(183, 23, 61, 0.28);
+  }
 }
 
 .full {
@@ -157,6 +202,18 @@
   padding: 0 1rem;
 }
 
+.card {
+  box-sizing: border-box;
+}
+
+.btn,
+.input,
+select,
+.type-select-trigger {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
 
 .queue {
   margin-top: 0;
@@ -201,6 +258,10 @@
 #queue .queueRow[data-type="svar_replikk"] .big,
 #queue .queueRow[data-type="svar_replikk"] .muted,
 #queue .queueRow[data-type="svar_replikk"] .desc { color: #725b00 !important; }
+
+#queue .queueNow .label-pill {
+  color: #ffffff !important;
+}
 
 
 /* ==========================================
@@ -337,6 +398,62 @@
   gap: 12px;
 }
 
+.speaker-add-card {
+  margin-top: 16px;
+}
+
+.speaker-add-form {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(160px, .65fr) 160px auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.form-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  color: rgba(30, 30, 30, 0.72);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.form-field .input,
+.form-field .type-select {
+  width: 100%;
+}
+
+.speaker-preview {
+  margin-top: 12px;
+}
+
+.manual-note {
+  margin-left: 8px;
+}
+
+.speaker-actions {
+  position: relative;
+  align-items: center;
+}
+
+.icon-button {
+  display: inline-flex;
+  width: 44px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.25;
+}
+
 .time-label {
   display: block;
   margin-bottom: 6px;
@@ -347,7 +464,7 @@
 
 .time-stepper {
   display: grid;
-  grid-template-columns: 42px 64px 42px;
+  grid-template-columns: 42px minmax(64px, 1fr) 42px;
   align-items: center;
   overflow: hidden;
   min-height: 46px;
@@ -442,6 +559,23 @@
 }
 
 @media (max-width: 520px) {
+  .container {
+    width: 100%;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+
+  .card.main-card {
+    width: 100%;
+    margin: 0;
+    padding: 0 !important;
+  }
+
+  .card {
+    width: 100%;
+    margin: 8px 0;
+  }
+
   .csv-upload {
     align-items: flex-start;
     flex-direction: column;
@@ -449,6 +583,14 @@
 
   .csv-file-name {
     max-width: 100%;
+  }
+
+  .speaker-add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .speaker-add-button {
+    width: 100%;
   }
 }
 
