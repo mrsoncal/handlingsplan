@@ -86,6 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginButton = document.getElementById("login-button");
   const logoutButton = document.getElementById("logout-button");
 
+  if (!loginSection || !loginButton || !logoutButton) return;
+
   if (!token) {
     loginSection.style.display = "none";
     loginButton.style.display = "inline-block";

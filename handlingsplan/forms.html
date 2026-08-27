@@ -6,7 +6,9 @@
   <title>Innspill til Handlingsplan 2026</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
-    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
+      ? "http://localhost:4000"
+      : "https://handlingsplan-backend.onrender.com";
   </script>
 </head>
 <body>
@@ -234,7 +236,9 @@
 
   <script>
     // Samme backend-base som de andre sidene
-    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
+      ? "http://localhost:4000"
+      : "https://handlingsplan-backend.onrender.com";
   </script>
   <script src="forms.js" defer></script>
   <script src="login.js" defer></script>

@@ -6,7 +6,9 @@
     <link rel="stylesheet" href="styles.css" />
     <script>
       // Samme base-URL som de andre håndlingsplan-sidene
-      window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+      window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
+        ? "http://localhost:4000"
+        : "https://handlingsplan-backend.onrender.com";
     </script>
   </head>
   <body id="raad-innspill-editor-body">

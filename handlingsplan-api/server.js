@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const multer = require("multer");
 const crypto = require("crypto");
+const path = require("path");
 const {
   init,
   getCouncils,
@@ -22,7 +23,7 @@ const {
   getCouncilLogoFile,
   updateInnspill,
   deleteInnspill,
-} = require("./db");
+} = process.env.USE_MOCK_DATA === "true" ? require("./mock-db") : require("./db");
 
 
 
@@ -64,6 +65,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+if (process.env.USE_MOCK_DATA === "true") {
+  app.use(express.static(path.join(__dirname, "..")));
+}
 
 // Simple health check
 app.get("/health", (req, res) => {

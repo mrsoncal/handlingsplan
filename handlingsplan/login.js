@@ -2,13 +2,16 @@ const passwordInput = document.getElementById("password");
 const loginForm = document.getElementById("login-form");
 
 // Use same base as the other pages
-const API_BASE = window.HP_API_BASE || "https://handlingsplan-backend.onrender.com";
+const LOGIN_API_BASE = window.HP_API_BASE ||
+  (["localhost", "127.0.0.1"].includes(location.hostname)
+    ? "http://localhost:4000"
+    : "https://handlingsplan-backend.onrender.com");
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const password = passwordInput.value;
 
-  const response = await fetch(`${API_BASE}/api/admin/login`, {
+  const response = await fetch(`${LOGIN_API_BASE}/api/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password }),

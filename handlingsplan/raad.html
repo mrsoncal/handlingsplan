@@ -42,7 +42,9 @@
   <script>
     // Viktig: dette skal peke på backend-et som returnerer handlingsplan_path
     // og serverer /uploads/...
-    window.HP_API_BASE = "https://handlingsplan-backend.onrender.com";
+    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
+      ? "http://localhost:4000"
+      : "https://handlingsplan-backend.onrender.com";
   </script>
   <script src="raad.js" type="module"></script>
 </body>
