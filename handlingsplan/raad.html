@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Handlingsplan – ungdomsråd</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
+  </script>
+  <script src="raad-brand-cache.js"></script>
 </head>
 <body>
   <div class="page">
@@ -12,7 +16,7 @@
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-            <button class="btn nav" id="openFormsBtn">Åpne forms</button>
+            <button class="btn nav" id="openFormsBtn">Åpne skjema</button>
             <!-- Handlingsplan-lenken blir dynamisk satt i raad.js -->
             <a class="btn nav" id="handlingsplanLink" href="#" target="_blank">
               Handlingsplan
@@ -25,7 +29,7 @@
         <img
           class="brand"
           id="raadBrandLogo"
-          src="../UFT-logo.png"
+          data-fallback-logo="../UFR-logo.png"
           alt="Ungdomsråd"
         />
       </div>
@@ -39,13 +43,6 @@
     </main>
   </div>
 
-  <script>
-    // Viktig: dette skal peke på backend-et som returnerer handlingsplan_path
-    // og serverer /uploads/...
-    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
-      ? "http://localhost:4000"
-      : "https://handlingsplan-backend.onrender.com";
-  </script>
   <script src="raad.js" type="module"></script>
 </body>
 </html>

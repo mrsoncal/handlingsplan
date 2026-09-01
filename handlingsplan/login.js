@@ -3,11 +3,9 @@ const loginForm = document.getElementById("login-form");
 
 // Use same base as the other pages
 const LOGIN_API_BASE = window.HP_API_BASE ||
-  (["localhost", "127.0.0.1"].includes(location.hostname)
-    ? "http://localhost:4000"
-    : "https://handlingsplan-backend.onrender.com");
+  "https://qeb2527k.function2.insforge.app/handlingsplan-api";
 
-loginForm.addEventListener("submit", async (e) => {
+if (loginForm && passwordInput) loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const password = passwordInput.value;
 
@@ -23,7 +21,11 @@ loginForm.addEventListener("submit", async (e) => {
     localStorage.setItem("token", data.token);
     window.location.reload();
   } else {
-    alert("Incorrect password.");
+    const statusEl = document.getElementById("login-status");
+    if (statusEl) {
+      statusEl.textContent = "Feil passord. Prøv igjen.";
+      statusEl.dataset.type = "error";
+    }
   }
 });
 

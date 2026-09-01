@@ -7,24 +7,24 @@
     <link rel="stylesheet" href="styles.css" />
     <script>
       // Sett dette til backend URL-en din
-      window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
-        ? "http://localhost:4000"
-        : "https://handlingsplan-backend.onrender.com";
+      window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
     </script>
   </head>
   <body class="raad-admin">
+    <script src="raad-brand-cache.js"></script>
 
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-            <a class="btn nav" id="back-link">Tilbake</a>
+            <a class="btn nav" id="back-link">Til rådssiden</a>
+            <button class="btn nav admin-logout-btn" id="admin-logout-btn" type="button" hidden>Logg ut</button>
           </nav>
         </div>
         <img
           class="brand"
           id="raadBrandLogo"
-          src="../UFR-logo.png"
+          data-fallback-logo="../UFR-logo.png"
           alt="Ungdomsråd"
         />
       </div>
@@ -33,10 +33,16 @@
       </div>
     </header>
 
+    <nav class="breadcrumbs container" aria-label="Brødsmulesti">
+      <a id="breadcrumb-council-link" href="#"><span id="breadcrumb-council">Laster…</span></a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Innstillinger</span>
+    </nav>
+
 
     <div class="container">
       <section class="card main-card">
-        <h2>Admin for <span id="raad-name">…</span></h2>
+        <h2>Innstillinger for <span id="raad-name">…</span></h2>
 
         <!-- RÅD-SPESIFIKT LOGIN -->
         <div id="login-section">
@@ -65,8 +71,16 @@
 
         <!-- ADMIN-INNHOLD, VISER SEG ETTER LOGIN -->
         <div id="admin-section" style="display: none">
+          <nav class="settings-nav" aria-label="Innstillinger">
+            <a href="#general-settings">Grunninfo</a>
+            <a href="#brand-settings">Logo</a>
+            <a href="#plan-settings">Handlingsplan</a>
+            <a href="#theme-settings">Temaer</a>
+            <a href="#submission-settings">Innspill</a>
+          </nav>
+
           <!-- Navn -->
-          <div class="admin-section-part" id="section-1">
+          <div class="admin-section-part" id="general-settings">
             <h3>Grunninformasjon</h3>
             <label for="raad-name-input" class="field-label">
               Navn på ungdomsråd
@@ -81,7 +95,7 @@
 
 
           <!-- Logo -->
-          <div class="admin-section-part">
+          <div class="admin-section-part" id="brand-settings">
             <h3>Logo / symbol</h3>
             <p class="help-text">
               Logoen vises på kortet i oversikten og i headeren.
@@ -95,15 +109,19 @@
                 <span id="logoFileName" class="file-input-name">Ingen fil valgt</span>
               </label>
 
-              <button id="upload-logo-btn" class="btn-upload">Last opp logo</button>
+              <button id="upload-logo-btn" class="btn-upload" type="button">Last opp logo</button>
 
             </div>
-            <p id="logo-status"></p>
+            <div id="logo-current" class="current-file" hidden>
+              <img id="logo-preview" alt="Nåværende rådslogo" />
+              <span>Nåværende logo</span>
+            </div>
+            <p id="logo-status" class="notice" role="status" aria-live="polite"></p>
           </div>
           
 
           <!-- Handlingsplan -->
-          <div class="admin-section-part">
+          <div class="admin-section-part" id="plan-settings">
             <h3>Handlingsplan</h3>
             <p class="help-text">
               Last opp gjeldende handlingsplan (PDF eller bilde).
@@ -117,15 +135,18 @@
                 <span id="hpFileName" class="file-input-name">Ingen fil valgt</span>
               </label>
 
-              <button id="upload-hp-btn" class="btn-upload">Last opp handlingsplan</button>
+              <button id="upload-hp-btn" class="btn-upload" type="button">Last opp handlingsplan</button>
 
             </div>
-            <p id="hp-status"></p>
+            <a id="hp-current" class="current-file current-file-link" href="#" target="_blank" rel="noopener" hidden>
+              Åpne nåværende handlingsplan
+            </a>
+            <p id="hp-status" class="notice" role="status" aria-live="polite"></p>
           </div>
         
 
           <!-- Temaer -->
-          <div class="admin-section-part">
+          <div class="admin-section-part" id="theme-settings">
             <h3>Temaer i skjemaet</h3>
             <p class="help-text">
               Legg til eller fjern temaer. Velg om man kan <strong>legge til</strong>,
@@ -137,11 +158,13 @@
               id="tema-header-row"
               class="form-row tema-grid-row"
             >
-              <div class="tema-navn"></div>
+              <div class="tema-navn">Tema</div>
+              <div class="tema-farge">Farge</div>
               <div class="tema-sjekk">Legge til</div>
               <div class="tema-sjekk">Endre</div>
               <div class="tema-sjekk">Fjerne</div>
-              <div></div>
+              <div class="tema-rekkefolge">Rekkefølge</div>
+              <div class="tema-handling">Handling</div>
             </div>
 
             <div id="tema-list" class="tema-list">
@@ -158,7 +181,7 @@
           </div>
 
           <!-- INNSPILL-TABELL -->
-          <div class="admin-section-part">
+          <div class="admin-section-part" id="submission-settings">
             <h3>Redaksjon av Innspill</h3>
             <p class="help-text">
               Rediger eller slett innspill.
@@ -168,7 +191,7 @@
               class="btn"
               type="button"
             >
-              Åpne innspill-tabell
+              Rediger innspill
             </button>
           </div>
           
@@ -176,14 +199,15 @@
 
           <!-- LAGRE-KNAPP -->
           <div class="admin-section-part" id="save-button">
+            <span id="unsaved-indicator" aria-live="polite"></span>
             <button
               id="save-btn"
               class="btn"
               type="button"
             >
-              Lagre
+              Lagre endringer
             </button>
-            <p id="save-status"></p>
+            <p id="save-status" class="notice" role="status" aria-live="polite"></p>
           </div>
           
         </div>

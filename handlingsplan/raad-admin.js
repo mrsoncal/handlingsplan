@@ -6,6 +6,7 @@ const raadId = new URLSearchParams(location.search).get("id");
 let raadData = null;
 let raadPassword = "";
 let temaState = [];
+let hasUnsavedChanges = false;
 
 // ---- COOKIE HELPERS for per-råd-passord (deles med raad-innspill-editor) ----
 const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
@@ -49,6 +50,42 @@ function setText(id, text) {
   if (el) el.textContent = text;
 }
 
+function setNotice(element, message, type = "info") {
+  if (!element) return;
+  element.textContent = message;
+  element.dataset.type = message ? type : "";
+}
+
+function setDirty(isDirty = true) {
+  hasUnsavedChanges = isDirty;
+  const indicator = $("unsaved-indicator");
+  const saveBtn = $("save-btn");
+  if (indicator) {
+    indicator.textContent = isDirty
+      ? "Du har ulagrede endringer"
+      : "";
+  }
+  if (saveBtn) saveBtn.classList.toggle("has-changes", isDirty);
+}
+
+function updateCurrentFiles(council) {
+  const logoCurrent = $("logo-current");
+  const logoPreview = $("logo-preview");
+  if (logoCurrent && logoPreview && council?.has_logo) {
+    const version = council.logo_version
+      ? `?v=${encodeURIComponent(council.logo_version)}`
+      : "";
+    logoPreview.src = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/logo-file${version}`;
+    logoCurrent.hidden = false;
+  }
+
+  const hpCurrent = $("hp-current");
+  if (hpCurrent && council?.has_handlingsplan) {
+    hpCurrent.href = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/handlingsplan-file`;
+    hpCurrent.hidden = false;
+  }
+}
+
 function ensurePassword() {
   if (raadPassword) return true;
 
@@ -90,6 +127,8 @@ function autoLoginFromCookie() {
   raadPassword = cookiePw;
   if (loginSection) loginSection.style.display = "none";
   if (adminSection) adminSection.style.display = "block";
+  const logoutBtn = $("admin-logout-btn");
+  if (logoutBtn) logoutBtn.hidden = false;
 }
 
 
@@ -113,11 +152,17 @@ async function fetchCouncil() {
       raadData.display_name || raadData.name || "Ukjent ungdomsråd";
 
     setText("raad-name", displayName);
+    setText("breadcrumb-council", displayName);
+    const breadcrumbCouncilLink = $("breadcrumb-council-link");
+    if (breadcrumbCouncilLink) {
+      breadcrumbCouncilLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
+    }
 
     const nameInput = $("raad-name-input");
     if (nameInput) nameInput.value = displayName;
 
     updateHeaderBrand(raadData);
+    updateCurrentFiles(raadData);
 
     // Bygg tema-state
     const fromApi = Array.isArray(raadData.temaer) ? raadData.temaer : [];
@@ -160,6 +205,8 @@ function initLogin() {
 
     if (loginSection) loginSection.style.display = "none";
     if (adminSection) adminSection.style.display = "block";
+    const logoutBtn = $("admin-logout-btn");
+    if (logoutBtn) logoutBtn.hidden = false;
   });
 }
 
@@ -172,11 +219,11 @@ async function uploadLogo() {
   const statusEl = $("logo-status");
 
   if (!fileInput || !fileInput.files.length) {
-    alert("Velg en logofil først.");
+    setNotice(statusEl, "Velg en logofil først.", "error");
     return;
   }
 
-  if (statusEl) statusEl.textContent = "Laster opp logo…";
+  setNotice(statusEl, "Laster opp logo…");
 
   const fd = new FormData();
   fd.append("logo", fileInput.files[0]);
@@ -197,18 +244,19 @@ async function uploadLogo() {
         const err = await res.json();
         if (err && err.error) msg = err.error;
       } catch (_) {}
-      if (statusEl) statusEl.textContent = msg;
-      alert(msg);
+      setNotice(statusEl, msg, "error");
       return;
     }
 
     raadData = await res.json();
     updateHeaderBrand(raadData);
-    if (statusEl) statusEl.textContent = "Logo lagret.";
+    updateCurrentFiles(raadData);
+    fileInput.value = "";
+    setText("logoFileName", "Ingen fil valgt");
+    setNotice(statusEl, "Logoen er lastet opp.", "success");
   } catch (err) {
     console.error(err);
-    if (statusEl) statusEl.textContent = "Feil ved opplasting av logo.";
-    alert("Det oppstod en feil ved opplasting av logo.");
+    setNotice(statusEl, "Det oppstod en feil ved opplasting av logo.", "error");
   }
 }
 
@@ -219,11 +267,11 @@ async function uploadHandlingsplan() {
   const statusEl = $("hp-status");
 
   if (!fileInput || !fileInput.files.length) {
-    alert("Velg en fil for handlingsplanen først.");
+    setNotice(statusEl, "Velg en fil for handlingsplanen først.", "error");
     return;
   }
 
-  if (statusEl) statusEl.textContent = "Laster opp handlingsplan…";
+  setNotice(statusEl, "Laster opp handlingsplan…");
 
   const fd = new FormData();
   fd.append("handlingsplan", fileInput.files[0]);
@@ -246,18 +294,18 @@ async function uploadHandlingsplan() {
         const err = await res.json();
         if (err && err.error) msg = err.error;
       } catch (_) {}
-      if (statusEl) statusEl.textContent = msg;
-      alert(msg);
+      setNotice(statusEl, msg, "error");
       return;
     }
 
     raadData = await res.json();
-    if (statusEl) statusEl.textContent = "Handlingsplan lagret.";
+    updateCurrentFiles(raadData);
+    fileInput.value = "";
+    setText("hpFileName", "Ingen fil valgt");
+    setNotice(statusEl, "Handlingsplanen er lastet opp.", "success");
   } catch (err) {
     console.error(err);
-    if (statusEl) statusEl.textContent =
-      "Feil ved opplasting av handlingsplan.";
-    alert("Det oppstod en feil ved opplasting av handlingsplanen.");
+    setNotice(statusEl, "Det oppstod en feil ved opplasting av handlingsplanen.", "error");
   }
 }
 
@@ -289,15 +337,19 @@ function renderTemaList() {
     nameInput.placeholder = "Tema (f.eks. Skole)";
     nameInput.addEventListener("input", (e) => {
       temaState[index].name = e.target.value;
+      setDirty();
     });
     row.appendChild(nameInput);
 
     // Farge
     const colorInput = document.createElement("input");
     colorInput.type = "color";
+    colorInput.className = "tema-color-input";
     colorInput.value = t.color || "#0088cc";
+    colorInput.setAttribute("aria-label", `Farge for ${t.name || "temaet"}`);
     colorInput.addEventListener("input", (e) => {
       temaState[index].color = e.target.value;
+      setDirty();
     });
     row.appendChild(colorInput);
 
@@ -310,6 +362,8 @@ function renderTemaList() {
       temaState[index].allowAdd = e.target.checked;
     });
     addLabel.appendChild(addCheckbox);
+    addLabel.setAttribute("aria-label", `Tillat å legge til punkt i ${t.name || "temaet"}`);
+    addCheckbox.addEventListener("change", () => setDirty());
     row.appendChild(addLabel);
 
     // Endre
@@ -321,6 +375,8 @@ function renderTemaList() {
       temaState[index].allowChange = e.target.checked;
     });
     changeLabel.appendChild(changeCheckbox);
+    changeLabel.setAttribute("aria-label", `Tillat å endre punkt i ${t.name || "temaet"}`);
+    changeCheckbox.addEventListener("change", () => setDirty());
     row.appendChild(changeLabel);
 
     // Fjerne
@@ -332,14 +388,45 @@ function renderTemaList() {
       temaState[index].allowRemove = e.target.checked;
     });
     removeLabel.appendChild(removeCheckbox);
+    removeLabel.setAttribute("aria-label", `Tillat å fjerne punkt i ${t.name || "temaet"}`);
+    removeCheckbox.addEventListener("change", () => setDirty());
     row.appendChild(removeLabel);
+
+    const orderActions = document.createElement("div");
+    orderActions.className = "tema-order-actions";
+    const upBtn = document.createElement("button");
+    upBtn.type = "button";
+    upBtn.className = "btn-icon";
+    upBtn.textContent = "↑";
+    upBtn.title = "Flytt tema opp";
+    upBtn.setAttribute("aria-label", `Flytt ${t.name || "temaet"} opp`);
+    upBtn.disabled = index === 0;
+    upBtn.addEventListener("click", () => moveTema(index, -1));
+    const downBtn = document.createElement("button");
+    downBtn.type = "button";
+    downBtn.className = "btn-icon";
+    downBtn.textContent = "↓";
+    downBtn.title = "Flytt tema ned";
+    downBtn.setAttribute("aria-label", `Flytt ${t.name || "temaet"} ned`);
+    downBtn.disabled = index === temaState.length - 1;
+    downBtn.addEventListener("click", () => moveTema(index, 1));
+    orderActions.append(upBtn, downBtn);
+    row.appendChild(orderActions);
 
     // Slett-knapp
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "btn-delete";
-    deleteBtn.textContent = "Slett";
+    deleteBtn.textContent = "Slett tema";
+    deleteBtn.setAttribute("aria-label", `Slett temaet ${t.name || "uten navn"}`);
     deleteBtn.style.fontSize = "0.8rem";
+    deleteBtn.addEventListener("click", () => {
+      const themeName = temaState[index]?.name || "dette temaet";
+      if (!window.confirm(`Vil du slette temaet «${themeName}»? Endringen lagres først når du velger Lagre endringer.`)) return;
+      temaState.splice(index, 1);
+      setDirty();
+      renderTemaList();
+    });
     row.appendChild(deleteBtn);
 
     container.appendChild(row);
@@ -347,25 +434,7 @@ function renderTemaList() {
 }
 
 function updateHeaderBrand(council) {
-  if (!council) return;
-
-  const brandImg =
-    document.getElementById("raadBrandLogo") ||
-    document.querySelector(".header .brand");
-  if (!brandImg) return;
-
-  const name = council.display_name || council.name || "Ungdomsråd";
-
-  let logoSrc = "../UFR-logo.png";
-
-  if (council.has_logo) {
-    logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
-      council.id
-    )}/logo-file?cacheBust=${Date.now()}`;
-  }
-
-  brandImg.src = logoSrc;
-  brandImg.alt = `Logo for ${name}`;
+  window.HPBrand?.update(council, API_BASE);
 }
 
 
@@ -379,6 +448,18 @@ function addTema() {
     allowRemove: true,
     position: temaState.length,
   });
+  setDirty();
+  renderTemaList();
+}
+
+function moveTema(index, offset) {
+  const targetIndex = index + offset;
+  if (targetIndex < 0 || targetIndex >= temaState.length) return;
+  [temaState[index], temaState[targetIndex]] = [temaState[targetIndex], temaState[index]];
+  temaState.forEach((theme, position) => {
+    theme.position = position;
+  });
+  setDirty();
   renderTemaList();
 }
 
@@ -390,7 +471,7 @@ async function saveConfig() {
   const statusEl = $("save-status");
   const saveBtn = $("save-btn");
 
-  if (statusEl) statusEl.textContent = "Lagrer…";
+  setNotice(statusEl, "Lagrer endringer…");
   if (saveBtn) saveBtn.disabled = true;
 
   const nameInput = $("raad-name-input");
@@ -406,8 +487,7 @@ async function saveConfig() {
         allowAdd: t.allowAdd !== false,
         allowChange: t.allowChange !== false,
         allowRemove: t.allowRemove !== false,
-        position:
-          typeof t.position === "number" ? t.position : index,
+        position: index,
       };
     })
     .filter(Boolean);
@@ -436,8 +516,7 @@ async function saveConfig() {
         const err = await res.json();
         if (err && err.error) msg = err.error;
       } catch (_) {}
-      if (statusEl) statusEl.textContent = msg;
-      alert(msg);
+      setNotice(statusEl, msg, "error");
       return;
     }
 
@@ -465,11 +544,11 @@ async function saveConfig() {
     }));
     renderTemaList();
 
-    if (statusEl) statusEl.textContent = "Lagret!";
+    setDirty(false);
+    setNotice(statusEl, "Endringene er lagret.", "success");
   } catch (err) {
     console.error(err);
-    if (statusEl) statusEl.textContent = "Feil ved lagring.";
-    alert("Det oppstod en feil ved lagring.");
+    setNotice(statusEl, "Det oppstod en feil ved lagring.", "error");
   } finally {
     if (saveBtn) saveBtn.disabled = false;
   }
@@ -483,11 +562,27 @@ function initButtons() {
   const addTemaBtn = $("add-tema-btn");
   const saveBtn = $("save-btn");
   const innspillEditorBtn = $("open-innspill-editor-btn");
+  const logoutBtn = $("admin-logout-btn");
 
   if (logoBtn) logoBtn.addEventListener("click", uploadLogo);
   if (hpBtn) hpBtn.addEventListener("click", uploadHandlingsplan);
   if (addTemaBtn) addTemaBtn.addEventListener("click", addTema);
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      if (hasUnsavedChanges && !window.confirm("Du har ulagrede endringer. Vil du logge ut likevel?")) return;
+      setDirty(false);
+      raadPassword = "";
+      clearPasswordCookie();
+      logoutBtn.hidden = true;
+      const loginSection = $("login-section");
+      const adminSection = $("admin-section");
+      if (loginSection) loginSection.style.display = "block";
+      if (adminSection) adminSection.style.display = "none";
+      const passwordInput = $("raad-password");
+      if (passwordInput) passwordInput.value = "";
+    });
+  }
   if (innspillEditorBtn && raadId) {
     innspillEditorBtn.addEventListener("click", () => {
       window.location.href = `raad-innspill-editor.html?id=${encodeURIComponent(
@@ -495,11 +590,25 @@ function initButtons() {
       )}`;
     });
   }
+
+  const nameInput = $("raad-name-input");
+  if (nameInput) nameInput.addEventListener("input", () => setDirty());
+
+  window.addEventListener("beforeunload", (event) => {
+    if (!hasUnsavedChanges) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
 }
 
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+  const themeList = $("tema-list");
+  if (themeList) {
+    themeList.innerHTML = '<div class="skeleton-panel" aria-label="Laster temaer" aria-busy="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>';
+  }
 
   $("raad-logo").addEventListener("change", () => {
     $("logoFileName").textContent =

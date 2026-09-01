@@ -6,23 +6,23 @@
     <link rel="stylesheet" href="styles.css" />
     <script>
       // Samme base-URL som de andre håndlingsplan-sidene
-      window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
-        ? "http://localhost:4000"
-        : "https://handlingsplan-backend.onrender.com";
+      window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
     </script>
   </head>
   <body id="raad-innspill-editor-body">
+    <script src="raad-brand-cache.js"></script>
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-            <a class="btn nav" id="back-link">Til admin</a>
+            <a class="btn nav" id="back-link">Til innstillinger</a>
+            <button class="btn nav admin-logout-btn" id="admin-logout-btn" type="button" hidden>Logg ut</button>
           </nav>
         </div>
         <img
           class="brand"
           id="raadBrandLogo"
-          src="../UFR-logo.png"
+          data-fallback-logo="../UFR-logo.png"
           alt="Ungdomsråd"
         />
         </div>
@@ -30,6 +30,13 @@
             <div class="header-space"></div>
         </div>
     </header>
+    <nav class="breadcrumbs container" aria-label="Brødsmulesti">
+      <a id="breadcrumb-council-link" href="#"><span id="breadcrumb-council">Laster…</span></a>
+      <span aria-hidden="true">/</span>
+      <a id="breadcrumb-settings-link" href="#">Innstillinger</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Rediger innspill</span>
+    </nav>
     <div class="container">
         <section class="card main-card">
             <!-- RÅD-SPESIFIKT LOGIN -->
@@ -61,11 +68,12 @@
             <div id="admin-section" style="display: none">
                 <div class="container">
                     <section class="card main-card">
-                    <h2>Innspill for <span id="raad-name">…</span></h2>
+                    <h2>Rediger innspill for <span id="raad-name">…</span></h2>
                     <p class="help-text">
                         Her ser du alle innsendte innspill i tabellform. Tabellen er sortert på
                         <strong>tema</strong> og deretter <strong>punktnummer</strong>.
                     </p>
+                    <p id="editor-status" class="notice" role="status" aria-live="polite"></p>
 
                     <div id="innspill-table-wrapper" class="table-wrapper">
                         <!-- Fylles av JavaScript -->

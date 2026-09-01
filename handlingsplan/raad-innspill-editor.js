@@ -51,6 +51,13 @@ function $(id) {
   return document.getElementById(id);
 }
 
+function setEditorStatus(message, type = "info") {
+  const statusEl = $("editor-status");
+  if (!statusEl) return;
+  statusEl.textContent = message;
+  statusEl.dataset.type = message ? type : "";
+}
+
 function updateLoginVisibility() {
   const loginSection = $("login-section");
   const adminSection = $("admin-section");
@@ -63,6 +70,19 @@ function updateLoginVisibility() {
     loginSection.style.display = "block";
     adminSection.style.display = "none";
   }
+  const logoutBtn = $("admin-logout-btn");
+  if (logoutBtn) logoutBtn.hidden = !isLoggedIn;
+}
+
+function logoutCouncilAdmin() {
+  clearPasswordCookie();
+  raadPassword = "";
+  isLoggedIn = false;
+  editingId = null;
+  updateLoginVisibility();
+  const passwordInput = $("raad-password");
+  if (passwordInput) passwordInput.value = "";
+  setEditorStatus("Du er logget ut.", "success");
 }
 
 
@@ -90,28 +110,14 @@ function initBackLink() {
   if (backLink && raadId) {
     backLink.href = `raad-admin.html?id=${encodeURIComponent(raadId)}`;
   }
+  const councilLink = $("breadcrumb-council-link");
+  if (councilLink && raadId) councilLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
+  const settingsLink = $("breadcrumb-settings-link");
+  if (settingsLink && raadId) settingsLink.href = `raad-admin.html?id=${encodeURIComponent(raadId)}`;
 }
 
 function updateHeaderBrand(council) {
-  if (!council) return;
-
-  const brandImg =
-    document.getElementById("raadBrandLogo") ||
-    document.querySelector(".header .brand");
-  if (!brandImg) return;
-
-  const name = council.display_name || council.name || "Ungdomsråd";
-
-  let logoSrc = "../UFR-logo.png";
-
-  if (council.has_logo) {
-    logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
-      council.id
-    )}/logo-file?cacheBust=${Date.now()}`;
-  }
-
-  brandImg.src = logoSrc;
-  brandImg.alt = `Logo for ${name}`;
+  window.HPBrand?.update(council, API_BASE);
 }
 
 // --- Tema-rekkefølge (samme som i karusellen på råd-siden) ---
@@ -293,7 +299,7 @@ async function handleVedtattToggleClick(id, nextState) {
         data && data.error
           ? data.error
           : "Det oppstod en feil ved oppdatering av vedtatt-status.";
-      alert(msg);
+      setEditorStatus(msg, "error");
       return;
     }
 
@@ -305,9 +311,10 @@ async function handleVedtattToggleClick(id, nextState) {
     );
 
     renderInnspillTable();
+    setEditorStatus(nextIsVedtatt ? "Innspillet er markert som vedtatt." : "Vedtatt-markeringen er fjernet.", "success");
   } catch (err) {
     console.error(err);
-    alert("Det oppstod en teknisk feil ved oppdatering av vedtatt-status.");
+    setEditorStatus("Det oppstod en teknisk feil ved oppdatering av vedtatt-status.", "error");
   }
 }
 
@@ -344,7 +351,7 @@ async function handleVedtattToggleClick(id, nextIsVedtatt) {
         data && data.error
           ? data.error
           : "Det oppstod en feil ved oppdatering av vedtatt-status.";
-      alert(msg);
+      setEditorStatus(msg, "error");
       return;
     }
 
@@ -418,16 +425,21 @@ async function handleSaveClick(id) {
 
     editingId = null;
     renderInnspillTable();
+    setEditorStatus("Innspillet er lagret.", "success");
   } catch (err) {
     console.error(err);
-    alert("Det oppstod en teknisk feil ved lagring av innspillet.");
+    setEditorStatus("Det oppstod en teknisk feil ved lagring av innspillet.", "error");
   }
 }
 
 async function handleDeleteClick(id) {
   if (!ensurePassword()) return;
 
-  if (!confirm("Er du sikker på at du vil slette dette innspillet?")) {
+  const item = innspillState.find((entry) => entry.id === id);
+  const itemName = item
+    ? `${item.tema || "Uten tema"}, punkt ${formatPunkt(item.punkt_nr, item.underpunkt_nr) || "uten nummer"}`
+    : "dette innspillet";
+  if (!confirm(`Vil du slette «${itemName}» permanent?`)) {
     return;
   }
 
@@ -446,7 +458,7 @@ async function handleDeleteClick(id) {
         data && data.error
           ? data.error
           : "Det oppstod en feil ved sletting av innspillet.";
-      alert(msg);
+      setEditorStatus(msg, "error");
       return;
     }
 
@@ -455,9 +467,10 @@ async function handleDeleteClick(id) {
     if (editingId === id) editingId = null;
 
     renderInnspillTable();
+    setEditorStatus(`«${itemName}» er slettet.`, "success");
   } catch (err) {
     console.error(err);
-    alert("Det oppstod en teknisk feil ved sletting av innspillet.");
+    setEditorStatus("Det oppstod en teknisk feil ved sletting av innspillet.", "error");
   }
 }
 
@@ -644,7 +657,9 @@ function renderInnspillTable() {
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
     deleteBtn.className = "btn btn-delete";
-    deleteBtn.textContent = "X";
+    deleteBtn.textContent = "Slett";
+    deleteBtn.title = "Slett innspill";
+    deleteBtn.setAttribute("aria-label", `Slett innspill: ${s.tema || "uten tema"}, punkt ${formatPunkt(s.punkt_nr, s.underpunkt_nr) || "uten nummer"}`);
     deleteBtn.addEventListener("click", () => handleDeleteClick(s.id));
     actionsWrap.appendChild(deleteBtn);
 
@@ -670,13 +685,23 @@ async function init() {
 
   initBackLink();
   initLoginModule();
+  const logoutBtn = $("admin-logout-btn");
+  if (logoutBtn) logoutBtn.addEventListener("click", logoutCouncilAdmin);
   updateLoginVisibility();
+  const wrapper = $("innspill-table-wrapper");
+  if (wrapper) {
+    wrapper.innerHTML = '<div class="skeleton-panel" aria-label="Laster innspill" aria-busy="true"><span class="skeleton-line skeleton-line-title"></span><span class="skeleton-line"></span><span class="skeleton-line"></span></div>';
+  }
 
   try {
     const council = await fetchCouncil(raadId);
     const nameSpan = $("raad-name");
     if (nameSpan) {
       nameSpan.textContent = council.display_name || council.name || "";
+    }
+    const breadcrumbCouncil = $("breadcrumb-council");
+    if (breadcrumbCouncil) {
+      breadcrumbCouncil.textContent = council.display_name || council.name || "Ukjent ungdomsråd";
     }
     updateHeaderBrand(council);
     setTemaOrderFromCouncil(council);
@@ -686,7 +711,6 @@ async function init() {
 
   } catch (err) {
     console.error(err);
-    const wrapper = $("innspill-table-wrapper");
     if (wrapper) {
       wrapper.innerHTML =
         "<p>Det oppstod en feil ved henting av innspill. Prøv igjen senere.</p>";

@@ -43,10 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (backLink && councilId) {
     backLink.href = `raad.html?id=${encodeURIComponent(councilId)}`;
   }
+  const breadcrumbCouncilLink = document.getElementById("breadcrumb-council-link");
+  if (breadcrumbCouncilLink && councilId) {
+    breadcrumbCouncilLink.href = `raad.html?id=${encodeURIComponent(councilId)}`;
+  }
 
   
 
-  loadTema();
+  temaSelect.innerHTML = '<option value="" selected disabled>Laster temaer…</option>';
+  temaSelect.disabled = true;
   fetchCouncilForForm();
 
 
@@ -63,25 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateHeaderFromCouncil(raad) {
-    const name = raad.display_name || raad.name || "Ungdomsråd";
+    window.HPBrand?.update(raad, API_BASE);
 
-    // Oppdater logo
-    const brandImg =
-      document.getElementById("raadBrandLogo") ||
-      document.querySelector(".brand");
-    if (brandImg) {
-      if (raad.logo_path) {
-        brandImg.src = `${API_BASE}${raad.logo_path}`;
-      }
-      brandImg.alt = name;
-    }
-
-    // Valgfritt: hvis du legger inn <span id="raadName"> i tittelen,
-    // kan vi vise navnet her også:
-    const nameSpan = document.getElementById("raadName");
-    if (nameSpan) {
-      nameSpan.textContent = name;
-    }
+    const name = raad?.display_name || raad?.name || "Ukjent ungdomsråd";
+    const breadcrumbCouncil = document.getElementById("breadcrumb-council");
+    if (breadcrumbCouncil) breadcrumbCouncil.textContent = name;
   }
 
 
@@ -139,8 +130,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 2) Fyll ut selectTema fra tema-listen
       populateTemaSelectFromCouncil(council);
+      temaSelect.disabled = false;
     } catch (err) {
       console.error("Feil ved henting av ungdomsråd:", err);
+      temaSelect.innerHTML = '<option value="" selected disabled>Kunne ikke laste temaer</option>';
+      const statusEl = document.getElementById("form-status");
+      if (statusEl) {
+        statusEl.textContent = "Kunne ikke laste ungdomsrådet. Prøv å laste siden på nytt.";
+        statusEl.dataset.type = "error";
+      }
     }
   }
 
@@ -180,28 +178,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function updateHeaderFromCouncil(council) {
-    const name = council.display_name || council.name || "Ungdomsråd";
-    const titleSpan = document.getElementById("raad-name");
-    if (titleSpan) {
-      titleSpan.textContent = name;
-    }
-
-    const brandImg = document.querySelector(".brand");
-    if (brandImg) {
-      if (council.logo_path) {
-        // backend returnerer f.eks. "/uploads/xyz"
-        brandImg.src = `${API_BASE}${council.logo_path}`;
-      }
-      brandImg.alt = name;
-    }
-  }
-
-
-
-
   function updateVisibilityAndValidity() {
     const action = getSelectedAction();
+    const guidance = document.getElementById("form-guidance");
+    let guidanceText = "";
 
     // Toggle sections
     sectionAdd.style.display = action === "add" ? "block" : "none";
@@ -211,17 +191,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // Basic validation
     if (!action) {
       submitBtn.disabled = true;
+      guidanceText = "Velg hva du vil gjøre.";
+      if (guidance) guidance.textContent = guidanceText;
       return;
     }
 
     if (!temaSelect.value) {
       submitBtn.disabled = true;
+      if (guidance) guidance.textContent = "Velg et tema.";
       return;
     }
 
     const punktVal = punktNrInput.value.trim();
     if (!isValidInteger(punktVal)) {
       submitBtn.disabled = true;
+      if (guidance) guidance.textContent = "Skriv inn et gyldig punktnummer.";
       return;
     }
 
@@ -229,22 +213,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const underVal = underpunktInput.value.trim();
     if (!isValidInteger(underVal, { allowEmpty: true })) {
       submitBtn.disabled = true;
+      if (guidance) guidance.textContent = "Underpunkt må være et heltall.";
       return;
     }
 
     if (action === "add") {
       if (!nyttPunktInput.value.trim()) {
         submitBtn.disabled = true;
+        if (guidance) guidance.textContent = "Formuler punktet du vil legge til.";
         return;
       }
     } else if (action === "change") {
       if (!endreFraInput.value.trim() || !endreTilInput.value.trim()) {
         submitBtn.disabled = true;
+        if (guidance) guidance.textContent = "Fyll ut både hva som skal endres og ny formulering.";
         return;
       }
     }
 
     submitBtn.disabled = false;
+    if (guidance) guidance.textContent = "Skjemaet er klart til innsending.";
   }
 
   // Attach listeners
@@ -268,6 +256,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (submitBtn.disabled) return;
 
     const action = getSelectedAction();
+    const statusEl = document.getElementById("form-status");
+    const setFormStatus = (message, type = "info") => {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.dataset.type = message ? type : "";
+    };
 
     const payload = {
       // NYTT: knytter innspillet til et konkret ungdomsråd
@@ -285,13 +279,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (!councilId) {
-      alert(
-        "Kunne ikke koble innspillet til et ungdomsråd (mangler ?raadId i URLen)."
-      );
+      setFormStatus("Kunne ikke koble innspillet til et ungdomsråd. Åpne skjemaet fra rådssiden.", "error");
       return;
     }
 
     try {
+      submitBtn.disabled = true;
+      setFormStatus("Sender innspillet…");
       const res = await fetch(
         `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
           councilId
@@ -308,28 +302,20 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         console.error("Feil ved lagring av innspill:", res.status, text);
-        alert(
-          "Det oppstod en feil ved innsending av innspillet. Prøv igjen senere."
-        );
+        setFormStatus("Det oppstod en feil ved innsending. Prøv igjen senere.", "error");
         return;
       }
 
       const saved = await res.json();
       console.log("[Handlingsplan innspill] lagret:", saved);
 
-      alert("Innspillet er sendt inn!");
       form.reset();
       updateVisibilityAndValidity();
+      setFormStatus("Innspillet er sendt inn.", "success");
     } catch (err) {
       console.error("Nettverksfeil ved innsending av innspill:", err);
-      alert(
-        "Det oppstod en nettverksfeil ved innsending av innspillet. Prøv igjen."
-      );
+      setFormStatus("Nettverksfeil. Kontroller tilkoblingen og prøv igjen.", "error");
     }
-
-
-    form.reset();
-    updateVisibilityAndValidity();
   });
 
   updateVisibilityAndValidity();

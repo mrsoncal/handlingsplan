@@ -11,11 +11,11 @@
     <div class="nav-container">
       <div class="navigation-bar">
         <nav class="nav">
-          <a class="btn nav" href="forms.html">Åpne Forms</a>
+          <a class="btn nav" href="raad-oversikt.html">Velg ungdomsråd</a>
           <a class="btn nav" href="../docs/Handlingsplan%20Telemark%20Ungdomsråd%202025.pdf" target="_blank">Handlingsplan</a>
         </nav>
         <nav class="nav-r">
-          <button class="btn nav" id="login-button">Admin</button>
+          <button class="btn nav" id="login-button">Global admin</button>
           <button class="btn nav" id="logout-button" style="display: none;">Logg ut</button>
         </nav>
       </div>
@@ -27,10 +27,11 @@
       <h1>Forslag til Handlingsplan 2026</h1>
   </header>
 
-  <div class="login-overlay" id="login-section" style="display: none;">
-    <div class="login-box">
+  <div class="login-overlay" id="login-section" role="dialog" aria-modal="true" aria-labelledby="global-login-title" style="display: none;">
+    <div class="login-box" tabindex="-1">
+      <button class="modal-close" id="closeLoginModal" type="button" aria-label="Lukk innlogging">×</button>
       <form id="login-form">
-        <h2>Logg inn som admin</h2>
+        <h2 id="global-login-title">Global admin-innlogging</h2>
         <div class="password-toggle">
           <input type="password" id="password" name="password" required />
           <button type="button" id="togglePassword" aria-label="Toggle password visibility">
@@ -38,6 +39,7 @@
           </button>
         </div>
         <button type="submit">Logg inn</button>
+        <p id="login-status" class="notice" role="status" aria-live="polite"></p>
       </form>
     </div>
   </div>
@@ -47,7 +49,13 @@
       <button class="carousel-nav left" onclick="prevSlide()">❮</button>
       <button class="carousel-nav right" onclick="nextSlide()">❯</button>
       <div class="carousel">
-        <div class="carousel-track" id="carousel-track"></div>
+        <div class="carousel-track" id="carousel-track" aria-busy="true">
+          <div class="skeleton-panel" aria-label="Laster innspill">
+            <span class="skeleton-line skeleton-line-title"></span>
+            <span class="skeleton-line"></span>
+            <span class="skeleton-line"></span>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -125,6 +133,9 @@
   </footer>
 
 
+  <script>
+    window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
+  </script>
   <script src="login.js" defer></script>
   <script src="script.js" defer></script>
 </body>

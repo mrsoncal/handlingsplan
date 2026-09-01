@@ -6,10 +6,9 @@
   <title>Innspill til Handlingsplan 2026</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
-    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
-      ? "http://localhost:4000"
-      : "https://handlingsplan-backend.onrender.com";
+    window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
   </script>
+  <script src="raad-brand-cache.js"></script>
 </head>
 <body>
 
@@ -17,13 +16,13 @@
     <div class="nav-container">
       <div class="navigation-bar">
         <nav class="nav">
-          <a class="btn nav" id="backLink" href="index.html">Tilbake</a>
+          <a class="btn nav" id="backLink" href="raad-oversikt.html">Til rådssiden</a>
         </nav>
       </div>
       <img
         class="brand"
         id="raadBrandLogo"
-        src="../UFR-logo.png"
+        data-fallback-logo="../UFR-logo.png"
         alt="Ungdomsråd"
       />
     </div>
@@ -32,20 +31,11 @@
     </div>
   </header>
 
-  <div class="login-overlay" id="login-section" style="display: none;">
-    <div class="login-box">
-      <form id="login-form">
-        <h2>Logg inn som admin</h2>
-        <div class="password-toggle">
-          <input type="password" id="password" name="password" required />
-          <button type="button" id="togglePassword" aria-label="Toggle password visibility">
-            <img id="togglePasswordIcon" src="visible.png" alt="Vis passord" />
-          </button>
-        </div>
-        <button type="submit">Logg inn</button>
-      </form>
-    </div>
-  </div>
+  <nav class="breadcrumbs container" aria-label="Brødsmulesti">
+    <a id="breadcrumb-council-link" href="#"><span id="breadcrumb-council">Laster…</span></a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Send inn forslag</span>
+  </nav>
 
   <main>
     <div class="container forms-container">
@@ -153,10 +143,12 @@
 
           <!-- Submit -->
           <div class="hp-actions">
+            <p id="form-guidance" class="form-guidance" aria-live="polite"></p>
             <button id="submitBtn" type="submit" class="hp-submit" disabled>
               Send innspill
             </button>
           </div>
+          <p id="form-status" class="notice" role="status" aria-live="polite"></p>
         </form>
       </section>
     </div>
@@ -236,12 +228,8 @@
 
   <script>
     // Samme backend-base som de andre sidene
-    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
-      ? "http://localhost:4000"
-      : "https://handlingsplan-backend.onrender.com";
+    window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
   </script>
   <script src="forms.js" defer></script>
-  <script src="login.js" defer></script>
-  <script src="script.js" defer></script>
 </body>
 </html>

@@ -71,25 +71,7 @@ function setupHandlingsplanLink(council) {
 
 
 function updateHeaderBrand(council) {
-  if (!council) return;
-
-  const brandImg =
-    document.getElementById("raadBrandLogo") ||
-    document.querySelector(".header .brand");
-  if (!brandImg) return;
-
-  const name = council.display_name || council.name || "Ungdomsråd";
-
-  let logoSrc = "../UFR-logo.png";
-
-  if (council.has_logo) {
-    logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
-      council.id
-    )}/logo-file?cacheBust=${Date.now()}`;
-  }
-
-  brandImg.src = logoSrc;
-  brandImg.alt = `Logo for ${name}`;
+  window.HPBrand?.update(council, API_BASE);
 }
 
 
@@ -474,6 +456,15 @@ async function init() {
 
   setupOpenFormsButton(id);
 
+  if (container) {
+    container.innerHTML = `
+      <section class="card skeleton-panel" aria-label="Laster innspill" aria-busy="true">
+        <span class="skeleton-line skeleton-line-title"></span>
+        <span class="skeleton-line"></span>
+        <span class="skeleton-line"></span>
+      </section>`;
+  }
+
   if (!id) {
     if (heading) heading.textContent = "Ingen ungdomsråd valgt";
     if (container) {
@@ -492,6 +483,8 @@ async function init() {
       const title = council.display_name || council.name || "Ukjent ungdomsråd";
 
       if (heading) heading.textContent = `Handlingsplan – ${title}`;
+      const breadcrumbCouncil = document.getElementById("breadcrumb-council");
+      if (breadcrumbCouncil) breadcrumbCouncil.textContent = title;
       document.title = `Handlingsplan – ${title}`;
 
       updateHeaderBrand(council);

@@ -103,11 +103,40 @@ document.addEventListener("DOMContentLoaded", () => {
   loginButton.addEventListener("click", () => {
     loginSection.style.display = "flex";
     loginButton.style.display = "none";
+    const focusable = loginSection.querySelector('button, input, [tabindex]:not([tabindex="-1"])');
+    focusable?.focus();
   });
 
   logoutButton.addEventListener("click", () => {
     localStorage.removeItem("token");
     location.reload();
+  });
+
+  const closeLogin = () => {
+    loginSection.style.display = "none";
+    loginButton.style.display = "inline-block";
+    loginButton.focus();
+  };
+
+  document.getElementById("closeLoginModal")?.addEventListener("click", closeLogin);
+  loginSection.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeLogin();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(loginSection.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   });
 });
 
@@ -219,6 +248,7 @@ function render(items) {
     console.warn("[render] no #carousel-track found");
     return;
   }
+  track.setAttribute("aria-busy", "false");
 
   const isAdmin = false; // midlertidig: kun lesevisning CHANGE WHEN ADDING ADMIN AND VEDTA FEATURES
 
@@ -349,7 +379,9 @@ function render(items) {
           const currentStatus = (s.status === "vedtatt" || domStatus === "vedtatt") ? "vedtatt" : "ny";
           const newStatus = currentStatus === "vedtatt" ? "ny" : "vedtatt";
 
-          const endpoint = `${API}/${encodeURIComponent(id)}`;
+          const endpoint = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
+            s.raadId
+          )}/innspill/${encodeURIComponent(id)}`;
           const token = localStorage.getItem("token");
 
           console.debug("[Vedta] click", { id, currentStatus, newStatus, endpoint });

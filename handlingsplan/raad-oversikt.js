@@ -5,6 +5,50 @@ const COUNCILS_URL = `${API_BASE}/api/ungdomsrad`;
 
 let allCouncils = [];
 let addCardEl = null;
+let activeModal = null;
+let modalReturnTarget = null;
+
+function getFocusableElements(modal) {
+  return Array.from(modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+}
+
+function openModal(modal, trigger) {
+  if (!modal) return;
+  activeModal = modal;
+  modalReturnTarget = trigger || document.activeElement;
+  modal.style.display = "flex";
+  const focusable = getFocusableElements(modal);
+  (focusable[0] || modal.querySelector(".login-box"))?.focus();
+}
+
+function closeModal(modal = activeModal) {
+  if (!modal) return;
+  modal.style.display = "none";
+  activeModal = null;
+  modalReturnTarget?.focus();
+  modalReturnTarget = null;
+}
+
+document.addEventListener("keydown", (event) => {
+  if (!activeModal) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeModal();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = getFocusableElements(activeModal);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
 
 // --- AUTH HELPERS ---
 
@@ -33,7 +77,7 @@ function setupAuthUI() {
   }
 
   loginButton.addEventListener("click", () => {
-    loginSection.style.display = "flex";
+    openModal(loginSection, loginButton);
   });
 
   logoutButton.addEventListener("click", () => {
@@ -62,7 +106,7 @@ function setupAuthUI() {
 
         const data = await res.json();
         localStorage.setItem("token", data.token);
-        loginSection.style.display = "none";
+        closeModal(loginSection);
         setupAuthUI();
         renderCouncils(); // <--- add this line
 
@@ -221,7 +265,7 @@ function renderCouncils() {
     if (council.has_logo) {
       logoSrc = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
         council.id
-      )}/logo-file?cacheBust=${Date.now()}`;
+      )}/logo-file?v=${encodeURIComponent(council.logo_version || "current")}`;
     }
 
     icon.src = logoSrc;
@@ -285,6 +329,16 @@ async function fetchCouncils() {
   const emptyEl = document.getElementById("councilListEmpty");
   if (!gridEl) return;
 
+  gridEl.setAttribute("aria-busy", "true");
+  const skeletons = Array.from({ length: 3 }, () => {
+    const skeleton = document.createElement("div");
+    skeleton.className = "raad-card skeleton-panel";
+    skeleton.setAttribute("aria-hidden", "true");
+    skeleton.innerHTML = '<span class="skeleton-line skeleton-line-title"></span><span class="skeleton-line"></span>';
+    return skeleton;
+  });
+  skeletons.forEach((skeleton) => gridEl.appendChild(skeleton));
+
   try {
     const res = await fetch(COUNCILS_URL);
     if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd.");
@@ -299,6 +353,8 @@ async function fetchCouncils() {
       emptyEl.textContent =
         "Det oppstod en feil ved henting av ungdomsråd. Prøv å laste siden på nytt.";
     }
+  } finally {
+    gridEl.setAttribute("aria-busy", "false");
   }
 }
 
@@ -418,16 +474,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelNewCouncilBtn = document.getElementById("cancelNewCouncil");
 
   if (addCard && newCouncilOverlay) {
-    addCard.addEventListener("click", () => {
-      newCouncilOverlay.style.display = "flex";
-      const nameInput = document.getElementById("councilName");
-      if (nameInput) nameInput.focus();
+    const showNewCouncilModal = () => openModal(newCouncilOverlay, addCard);
+    addCard.addEventListener("click", showNewCouncilModal);
+    addCard.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showNewCouncilModal();
+      }
     });
   }
 
   if (cancelNewCouncilBtn && newCouncilOverlay) {
     cancelNewCouncilBtn.addEventListener("click", () => {
-      newCouncilOverlay.style.display = "none";
+      closeModal(newCouncilOverlay);
     });
   }
 
@@ -436,10 +495,13 @@ document.addEventListener("DOMContentLoaded", () => {
     newCouncilOverlay.addEventListener("click", (event) => {
       const box = newCouncilOverlay.querySelector(".login-box");
       if (box && !box.contains(event.target)) {
-        newCouncilOverlay.style.display = "none";
+        closeModal(newCouncilOverlay);
       }
     });
   }
+
+  document.getElementById("closeNewCouncilModal")?.addEventListener("click", () => closeModal(newCouncilOverlay));
+  document.getElementById("closeLoginModal")?.addEventListener("click", () => closeModal(document.getElementById("login-section")));
 
   fetchCouncils();
 });
@@ -460,7 +522,7 @@ document.addEventListener("click", (e) => {
 
   // If click is outside the login box → close
   if (box && !box.contains(e.target)) {
-    overlay.style.display = "none";
+    closeModal(overlay);
     if (loginBtn) {
       loginBtn.style.display = "inline-block";
     }

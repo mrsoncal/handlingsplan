@@ -16,7 +16,7 @@
           </nav>
           <nav class="nav-r">
             <!-- Admin login / logout som på de andre sidene -->
-            <button class="btn nav" id="login-button">Admin</button>
+            <button class="btn nav" id="login-button">Global admin</button>
             <button class="btn nav" id="logout-button" style="display: none;">
               Logg ut
             </button>
@@ -30,10 +30,11 @@
     </header>
 
     <!-- Admin login overlay -->
-    <div class="login-overlay" id="login-section" style="display: none;">
-      <div class="login-box">
+    <div class="login-overlay" id="login-section" role="dialog" aria-modal="true" aria-labelledby="admin-login-title" style="display: none;">
+      <div class="login-box" tabindex="-1">
+        <button class="modal-close" id="closeLoginModal" type="button" aria-label="Lukk innlogging">×</button>
         <form id="login-form">
-          <h2>Admin-innlogging</h2>
+          <h2 id="admin-login-title">Admin-innlogging</h2>
 
           <div class="password-wrapper">
           <label for="password">Adminpassord</label>
@@ -57,8 +58,8 @@
                 src="../eye-closed.svg"
                 alt="Vis passord"
               />
-          </div>
             </button>
+          </div>
           </div>
           <button class="login-btn" type="submit">Logg inn</button>
         </form>
@@ -66,10 +67,11 @@
     </div>
 
     <!-- Nytt ungdomsråd overlay (popup) -->
-    <div class="login-overlay" id="newCouncilOverlay" style="display: none;">
-      <div class="login-box">
+    <div class="login-overlay" id="newCouncilOverlay" role="dialog" aria-modal="true" aria-labelledby="new-council-title" style="display: none;">
+      <div class="login-box" tabindex="-1">
+        <button class="modal-close" id="closeNewCouncilModal" type="button" aria-label="Lukk skjema">×</button>
         <form id="newCouncilForm" class="council-form">
-            <h2>Legg til nytt Ungdomsråd</h2>
+            <h2 id="new-council-title">Legg til nytt ungdomsråd</h2>
 
             <div>
                 <label for="councilName" class="form-row">
@@ -94,6 +96,7 @@
                 name="password"
                 type="password"
                 placeholder="Sett et passord"
+                minlength="6"
                 required
               />
               <button
@@ -107,8 +110,8 @@
                   src="../eye-closed.svg"
                   alt="Vis passord"
                 />
-              </div>
               </button>
+              </div>
               <p class="warning">
                 Dette passordet kan ikke endres. Pass på at alle fremtidige råd har dette passordet.
               </p>
@@ -145,7 +148,7 @@
 
     <main class="container">
       <section class="card">
-        <h2>Velg Ungdomsråd</h2>
+        <h2>Velg ungdomsråd</h2>
 
         <!-- Søkefelt for å filtrere råd -->
         <div class="raad-search">
@@ -160,7 +163,7 @@
 
         <div id="raadGrid" class="raad-grid">
           <!-- Første kort: legg til nytt råd (hele kortet er klikkbart) -->
-          <article class="raad-card raad-card-add" id="raadAddCard">
+          <article class="raad-card raad-card-add" id="raadAddCard" role="button" tabindex="0">
             <h3 class="raad-card-title">Legg til nytt ungdomsråd</h3>
           </article>
           <!-- Øvrige råd-kort legges inn her med JS -->
@@ -246,9 +249,7 @@
 
   <script>
     // Sett API base-URL til backend på Render (tilpass om nødvendig)
-    window.HP_API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname)
-      ? "http://localhost:4000"
-      : "https://handlingsplan-backend.onrender.com";
+    window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
   </script>
   <script src="raad-oversikt.js" type="module"></script>
 </body>
