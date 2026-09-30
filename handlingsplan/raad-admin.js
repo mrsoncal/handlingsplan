@@ -119,8 +119,11 @@ function renderShareTools() {
   const qr = window.qrcode(0, "M");
   qr.addData(shareUrl);
   qr.make();
-  qrContainer.innerHTML = qr.createSvgTag(5, 4);
-  qrContainer.querySelector("svg")?.setAttribute("aria-hidden", "true");
+  const qrImage = document.createElement("img");
+  qrImage.src = qr.createDataURL(8, 4);
+  qrImage.alt = "QR-kode til skjemaet for innspill";
+  qrImage.title = "Høyreklikk for å lagre QR-koden som bilde";
+  qrContainer.appendChild(qrImage);
 }
 
 async function copyFormsLink() {
