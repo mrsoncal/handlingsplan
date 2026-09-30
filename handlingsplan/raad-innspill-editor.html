@@ -75,6 +75,20 @@
                     </p>
                     <p id="editor-status" class="notice" role="status" aria-live="polite"></p>
 
+                    <div class="editor-toolbar">
+                      <div>
+                        <button id="export-ai-btn" class="btn btn-export" type="button">
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"></path>
+                          </svg>
+                          Eksporter for KI-analyse
+                        </button>
+                        <p class="export-help">
+                          Laster ned én KI-pakke med handlingsplanen, alle innspill og instruksjoner for redaksjonell analyse.
+                        </p>
+                      </div>
+                    </div>
+
                     <div id="innspill-table-wrapper" class="table-wrapper">
                         <!-- Fylles av JavaScript -->
                     </div>
@@ -83,9 +97,66 @@
             </div>
         </section>
     </div>
-    
-    
 
+    <dialog
+      id="edit-innspill-dialog"
+      class="edit-innspill-dialog"
+      aria-labelledby="edit-innspill-title"
+    >
+      <form id="edit-innspill-form" class="edit-innspill-form">
+        <button
+          id="close-edit-innspill"
+          class="modal-close"
+          type="button"
+          aria-label="Lukk redigering"
+        >×</button>
+
+        <h2 id="edit-innspill-title">Rediger innspill</h2>
+        <p id="edit-action-type" class="help-text"></p>
+
+        <div class="edit-innspill-grid">
+          <label>
+            <span>Tema</span>
+            <select id="edit-tema" class="input" required>
+              <option value="" selected disabled>Velg tema</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Punktnummer</span>
+            <input id="edit-punkt" class="input" type="text" inputmode="decimal" />
+          </label>
+
+          <label id="edit-formuler-field" class="edit-innspill-wide">
+            <span>Formuler punktet</span>
+            <textarea id="edit-formuler" class="input" rows="4"></textarea>
+          </label>
+
+          <label id="edit-endre-fra-field">
+            <span>Endre fra</span>
+            <textarea id="edit-endre-fra" class="input" rows="4"></textarea>
+          </label>
+
+          <label id="edit-endre-til-field">
+            <span>Endre til</span>
+            <textarea id="edit-endre-til" class="input" rows="4"></textarea>
+          </label>
+        </div>
+
+        <p id="edit-dialog-status" class="notice" role="status" aria-live="polite"></p>
+
+        <div class="edit-dialog-actions">
+          <button id="cancel-edit-innspill" class="btn btn-secondary" type="button">
+            Avbryt
+          </button>
+          <button id="save-edit-innspill" class="btn btn-save" type="submit">
+            Lagre innspill
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="raad-innspill-editor.js"></script>
   </body>
 </html>

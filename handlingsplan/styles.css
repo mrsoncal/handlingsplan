@@ -1957,6 +1957,25 @@ object-fit: contain;
   cursor: pointer;
 }
 
+.btn-delete.btn-icon-only {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.7rem;
+  justify-self: end;
+}
+
+.btn-icon-only svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: none;
+}
+
 
 
 input[type="color"] {
@@ -2138,13 +2157,13 @@ input[type="color"]::-webkit-color-swatch {
   font-size: 1.25rem;
   font-weight: 600;
   color: #ffffff;
-  background: #B7173D;
+  background: #28a745;
   border: none;
   border-radius: 9999px;
 }
 
 #save-button .btn.has-changes {
-  box-shadow: 0 0 0 4px rgba(183, 23, 61, 0.2);
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.22);
 }
 
 .form-guidance {
@@ -2155,7 +2174,77 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 #save-button .btn:hover {
-  background: #8e1230;
+  background: #218838;
+  cursor: pointer;
+}
+
+.qr-share-layout {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.forms-qr-code {
+  display: grid;
+  place-items: center;
+  width: 13rem;
+  min-height: 13rem;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #8bbbc4;
+}
+
+.forms-qr-code svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.forms-qr-code-error {
+  padding: 1rem;
+  color: #8e1230;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.qr-share-details {
+  display: flex;
+  flex: 1 1 22rem;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.qr-link-row {
+  display: flex;
+  width: 100%;
+  gap: 0.75rem;
+  align-items: stretch;
+  margin-bottom: 0.75rem;
+}
+
+.admin-section-part .qr-link-row .input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.btn-copy {
+  width: auto;
+  padding: 0.75rem 1.25rem;
+  border: 0;
+  border-radius: 9999px;
+  background: #ffcc00;
+  color: #000000;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-copy:hover {
+  background: #efbf00;
   cursor: pointer;
 }
 
@@ -2178,6 +2267,56 @@ input[type="color"]::-webkit-color-swatch {
 .innspill-head-row {
   background: #00545f;
   color: white;
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0 1.25rem;
+}
+
+.editor-toolbar > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.btn.btn-export {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: auto;
+  padding: 0.8rem 1.25rem;
+  border: 0;
+  border-radius: 9999px;
+  background: #ffcc00;
+  color: #000000;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.btn.btn-export:hover {
+  background: #efbf00;
+  cursor: pointer;
+}
+
+.btn-export svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.export-help {
+  max-width: 32rem;
+  margin: 0.45rem 0 0;
+  color: #374151;
+  font-size: 0.8rem;
+  text-align: right;
 }
 
 .innspill-actions {
@@ -2207,6 +2346,106 @@ input[type="color"]::-webkit-color-swatch {
 .btn.btn-small:hover{
   background: #004855;
   cursor: pointer;
+}
+
+.edit-innspill-dialog {
+  width: min(46rem, calc(100% - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 0;
+  background: #ffffff;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.3);
+}
+
+.edit-innspill-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.edit-innspill-form {
+  position: relative;
+  padding: 2rem;
+}
+
+.edit-innspill-form h2 {
+  margin-top: 0;
+  padding-right: 3rem;
+}
+
+.edit-innspill-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.edit-innspill-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.edit-innspill-grid [hidden] {
+  display: none;
+}
+
+.edit-innspill-grid .input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #8bbbc4;
+  background: #ffffff;
+  color: #111827;
+  font: inherit;
+}
+
+.edit-innspill-grid textarea.input {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.edit-innspill-wide {
+  grid-column: 1 / -1;
+}
+
+.edit-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.edit-dialog-actions .btn {
+  width: auto;
+  padding: 0.8rem 1.35rem;
+  border-radius: 9999px;
+  font-weight: 700;
+}
+
+.edit-dialog-actions .btn-secondary {
+  border: 1px solid #b7173d;
+  background: #b7173d;
+  color: #ffffff;
+}
+
+.edit-dialog-actions .btn-save {
+  border: 1px solid #28a745;
+  background: #28a745;
+  color: #ffffff;
+}
+
+.edit-dialog-actions .btn-secondary:hover {
+  background: #8e1230;
+}
+
+.edit-dialog-actions .btn-save:hover {
+  background: #218838;
+}
+
+.edit-dialog-actions .btn:hover {
+  cursor: pointer;
+  filter: brightness(0.92);
 }
 
 #raad-innspill-editor-body .container {
@@ -2256,19 +2495,19 @@ input[type="color"]::-webkit-color-swatch {
 /* 1: Tema */
 #innspill-table-wrapper .innspill-table th:nth-child(1),
 #innspill-table-wrapper .innspill-table td:nth-child(1) {
-  width: 14%;
+  width: 12%;
 }
 
 /* 2: Hva vil du gjøre? */
 #innspill-table-wrapper .innspill-table th:nth-child(2),
 #innspill-table-wrapper .innspill-table td:nth-child(2) {
-  width: 14%;
+  width: 13%;
 }
 
 /* 3: Punkt (nr) – smal, sentrert */
 #innspill-table-wrapper .innspill-table th:nth-child(3),
 #innspill-table-wrapper .innspill-table td:nth-child(3) {
-  width: 4%;
+  width: 5%;
   text-align: center;
 }
 
@@ -2281,19 +2520,19 @@ input[type="color"]::-webkit-color-swatch {
 /* 5: Endre fra */
 #innspill-table-wrapper .innspill-table th:nth-child(5),
 #innspill-table-wrapper .innspill-table td:nth-child(5) {
-  width: 18%;
+  width: 15%;
 }
 
 /* 6: Endre til */
 #innspill-table-wrapper .innspill-table th:nth-child(6),
 #innspill-table-wrapper .innspill-table td:nth-child(6) {
-  width: 18%;
+  width: 14%;
 }
 
 /* 7: Handlinger – kompakt, knappesone */
 #innspill-table-wrapper .innspill-table th:nth-child(7),
 #innspill-table-wrapper .innspill-table td:nth-child(7) {
-  width: 14%;
+  width: 23%;
   white-space: nowrap; /* ikke brekk knappene */
 }
 
@@ -2939,5 +3178,33 @@ tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:f
 @media (min-width: 601px) {
   .hp-header-cell .punkt-nummer {
     display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .edit-innspill-form {
+    padding: 1.25rem;
+  }
+
+  .edit-innspill-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-innspill-wide {
+    grid-column: auto;
+  }
+
+  .edit-dialog-actions,
+  .qr-link-row {
+    flex-direction: column;
+  }
+
+  .edit-dialog-actions .btn,
+  .btn-copy {
+    width: 100%;
+  }
+
+  .forms-qr-code {
+    margin-inline: auto;
   }
 }

@@ -73,6 +73,7 @@
         <div id="admin-section" style="display: none">
           <nav class="settings-nav" aria-label="Innstillinger">
             <a href="#general-settings">Grunninfo</a>
+            <a href="#share-settings">Del skjema</a>
             <a href="#brand-settings">Logo</a>
             <a href="#plan-settings">Handlingsplan</a>
             <a href="#theme-settings">Temaer</a>
@@ -91,6 +92,32 @@
               type="text"
               placeholder="Navn på ungdomsråd"
             />
+          </div>
+
+          <!-- Del skjema -->
+          <div class="admin-section-part" id="share-settings">
+            <h3>Del skjema for innspill</h3>
+            <p class="help-text">
+              QR-koden og lenken åpner skjemaet direkte for dette ungdomsrådet.
+            </p>
+            <div class="qr-share-layout">
+              <div
+                id="forms-qr-code"
+                class="forms-qr-code"
+                role="img"
+                aria-label="QR-kode til skjemaet for innspill"
+              ></div>
+              <div class="qr-share-details">
+                <label for="forms-share-url" class="field-label">Direktelenke</label>
+                <div class="qr-link-row">
+                  <input id="forms-share-url" class="input" type="url" readonly />
+                  <button id="copy-forms-link" class="btn btn-copy" type="button">
+                    Kopier lenke
+                  </button>
+                </div>
+                <p id="copy-link-status" class="notice" role="status" aria-live="polite"></p>
+              </div>
+            </div>
           </div>
 
 
@@ -214,6 +241,7 @@
       </section>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="raad-admin.js"></script>
   </body>
 </html>

@@ -45,6 +45,11 @@ function $(id) {
   return document.getElementById(id);
 }
 
+const TRASH_ICON_SVG = `
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-1 12H8L7 9Z"></path>
+  </svg>`;
+
 function setText(id, text) {
   const el = $(id);
   if (el) el.textContent = text;
@@ -83,6 +88,59 @@ function updateCurrentFiles(council) {
   if (hpCurrent && council?.has_handlingsplan) {
     hpCurrent.href = `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/handlingsplan-file`;
     hpCurrent.hidden = false;
+  }
+}
+
+function getFormsShareUrl() {
+  const url = new URL("forms.html", window.location.href);
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("raadId", raadId);
+  return url.toString();
+}
+
+function renderShareTools() {
+  if (!raadId) return;
+
+  const shareUrl = getFormsShareUrl();
+  const urlInput = $("forms-share-url");
+  const qrContainer = $("forms-qr-code");
+
+  if (urlInput) urlInput.value = shareUrl;
+  if (!qrContainer) return;
+
+  qrContainer.innerHTML = "";
+  if (typeof window.qrcode !== "function") {
+    qrContainer.textContent = "QR-koden kunne ikke lastes. Bruk direktelenken.";
+    qrContainer.classList.add("forms-qr-code-error");
+    return;
+  }
+
+  const qr = window.qrcode(0, "M");
+  qr.addData(shareUrl);
+  qr.make();
+  qrContainer.innerHTML = qr.createSvgTag(5, 4);
+  qrContainer.querySelector("svg")?.setAttribute("aria-hidden", "true");
+}
+
+async function copyFormsLink() {
+  const input = $("forms-share-url");
+  const statusEl = $("copy-link-status");
+  if (!input) return;
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(input.value);
+    } else {
+      input.focus();
+      input.select();
+      document.execCommand("copy");
+      input.setSelectionRange(0, 0);
+    }
+    setNotice(statusEl, "Lenken er kopiert.", "success");
+  } catch (err) {
+    console.error(err);
+    setNotice(statusEl, "Kunne ikke kopiere automatisk. Marker lenken og kopier den manuelt.", "error");
   }
 }
 
@@ -416,10 +474,10 @@ function renderTemaList() {
     // Slett-knapp
     const deleteBtn = document.createElement("button");
     deleteBtn.type = "button";
-    deleteBtn.className = "btn-delete";
-    deleteBtn.textContent = "Slett tema";
+    deleteBtn.className = "btn-delete btn-icon-only";
+    deleteBtn.innerHTML = TRASH_ICON_SVG;
     deleteBtn.setAttribute("aria-label", `Slett temaet ${t.name || "uten navn"}`);
-    deleteBtn.style.fontSize = "0.8rem";
+    deleteBtn.title = "Slett tema";
     deleteBtn.addEventListener("click", () => {
       const themeName = temaState[index]?.name || "dette temaet";
       if (!window.confirm(`Vil du slette temaet «${themeName}»? Endringen lagres først når du velger Lagre endringer.`)) return;
@@ -562,12 +620,14 @@ function initButtons() {
   const addTemaBtn = $("add-tema-btn");
   const saveBtn = $("save-btn");
   const innspillEditorBtn = $("open-innspill-editor-btn");
+  const copyFormsLinkBtn = $("copy-forms-link");
   const logoutBtn = $("admin-logout-btn");
 
   if (logoBtn) logoBtn.addEventListener("click", uploadLogo);
   if (hpBtn) hpBtn.addEventListener("click", uploadHandlingsplan);
   if (addTemaBtn) addTemaBtn.addEventListener("click", addTema);
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
+  if (copyFormsLinkBtn) copyFormsLinkBtn.addEventListener("click", copyFormsLink);
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       if (hasUnsavedChanges && !window.confirm("Du har ulagrede endringer. Vil du logge ut likevel?")) return;
@@ -622,6 +682,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
   initBackLink();
+  renderShareTools();
   await fetchCouncil();
   autoLoginFromCookie();
   initLogin();
