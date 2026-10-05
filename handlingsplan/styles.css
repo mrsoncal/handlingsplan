@@ -1564,6 +1564,42 @@ object-fit: contain;
   cursor: pointer;
 }
 
+.council-password-btn {
+  background: #005260;
+  color: #ffffff;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  border: none;
+  border-radius: 9999px;
+}
+
+.council-password-btn:hover {
+  background: #003f4a;
+  cursor: pointer;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.form-status {
+  min-height: 1.25rem;
+  margin: 0.5rem 0 0;
+  color: #b7173d;
+  font-weight: 700;
+}
+
+.form-status-success {
+  color: #198447;
+}
+
+.form-status-error {
+  color: #b7173d;
+}
+
 .council-form {
   display: flex;
   flex-direction: column;
@@ -3225,4 +3261,44 @@ tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:f
   .forms-qr-code {
     margin-inline: auto;
   }
+}
+
+#changePasswordOverlay .login-box {
+  width: min(460px, 90vw);
+  height: auto;
+  max-height: 90vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#changePasswordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+#changePasswordForm h2,
+#changePasswordForm p {
+  margin: 0;
+}
+
+#changePasswordForm .form-row {
+  gap: 0.4rem;
+}
+
+#changePasswordForm .new-council-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+#changePasswordForm .modal-actions {
+  flex-direction: row;
+  align-items: center;
+}
+
+#changePasswordForm .modal-actions button {
+  width: auto;
+  margin: 0;
 }

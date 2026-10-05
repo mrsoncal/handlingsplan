@@ -11,6 +11,7 @@ const {
   createCouncil,
   getCouncilById,
   getCouncilWithPassword,
+  updateCouncilPassword,
   deleteCouncil,
   createInnspill,
   getInnspillForCouncil,
@@ -158,6 +159,48 @@ app.get("/api/ungdomsrad/:id", async (req, res) => {
     res
       .status(500)
       .json({ error: "Kunne ikke hente ungdomsråd." });
+  }
+});
+
+
+// POST /api/ungdomsrad/:id/admin-login -> validate the council password
+app.post("/api/ungdomsrad/:id/admin-login", async (req, res) => {
+  try {
+    const { password } = req.body || {};
+    if (!password) {
+      return res.status(400).json({ error: "Passord er påkrevd." });
+    }
+
+    const council = await getCouncilWithPassword(req.params.id, password);
+    if (!council) {
+      return res.status(401).json({ error: "Feil passord for dette ungdomsrådet." });
+    }
+
+    res.json({ authenticated: true });
+  } catch (err) {
+    console.error("Error validating council password:", err);
+    res.status(500).json({ error: "Kunne ikke logge inn." });
+  }
+});
+
+// PUT /api/ungdomsrad/:id/password -> change one council password (global admin only)
+app.put("/api/ungdomsrad/:id/password", requireAdmin, async (req, res) => {
+  try {
+    const password = typeof req.body?.password === "string" ? req.body.password : "";
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Passordet må ha minst 6 tegn." });
+    }
+
+    const council = await getCouncilById(req.params.id);
+    if (!council) {
+      return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
+    }
+
+    await updateCouncilPassword(req.params.id, password);
+    res.json({ updated: true });
+  } catch (err) {
+    console.error("Error updating council password:", err);
+    res.status(500).json({ error: "Kunne ikke endre passordet." });
   }
 });
 
@@ -325,7 +368,12 @@ app.post(
         return res.status(400).json({ error: "Ingen fil lastet opp." });
       }
 
-      // Ikke passord-sjekk her lenger – hvem som helst som treffer endepunktet kan laste opp
+      const password = req.body?.password;
+      const council = await getCouncilWithPassword(id, password);
+      if (!council) {
+        return res.status(403).json({ error: "Feil passord for dette ungdomsrådet." });
+      }
+
       await updateCouncilHandlingsplanFile(
         id,
         file.buffer,
@@ -358,7 +406,12 @@ app.post(
         return res.status(400).json({ error: "Ingen fil lastet opp." });
       }
 
-      // Ingen passord-sjekk her heller
+      const password = req.body?.password;
+      const council = await getCouncilWithPassword(id, password);
+      if (!council) {
+        return res.status(403).json({ error: "Feil passord for dette ungdomsrådet." });
+      }
+
       await updateCouncilLogoFile(
         id,
         file.buffer,

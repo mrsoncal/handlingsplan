@@ -10,6 +10,9 @@ let hasUnsavedChanges = false;
 
 // ---- COOKIE HELPERS for per-råd-passord (deles med raad-innspill-editor) ----
 const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
+const COUNCIL_LOGIN_URL = raadId
+  ? `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/admin-login`
+  : "";
 
 function setPasswordCookie(pw) {
   if (!PW_COOKIE_NAME) return;
@@ -151,45 +154,43 @@ function ensurePassword() {
   if (raadPassword) return true;
 
   const errorEl = $("raad-login-error");
-
-  // 1) Prøv cookie først
-  const cookiePw = getPasswordFromCookie();
-  if (cookiePw) {
-    raadPassword = cookiePw;
-    if (errorEl) errorEl.textContent = "";
-    return true;
-  }
-
-  // 2) Ellers: les fra input-feltet
-  const pwInput = $("raad-password");
-  const pw = pwInput ? pwInput.value.trim() : "";
-
-  if (!pw) {
-    if (errorEl) {
-      errorEl.textContent =
-        "Skriv inn admin-passordet som ble satt da ungdomsrådet ble opprettet.";
-    }
-    return false;
-  }
-
-  raadPassword = pw;
-  if (errorEl) errorEl.textContent = "";
-  setPasswordCookie(raadPassword); // viktig: lagre cookie
-  return true;
+  if (errorEl) errorEl.textContent = "Du må logge inn med riktig admin-passord først.";
+  return false;
 }
 
-function autoLoginFromCookie() {
+async function validateCouncilPassword(password) {
+  const response = await fetch(COUNCIL_LOGIN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || "Kunne ikke kontrollere passordet.");
+  }
+}
+
+function showAdmin() {
   const loginSection = $("login-section");
   const adminSection = $("admin-section");
-  const cookiePw = getPasswordFromCookie();
-  if (!cookiePw) return;
-
-  // Bruk passordet fra cookie uten å vise feilmelding
-  raadPassword = cookiePw;
   if (loginSection) loginSection.style.display = "none";
   if (adminSection) adminSection.style.display = "block";
   const logoutBtn = $("admin-logout-btn");
   if (logoutBtn) logoutBtn.hidden = false;
+}
+
+async function autoLoginFromCookie() {
+  const cookiePw = getPasswordFromCookie();
+  if (!cookiePw) return;
+
+  try {
+    await validateCouncilPassword(cookiePw);
+    raadPassword = cookiePw;
+    showAdmin();
+  } catch {
+    raadPassword = "";
+    clearPasswordCookie();
+  }
 }
 
 
@@ -256,18 +257,33 @@ function initBackLink() {
 
 function initLogin() {
   const loginBtn = $("raad-login-btn");
-  const loginSection = $("login-section");
-  const adminSection = $("admin-section");
 
   if (!loginBtn) return;
 
-  loginBtn.addEventListener("click", () => {
-    if (!ensurePassword()) return;
+  loginBtn.addEventListener("click", async () => {
+    const pwInput = $("raad-password");
+    const errorEl = $("raad-login-error");
+    const password = pwInput?.value.trim() || "";
+    if (!password) {
+      if (errorEl) errorEl.textContent = "Vennligst skriv inn passord.";
+      return;
+    }
 
-    if (loginSection) loginSection.style.display = "none";
-    if (adminSection) adminSection.style.display = "block";
-    const logoutBtn = $("admin-logout-btn");
-    if (logoutBtn) logoutBtn.hidden = false;
+    loginBtn.disabled = true;
+    if (errorEl) errorEl.textContent = "Kontrollerer passord…";
+    try {
+      await validateCouncilPassword(password);
+      raadPassword = password;
+      setPasswordCookie(password);
+      if (errorEl) errorEl.textContent = "";
+      showAdmin();
+    } catch (err) {
+      raadPassword = "";
+      clearPasswordCookie();
+      if (errorEl) errorEl.textContent = err.message || "Feil passord.";
+    } finally {
+      loginBtn.disabled = false;
+    }
   });
 }
 
@@ -687,7 +703,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initBackLink();
   renderShareTools();
   await fetchCouncil();
-  autoLoginFromCookie();
+  await autoLoginFromCookie();
   initLogin();
   initButtons();
 });

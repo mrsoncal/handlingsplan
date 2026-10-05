@@ -7,6 +7,7 @@ let allCouncils = [];
 let addCardEl = null;
 let activeModal = null;
 let modalReturnTarget = null;
+let passwordCouncil = null;
 
 function getFocusableElements(modal) {
   return Array.from(modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -192,6 +193,94 @@ async function deleteCouncil(council) {
   }
 }
 
+function openPasswordModal(council, trigger) {
+  const overlay = document.getElementById("changePasswordOverlay");
+  const form = document.getElementById("changePasswordForm");
+  const councilLabel = document.getElementById("change-password-council");
+  const status = document.getElementById("change-password-status");
+  if (!overlay || !form) return;
+
+  passwordCouncil = council;
+  form.reset();
+  form.dataset.submitting = "false";
+  if (councilLabel) {
+    councilLabel.textContent = council.display_name || council.name || `Ungdomsråd #${council.id}`;
+  }
+  if (status) {
+    status.textContent = "";
+    status.className = "form-status";
+  }
+  openModal(overlay, trigger);
+  document.getElementById("newCouncilPassword")?.focus();
+}
+
+async function handlePasswordChange(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = document.getElementById("change-password-status");
+  const newPassword = document.getElementById("newCouncilPassword")?.value || "";
+  const confirmedPassword = document.getElementById("confirmCouncilPassword")?.value || "";
+
+  if (!passwordCouncil || form.dataset.submitting === "true") return;
+  if (newPassword.length < 6) {
+    if (status) status.textContent = "Passordet må ha minst 6 tegn.";
+    return;
+  }
+  if (newPassword !== confirmedPassword) {
+    if (status) status.textContent = "Passordene er ikke like.";
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    if (status) status.textContent = "Du må logge inn som global administrator først.";
+    return;
+  }
+
+  form.dataset.submitting = "true";
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+  if (status) status.textContent = "Lagrer …";
+
+  try {
+    const response = await fetch(
+      `${COUNCILS_URL}/${encodeURIComponent(passwordCouncil.id)}/password`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password: newPassword }),
+      }
+    );
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        setupAuthUI();
+        renderCouncils();
+      }
+      throw new Error(result.error || "Kunne ikke endre passordet.");
+    }
+
+    if (status) {
+      status.textContent = "Passordet er endret.";
+      status.className = "form-status form-status-success";
+    }
+    window.setTimeout(() => closeModal(document.getElementById("changePasswordOverlay")), 650);
+  } catch (error) {
+    console.error(error);
+    if (status) {
+      status.textContent = error.message || "Kunne ikke endre passordet.";
+      status.className = "form-status form-status-error";
+    }
+  } finally {
+    form.dataset.submitting = "false";
+    if (submitButton) submitButton.disabled = false;
+  }
+}
+
 // --- RENDER HJELPER ---
 
 function renderCouncils() {
@@ -295,6 +384,16 @@ function renderCouncils() {
     actions.className = "raad-card-actions";
 
     if (admin) {
+      const passwordBtn = document.createElement("button");
+      passwordBtn.type = "button";
+      passwordBtn.className = "btn council-password-btn";
+      passwordBtn.textContent = "Endre passord";
+      passwordBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        openPasswordModal(council, passwordBtn);
+      });
+      actions.appendChild(passwordBtn);
+
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
       deleteBtn.className = "btn council-delete-btn";
@@ -472,6 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const addCard = document.getElementById("raadAddCard");
   const newCouncilOverlay = document.getElementById("newCouncilOverlay");
   const cancelNewCouncilBtn = document.getElementById("cancelNewCouncil");
+  const changePasswordOverlay = document.getElementById("changePasswordOverlay");
 
   if (addCard && newCouncilOverlay) {
     const showNewCouncilModal = () => openModal(newCouncilOverlay, addCard);
@@ -502,6 +602,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("closeNewCouncilModal")?.addEventListener("click", () => closeModal(newCouncilOverlay));
   document.getElementById("closeLoginModal")?.addEventListener("click", () => closeModal(document.getElementById("login-section")));
+
+  document.getElementById("changePasswordForm")?.addEventListener("submit", handlePasswordChange);
+  document.getElementById("cancelChangePassword")?.addEventListener("click", () => closeModal(changePasswordOverlay));
+  document.getElementById("closeChangePasswordModal")?.addEventListener("click", () => closeModal(changePasswordOverlay));
+  changePasswordOverlay?.addEventListener("click", (event) => {
+    const box = changePasswordOverlay.querySelector(".login-box");
+    if (box && !box.contains(event.target)) closeModal(changePasswordOverlay);
+  });
 
   fetchCouncils();
 });

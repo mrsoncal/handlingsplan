@@ -1,4 +1,80 @@
 import React, { useMemo, useState, useRef } from "react";
+import readXlsxFile, { readSheetNames } from "read-excel-file";
+
+const MAX_EXCEL_FILE_SIZE = 10 * 1024 * 1024;
+const REQUIRED_COLUMNS = [
+  { key: "delegatnummer", label: "delegatnummer" },
+  { key: "fullName", label: "fullt navn" },
+  { key: "org", label: "representerer" },
+];
+
+function normalizeHeader(value) {
+  return String(value ?? "")
+    .trim()
+    .toLocaleLowerCase("no")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+const HEADER_ALIASES = {
+  delegatnummer: ["delegatnummer", "delegatenummer", "delegatnr", "nummer", "nr", "id"],
+  fullName: ["fulltnavn", "navn", "name", "fullname"],
+  org: ["representerer", "radelevradorganisasjon", "organisasjon", "elevrad", "rad", "kommune", "org"],
+};
+
+function excelColumnName(index) {
+  let value = index + 1;
+  let name = "";
+  while (value > 0) {
+    const remainder = (value - 1) % 26;
+    name = String.fromCharCode(65 + remainder) + name;
+    value = Math.floor((value - 1) / 26);
+  }
+  return name;
+}
+
+function displayExcelValue(value) {
+  if (value instanceof Date) return value.toLocaleDateString("nb-NO");
+  if (value == null) return "";
+  return String(value);
+}
+
+function compactExcelRows(rows) {
+  const hasValue = (value) => value != null && String(value).trim() !== "";
+  const firstRow = rows.findIndex((row) => row.some(hasValue));
+  if (firstRow < 0) return { rows: [], startRow: 1, columnCount: 0 };
+
+  let lastRow = rows.length - 1;
+  while (lastRow >= firstRow && !rows[lastRow].some(hasValue)) lastRow -= 1;
+
+  const activeRows = rows.slice(firstRow, lastRow + 1);
+  const columnCount = activeRows.reduce((max, row) => {
+    let lastColumn = row.length - 1;
+    while (lastColumn >= 0 && !hasValue(row[lastColumn])) lastColumn -= 1;
+    return Math.max(max, lastColumn + 1);
+  }, 0);
+
+  return {
+    rows: activeRows.map((row) =>
+      Array.from({ length: columnCount }, (_, index) => row[index] ?? null)
+    ),
+    startRow: firstRow + 1,
+    columnCount,
+  };
+}
+
+function suggestColumnMapping(rows, columnCount) {
+  const normalizedHeaders = (rows[0] || []).map(normalizeHeader);
+  const mapping = { delegatnummer: "", fullName: "", org: "" };
+  for (const field of REQUIRED_COLUMNS) {
+    const matchIndex = normalizedHeaders.findIndex((header) =>
+      HEADER_ALIASES[field.key].includes(header)
+    );
+    if (matchIndex >= 0 && matchIndex < columnCount) mapping[field.key] = String(matchIndex);
+  }
+  return mapping;
+}
 
 function createRow(id, delegatnummer = "", fullName = "", org = "") {
   return { id, delegatnummer, fullName, org };
@@ -12,7 +88,112 @@ export default function CsvTool() {
     );
   });
   const [globalError, setGlobalError] = useState("");
+  const [excelFile, setExcelFile] = useState(null);
+  const [excelFileName, setExcelFileName] = useState("");
+  const [excelSheets, setExcelSheets] = useState([]);
+  const [excelSheet, setExcelSheet] = useState("");
+  const [excelRows, setExcelRows] = useState([]);
+  const [excelStartRow, setExcelStartRow] = useState(1);
+  const [excelColumnCount, setExcelColumnCount] = useState(0);
+  const [excelMapping, setExcelMapping] = useState({ delegatnummer: "", fullName: "", org: "" });
+  const [excelError, setExcelError] = useState("");
+  const [excelStatus, setExcelStatus] = useState("");
+  const [excelLoading, setExcelLoading] = useState(false);
   const nextIdRef = useRef(6);
+
+  const loadExcelSheet = async (file, sheetName) => {
+    setExcelLoading(true);
+    setExcelError("");
+    setExcelStatus("");
+    try {
+      const parsedRows = await readXlsxFile(file, { sheet: sheetName });
+      const active = compactExcelRows(parsedRows);
+      if (!active.rows.length) throw new Error("Arket inneholder ingen aktive celler.");
+      if (active.rows.length > 10000 || active.columnCount > 200) {
+        throw new Error("Arket er for stort. Maksimum er 10 000 aktive rader og 200 aktive kolonner.");
+      }
+      setExcelRows(active.rows);
+      setExcelStartRow(active.startRow);
+      setExcelColumnCount(active.columnCount);
+      setExcelMapping(suggestColumnMapping(active.rows, active.columnCount));
+    } catch (error) {
+      console.error("[XLSX] parse error:", error);
+      setExcelRows([]);
+      setExcelColumnCount(0);
+      setExcelError(error.message || "Kunne ikke lese Excel-filen.");
+    } finally {
+      setExcelLoading(false);
+    }
+  };
+
+  const handleExcelUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setExcelError("");
+    setExcelStatus("");
+
+    if (!file.name.toLocaleLowerCase("no").endsWith(".xlsx")) {
+      setExcelError("Velg en .xlsx-fil. Eldre .xls-filer må først lagres som .xlsx i Excel.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > MAX_EXCEL_FILE_SIZE) {
+      setExcelError("Excel-filen kan ikke være større enn 10 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setExcelFile(file);
+    setExcelFileName(file.name);
+    setExcelLoading(true);
+    try {
+      const sheetNames = await readSheetNames(file);
+      if (!sheetNames.length) throw new Error("Excel-filen inneholder ingen ark.");
+      setExcelSheets(sheetNames);
+      setExcelSheet(sheetNames[0]);
+      await loadExcelSheet(file, sheetNames[0]);
+    } catch (error) {
+      console.error("[XLSX] workbook error:", error);
+      setExcelError(error.message || "Kunne ikke åpne Excel-filen.");
+      setExcelLoading(false);
+    }
+  };
+
+  const handleSheetChange = async (event) => {
+    const sheetName = event.target.value;
+    setExcelSheet(sheetName);
+    if (excelFile) await loadExcelSheet(excelFile, sheetName);
+  };
+
+  const importExcelRows = () => {
+    setExcelStatus("");
+    setExcelError("");
+    if (!excelRows.length) return;
+    if (REQUIRED_COLUMNS.some((field) => excelMapping[field.key] === "")) {
+      setExcelError("Velg hvilken Excel-kolonne som skal brukes for alle tre CSV-feltene.");
+      return;
+    }
+
+    const imported = excelRows
+      .slice(1)
+      .map((row) => ({
+        delegatnummer: displayExcelValue(row[Number(excelMapping.delegatnummer)]).trim(),
+        fullName: displayExcelValue(row[Number(excelMapping.fullName)]).trim(),
+        org: displayExcelValue(row[Number(excelMapping.org)]).trim(),
+      }))
+      .filter((row) => row.delegatnummer || row.fullName || row.org)
+      .map((row, index) => createRow(index + 1, row.delegatnummer, row.fullName, row.org));
+
+    if (!imported.length) {
+      setExcelError("Ingen deltakerrader ble funnet under overskriftsraden.");
+      return;
+    }
+
+    setRows(imported);
+    nextIdRef.current = imported.length + 1;
+    setGlobalError("");
+    setExcelStatus(`${imported.length} rader er lagt inn i CSV-verktøyet. Kontroller markerte feil før nedlasting.`);
+  };
 
   const addRows = (count = 1) => {
     setRows((prev) => {
@@ -221,6 +402,115 @@ export default function CsvTool() {
             Kolonnene er <b>delegatnummer</b>, <b>fullt navn</b> og{" "}
             <b>råd/elevråd/organisasjon</b>.
           </p>
+
+          <section className="excel-import-card" aria-labelledby="excel-import-title">
+            <div className="title excel-import-title" id="excel-import-title">Importer fra Excel</div>
+            <p>
+              Last opp en <b>.xlsx-fil</b>. Verktøyet viser hele det aktive området i valgt ark,
+              og lar deg velge hvilke kolonner som skal brukes i CSV-filen.
+            </p>
+
+            <div className="excel-upload-row">
+              <input
+                id="delegate-xlsx"
+                className="csv-upload-input"
+                type="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                onChange={handleExcelUpload}
+              />
+              <label className="csv-upload-button excel-upload-button" htmlFor="delegate-xlsx">
+                Velg Excel-fil
+              </label>
+              <span className={`csv-file-name ${excelFileName ? "has-file" : ""}`}>
+                {excelFileName || "Ingen fil valgt"}
+              </span>
+              {excelSheets.length > 1 && (
+                <label className="excel-sheet-label">
+                  Ark
+                  <select className="input excel-sheet-select" value={excelSheet} onChange={handleSheetChange}>
+                    {excelSheets.map((sheet) => <option key={sheet} value={sheet}>{sheet}</option>)}
+                  </select>
+                </label>
+              )}
+            </div>
+
+            {excelLoading && <p className="muted" role="status">Leser Excel-filen …</p>}
+            {excelError && <p className="excel-message excel-message-error" role="alert">{excelError}</p>}
+            {excelStatus && <p className="excel-message excel-message-success" role="status">{excelStatus}</p>}
+
+            {excelRows.length > 0 && !excelLoading && (
+              <>
+                <div className="excel-summary">
+                  Aktivt område: <b>{excelRows.length} rader</b> og <b>{excelColumnCount} kolonner</b>
+                  {excelSheet ? <> i arket <b>{excelSheet}</b></> : null}.
+                  Første aktive rad er Excel-rad {excelStartRow} og brukes som overskriftsrad.
+                </div>
+
+                <div className="excel-mapping" aria-label="Koble Excel-kolonner til CSV-felter">
+                  {REQUIRED_COLUMNS.map((field) => (
+                    <label key={field.key}>
+                      CSV-felt: {field.label}
+                      <select
+                        className="input"
+                        value={excelMapping[field.key]}
+                        onChange={(event) => setExcelMapping((current) => ({
+                          ...current,
+                          [field.key]: event.target.value,
+                        }))}
+                      >
+                        <option value="">Velg kolonne</option>
+                        {Array.from({ length: excelColumnCount }, (_, columnIndex) => {
+                          const header = displayExcelValue(excelRows[0]?.[columnIndex]).trim();
+                          return (
+                            <option key={columnIndex} value={String(columnIndex)}>
+                              {excelColumnName(columnIndex)}{header ? ` – ${header}` : ""}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="excel-guidance">
+                  <h3>Slik bør Excel-arket tilpasses</h3>
+                  <ul>
+                    <li>Bruk én overskriftsrad med kolonnene <b>delegatnummer</b>, <b>fullt navn</b> og <b>representerer</b>.</li>
+                    <li>Ha én deltaker per rad. Fjern tittelrader, delsummer og sammenslåtte celler.</li>
+                    <li>Delegatnummer må være unike heltall. Navn og organisasjon må være fylt ut.</li>
+                    <li>Ekstra kolonner kan ligge i arket. De vises i forhåndsvisningen, men blir ikke med i CSV-filen.</li>
+                  </ul>
+                </div>
+
+                <div className="excel-preview-wrap" tabIndex="0" aria-label="Forhåndsvisning av aktivt Excel-område">
+                  <table className="excel-preview-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Excel-rad</th>
+                        {Array.from({ length: excelColumnCount }, (_, index) => (
+                          <th scope="col" key={index}>{excelColumnName(index)}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {excelRows.map((row, rowIndex) => (
+                        <tr key={rowIndex} className={rowIndex === 0 ? "excel-header-row" : undefined}>
+                          <th scope="row">{excelStartRow + rowIndex}</th>
+                          {Array.from({ length: excelColumnCount }, (_, columnIndex) => (
+                            <td key={columnIndex}>{displayExcelValue(row[columnIndex])}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <button className="btn primary excel-use-button" type="button" onClick={importExcelRows}>
+                  Bruk valgte kolonner i CSV-verktøyet
+                </button>
+              </>
+            )}
+          </section>
 
           <div className="row" style={{ marginBottom: 12, gap: 8 }}>
             <button className="btn" type="button" onClick={() => addRows(1)}>

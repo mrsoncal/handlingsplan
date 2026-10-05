@@ -254,16 +254,25 @@ async function getCouncils() {
 
 
 // used internally, we do NOT expose password via API
-async function getCouncilWithPassword(id) {
+async function getCouncilWithPassword(id, password) {
   const result = await pool.query(
     `
       SELECT id, name, year, created_at, handlingsplan_path, admin_password
       FROM councils
-      WHERE id = $1
+      WHERE id = $1 AND admin_password = $2
     `,
-    [id]
+    [id, password]
   );
   return result.rows[0] || null;
+}
+
+async function updateCouncilPassword(id, password) {
+  await pool.query(
+    `UPDATE councils
+     SET admin_password = $2
+     WHERE id = $1`,
+    [id, password]
+  );
 }
 
 async function deleteCouncil(id) {
@@ -543,6 +552,7 @@ module.exports = {
   createCouncil,
   getCouncilById,
   getCouncilWithPassword,
+  updateCouncilPassword,
   deleteCouncil,
   setCouncilHandlingsplanPath,
   setCouncilLogoPath,

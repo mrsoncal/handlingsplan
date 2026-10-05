@@ -113,7 +113,7 @@
               </button>
               </div>
               <p class="warning">
-                Dette passordet kan ikke endres. Pass på at alle fremtidige råd har dette passordet.
+                Passordet kan senere endres av en innlogget global administrator.
               </p>
             </div>
 
@@ -141,6 +141,50 @@
             <button type="submit" class="btn">
               Opprett og åpne
             </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Endre passord for ett ungdomsråd -->
+    <div class="login-overlay" id="changePasswordOverlay" role="dialog" aria-modal="true" aria-labelledby="change-password-title" style="display: none;">
+      <div class="login-box" tabindex="-1">
+        <button class="modal-close" id="closeChangePasswordModal" type="button" aria-label="Lukk passordendring">×</button>
+        <form id="changePasswordForm" class="council-form">
+          <h2 id="change-password-title">Endre passord</h2>
+          <p id="change-password-council" class="muted"></p>
+
+          <label class="form-row" for="newCouncilPassword">
+            Nytt passord
+            <input
+              class="new-council-input"
+              id="newCouncilPassword"
+              name="newPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="6"
+              required
+            />
+          </label>
+
+          <label class="form-row" for="confirmCouncilPassword">
+            Gjenta nytt passord
+            <input
+              class="new-council-input"
+              id="confirmCouncilPassword"
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="6"
+              required
+            />
+          </label>
+
+          <p id="change-password-status" class="form-status" role="status" aria-live="polite"></p>
+
+          <div class="form-row modal-actions">
+            <button type="button" class="btn-cancel" id="cancelChangePassword">Avbryt</button>
+            <button type="submit" class="btn">Lagre nytt passord</button>
           </div>
         </form>
       </div>

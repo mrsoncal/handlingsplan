@@ -185,6 +185,34 @@ export default async function (req: Request): Promise<Response> {
       });
     }
 
+    if (segments[3] === "admin-login" && segments.length === 4 && req.method === "POST") {
+      const body = await req.json();
+      if (!await verifyPassword(String(body.password || ""), council)) {
+        return json({ error: "Feil passord for dette ungdomsrådet." }, 401);
+      }
+      return json({ authenticated: true });
+    }
+
+    if (segments[3] === "password" && segments.length === 4 && req.method === "PUT") {
+      const signingSecret = Deno.env.get("JWT_SECRET") || apiKey;
+      if (!await isAdminRequest(req, signingSecret)) return json({ error: "Ikke autorisert." }, 401);
+
+      const body = await req.json();
+      const password = typeof body.password === "string" ? body.password : "";
+      if (password.length < 6) return json({ error: "Passordet må ha minst 6 tegn." }, 400);
+
+      const passwordData = await hashPassword(password);
+      const { error } = await admin.database
+        .from("councils")
+        .update({
+          password_salt: passwordData.salt,
+          password_hash: passwordData.hash,
+        })
+        .eq("id", councilId);
+      if (error) throw error;
+      return json({ updated: true });
+    }
+
     if (segments.length === 3 && req.method === "DELETE") {
       const signingSecret = Deno.env.get("JWT_SECRET") || apiKey;
       if (!await isAdminRequest(req, signingSecret)) return json({ error: "Ikke autorisert." }, 401);

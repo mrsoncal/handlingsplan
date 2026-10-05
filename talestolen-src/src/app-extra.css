@@ -697,6 +697,157 @@ select,
   border-color: #b7173d;
 }
 
+.excel-import-card {
+  margin: 20px 0 24px;
+  padding: 20px;
+  border: 2px solid #005260;
+  background: #eef8fa;
+}
+
+.excel-import-title {
+  margin-bottom: 6px;
+}
+
+.excel-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.excel-upload-button {
+  background: #ffcc00;
+  color: #1e1e1e;
+}
+
+.excel-upload-button:hover {
+  background: #e6b800;
+}
+
+.excel-sheet-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.excel-sheet-select {
+  width: auto;
+  min-width: 180px;
+}
+
+.excel-message {
+  margin: 12px 0 0;
+  font-weight: 700;
+}
+
+.excel-message-error {
+  color: #b7173d;
+}
+
+.excel-message-success {
+  color: #198447;
+}
+
+.excel-summary {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #ceecf4;
+}
+
+.excel-mapping {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.excel-mapping label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.excel-guidance {
+  margin-top: 16px;
+}
+
+.excel-guidance h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.excel-guidance ul {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.excel-guidance li + li {
+  margin-top: 4px;
+}
+
+.excel-preview-wrap {
+  max-height: 430px;
+  overflow: auto;
+  margin-top: 16px;
+  border: 1px solid rgba(0, 82, 96, 0.28);
+  background: #ffffff;
+}
+
+.excel-preview-table {
+  min-width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.excel-preview-table th,
+.excel-preview-table td {
+  padding: 8px 10px;
+  border: 1px solid #d8e8eb;
+  text-align: left;
+}
+
+.excel-preview-table thead th,
+.excel-preview-table tbody th {
+  position: sticky;
+  z-index: 2;
+  background: #005260;
+  color: #ffffff;
+}
+
+.excel-preview-table thead th {
+  top: 0;
+}
+
+.excel-preview-table tbody th {
+  left: 0;
+}
+
+.excel-preview-table .excel-header-row td {
+  background: #ffed99;
+  font-weight: 700;
+}
+
+.excel-use-button {
+  margin-top: 14px;
+}
+
+@media (max-width: 720px) {
+  .excel-mapping {
+    grid-template-columns: 1fr;
+  }
+
+  .excel-sheet-label {
+    width: 100%;
+    margin-left: 0;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 /* === CSV Tool layout tweaks === */
 .csv-table tbody {
   background: #ceecf4 !important;

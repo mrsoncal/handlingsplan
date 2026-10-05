@@ -105,6 +105,11 @@ async function getCouncilWithPassword(id, password) {
   ) || null;
 }
 
+async function updateCouncilPassword(id, password) {
+  const council = councils.find((item) => item.id === Number(id));
+  if (council) council.admin_password = password;
+}
+
 async function deleteCouncil(id) {
   const councilId = Number(id);
   councils = councils.filter((council) => council.id !== councilId);
@@ -190,6 +195,7 @@ module.exports = {
   createCouncil,
   getCouncilById,
   getCouncilWithPassword,
+  updateCouncilPassword,
   deleteCouncil,
   createInnspill,
   getInnspillForCouncil,

@@ -10,6 +10,8 @@ const INNSPILL_ITEM_URL = (councilId, innspillId) =>
   `${API_BASE}/api/ungdomsrad/${encodeURIComponent(
     councilId
   )}/innspill/${encodeURIComponent(innspillId)}`;
+const COUNCIL_LOGIN_URL = (id) =>
+  `${API_BASE}/api/ungdomsrad/${encodeURIComponent(id)}/admin-login`;
 
 let raadPassword = "";
 let innspillState = [];
@@ -213,24 +215,42 @@ function formatCreatedAt(createdAt) {
 
 // ---- LOGIN LOGIC ----
 
-function initLoginModule() {
+async function validateCouncilPassword(password) {
+  const response = await fetch(COUNCIL_LOGIN_URL(raadId), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || "Kunne ikke kontrollere passordet.");
+  }
+}
+
+async function initLoginModule() {
   const loginBtn = $("raad-login-btn");
   const pwInput = $("raad-password");
   const errorEl = $("raad-login-error");
 
-  // 1) Sjekk cookie først – hvis vi har pw der, auto-logg inn
   const cookiePw = getPasswordFromCookie();
   if (cookiePw) {
-    raadPassword = cookiePw;
-    isLoggedIn = true;
-    if (pwInput) pwInput.value = "";
-    if (errorEl) errorEl.textContent = "";
-    updateLoginVisibility();
+    try {
+      await validateCouncilPassword(cookiePw);
+      raadPassword = cookiePw;
+      isLoggedIn = true;
+      if (pwInput) pwInput.value = "";
+      if (errorEl) errorEl.textContent = "";
+      updateLoginVisibility();
+    } catch {
+      clearPasswordCookie();
+      raadPassword = "";
+      isLoggedIn = false;
+      updateLoginVisibility();
+    }
   }
 
-  // 2) Manuell login
   if (loginBtn && pwInput) {
-    loginBtn.addEventListener("click", () => {
+    loginBtn.addEventListener("click", async () => {
       const pw = pwInput.value.trim();
       if (!pw) {
         if (errorEl) {
@@ -239,11 +259,24 @@ function initLoginModule() {
         return;
       }
 
-      raadPassword = pw;
-      isLoggedIn = true;
-      setPasswordCookie(pw);
-      if (errorEl) errorEl.textContent = "";
-      updateLoginVisibility();
+      loginBtn.disabled = true;
+      if (errorEl) errorEl.textContent = "Kontrollerer passord…";
+      try {
+        await validateCouncilPassword(pw);
+        raadPassword = pw;
+        isLoggedIn = true;
+        setPasswordCookie(pw);
+        if (errorEl) errorEl.textContent = "";
+        updateLoginVisibility();
+      } catch (err) {
+        raadPassword = "";
+        isLoggedIn = false;
+        clearPasswordCookie();
+        if (errorEl) errorEl.textContent = err.message || "Feil passord.";
+        updateLoginVisibility();
+      } finally {
+        loginBtn.disabled = false;
+      }
     });
   }
 }
@@ -252,15 +285,6 @@ function initLoginModule() {
 function ensurePassword() {
   // Hvis allerede satt i minnet og vi anser oss som innlogget
   if (raadPassword && isLoggedIn) return true;
-
-  // Prøv cookie
-  const cookiePw = getPasswordFromCookie();
-  if (cookiePw) {
-    raadPassword = cookiePw;
-    isLoggedIn = true;
-    updateLoginVisibility();
-    return true;
-  }
 
   // Ellers: be brukeren logge inn
   const errorEl = $("raad-login-error");
@@ -958,7 +982,7 @@ async function init() {
   }
 
   initBackLink();
-  initLoginModule();
+  await initLoginModule();
   initEditDialog();
   const exportBtn = $("export-ai-btn");
   if (exportBtn) exportBtn.addEventListener("click", exportInnspillForAi);
