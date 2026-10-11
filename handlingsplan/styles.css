@@ -2206,13 +2206,6 @@ input[type="color"]::-webkit-color-swatch {
   box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.22);
 }
 
-.form-guidance {
-  flex: 1;
-  margin: 0;
-  color: #4b5563;
-  font-size: 0.85rem;
-}
-
 #save-button .btn:hover {
   background: #218838;
   cursor: pointer;

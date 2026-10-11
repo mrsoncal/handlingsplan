@@ -238,8 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const action = getSelectedAction();
-    const guidance = document.getElementById("form-guidance");
-    let guidanceText = "";
 
     // Toggle sections
     sectionAdd.style.display = action === "add" ? "block" : "none";
@@ -249,21 +247,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Basic validation
     if (!action) {
       submitBtn.disabled = true;
-      guidanceText = "Velg hva du vil gjøre.";
-      if (guidance) guidance.textContent = guidanceText;
       return;
     }
 
     if (!temaSelect.value) {
       submitBtn.disabled = true;
-      if (guidance) guidance.textContent = "Velg et tema.";
       return;
     }
 
     const punktVal = punktNrInput.value.trim();
     if (!isValidInteger(punktVal)) {
       submitBtn.disabled = true;
-      if (guidance) guidance.textContent = "Skriv inn et gyldig punktnummer.";
       return;
     }
 
@@ -271,26 +265,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const underVal = underpunktInput.value.trim();
     if (!isValidInteger(underVal, { allowEmpty: true })) {
       submitBtn.disabled = true;
-      if (guidance) guidance.textContent = "Underpunkt må være et heltall.";
       return;
     }
 
     if (action === "add") {
       if (!nyttPunktInput.value.trim()) {
         submitBtn.disabled = true;
-        if (guidance) guidance.textContent = "Formuler punktet du vil legge til.";
         return;
       }
     } else if (action === "change") {
       if (!endreFraInput.value.trim() || !endreTilInput.value.trim()) {
         submitBtn.disabled = true;
-        if (guidance) guidance.textContent = "Fyll ut både hva som skal endres og ny formulering.";
         return;
       }
     }
 
     submitBtn.disabled = false;
-    if (guidance) guidance.textContent = "Skjemaet er klart til innsending.";
   }
 
   // Attach listeners
