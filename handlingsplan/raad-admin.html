@@ -17,8 +17,34 @@
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-            <a class="btn nav" id="back-link">Til rådssiden</a>
-            <button class="btn nav admin-logout-btn" id="admin-logout-btn" type="button" hidden>Logg ut</button>
+            <a
+              class="btn nav"
+              id="back-link"
+              aria-label="Tilbake til rådssiden"
+              title="Tilbake til rådssiden"
+            >
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 7 4 12l5 5" />
+                <path d="M4 12h10a6 6 0 0 1 6 6" />
+              </svg>
+              <span class="nav-label">Til rådssiden</span>
+            </a>
+          </nav>
+          <nav class="nav-r">
+            <button
+              class="btn nav admin-logout-btn"
+              id="admin-logout-btn"
+              type="button"
+              aria-label="Logg ut"
+              title="Logg ut"
+              hidden
+            >
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14 8l4 4-4 4M18 12H7" />
+                <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4" />
+              </svg>
+              <span class="nav-label">Logg ut</span>
+            </button>
           </nav>
         </div>
         <img
@@ -213,18 +239,14 @@
             <p class="help-text">
               Rediger eller slett innspill.
             </p>
-            <div class="innspill-collection-control">
-              <p id="innspill-collection-state" class="collection-state" aria-live="polite"></p>
-              <button
-                id="toggle-innspill-collection-btn"
-                class="btn btn-collection-toggle"
-                type="button"
-                aria-pressed="false"
-              >
-                Blokker innsamling
-              </button>
-              <p id="innspill-collection-status" class="notice" role="status" aria-live="polite"></p>
-            </div>
+            <button
+              id="toggle-innspill-collection-btn"
+              class="btn"
+              type="button"
+              aria-pressed="false"
+            >
+              Blokker innsamling
+            </button>
             <button
               id="open-innspill-editor-btn"
               class="btn"

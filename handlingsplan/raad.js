@@ -356,10 +356,10 @@ function renderInnspillCarousel(innspill) {
       }
 
 
-      // Liten "Vedtatt"-badge inne i teksten
+      // Behold merket ved handlingsteksten på desktop.
       if (isVedtatt) {
         const badge = document.createElement("span");
-        badge.className = "vedtatt-label-inline";
+        badge.className = "vedtatt-label-inline vedtatt-label-desktop";
         badge.textContent = "Vedtatt ✓";
         actionSpan.appendChild(badge);
       }
@@ -374,6 +374,37 @@ function renderInnspillCarousel(innspill) {
       headerFlex.appendChild(actionSpan);
       headerFlex.appendChild(punktSpan);
       tdHeader.appendChild(headerFlex);
+
+      const cardFooter = document.createElement("div");
+      cardFooter.className = "hp-card-footer";
+
+      if (isVedtatt) {
+        const mobileBadge = document.createElement("span");
+        mobileBadge.className = "vedtatt-label-inline vedtatt-label-mobile";
+        mobileBadge.textContent = "Vedtatt ✓";
+        mobileBadge.setAttribute("aria-hidden", "true");
+        cardFooter.appendChild(mobileBadge);
+      }
+
+      let mobileToggle = null;
+      if (!isRemove) {
+        mobileToggle = document.createElement("button");
+        mobileToggle.type = "button";
+        mobileToggle.className = "hp-card-toggle";
+        mobileToggle.setAttribute("aria-expanded", "false");
+        mobileToggle.innerHTML = `
+          <span>Vis detaljer</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m7 10 5 5 5-5" />
+          </svg>
+        `;
+        cardFooter.appendChild(mobileToggle);
+      }
+
+      if (cardFooter.childElementCount > 0) {
+        tdHeader.appendChild(cardFooter);
+      }
+
       tr.appendChild(tdHeader);
 
       // Egen "Punkt (nr)"-kolonne til desktop-visning
@@ -396,8 +427,22 @@ function renderInnspillCarousel(innspill) {
 
       // Mobil-vennlig accordion: klikk på raden for å vise/skjule detaljer (Endre fra / Endre til)
       if (!isRemove) {
-        tr.addEventListener("click", () => {
-          tr.classList.toggle("expanded");
+        const toggleDetails = () => {
+          const expanded = tr.classList.toggle("expanded");
+          mobileToggle?.setAttribute("aria-expanded", String(expanded));
+          const toggleLabel = mobileToggle?.querySelector("span");
+          if (toggleLabel) {
+            toggleLabel.textContent = expanded ? "Skjul detaljer" : "Vis detaljer";
+          }
+        };
+
+        tr.addEventListener("click", (event) => {
+          if (event.target.closest("button")) return;
+          toggleDetails();
+        });
+        mobileToggle?.addEventListener("click", (event) => {
+          event.stopPropagation();
+          toggleDetails();
         });
       }
 
