@@ -15,6 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const sectionChange = document.getElementById("section-change");
   const sectionRemove = document.getElementById("section-remove");
   const submitBtn = document.getElementById("submitBtn");
+  const formTitle = document.getElementById("form-title");
+  const formSubtitle = document.getElementById("form-subtitle");
+  const formStateMessage = document.getElementById("form-state-message");
   
 
   // --- Koble formen til et spesifikt ungdomsråd --------------------------
@@ -34,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const raadId = councilId;
 
   let currentCouncil = null;
+  let isAcceptingInnspill = false;
 
 
 
@@ -73,6 +77,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const name = raad?.display_name || raad?.name || "Ukjent ungdomsråd";
     const breadcrumbCouncil = document.getElementById("breadcrumb-council");
     if (breadcrumbCouncil) breadcrumbCouncil.textContent = name;
+  }
+
+  function showCollectionState(accepting) {
+    isAcceptingInnspill = accepting;
+    form.hidden = !accepting;
+    if (formTitle) formTitle.hidden = !accepting;
+    if (formSubtitle) formSubtitle.hidden = !accepting;
+
+    if (formStateMessage) {
+      formStateMessage.hidden = accepting;
+      formStateMessage.textContent = accepting
+        ? ""
+        : "Du kan ikke sende inn noen innspill akkurat nå.";
+      formStateMessage.dataset.type = accepting ? "" : "info";
+    }
+
+    updateVisibilityAndValidity();
+  }
+
+  async function refreshCollectionState() {
+    if (!councilId) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}`,
+        { cache: "no-store" }
+      );
+      if (!res.ok) return;
+      const council = await res.json();
+      const accepting = council.accepting_innspill !== false;
+      if (accepting !== isAcceptingInnspill) {
+        currentCouncil = council;
+        if (accepting) populateTemaSelectFromCouncil(council);
+        showCollectionState(accepting);
+      }
+    } catch (err) {
+      console.warn("Kunne ikke kontrollere om skjemaet er åpent:", err);
+    }
   }
 
 
@@ -128,16 +170,27 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1) Oppdater header-logo/tittel (se neste seksjon for header-struktur)
       updateHeaderFromCouncil(council);
 
-      // 2) Fyll ut selectTema fra tema-listen
-      populateTemaSelectFromCouncil(council);
-      temaSelect.disabled = false;
+      // 2) Vis skjemaet bare når innsamlingen er åpen
+      const accepting = council.accepting_innspill !== false;
+      if (accepting) {
+        populateTemaSelectFromCouncil(council);
+        temaSelect.disabled = false;
+      }
+      showCollectionState(accepting);
+
+      window.HPInnspillSync?.startAutoRefresh(refreshCollectionState, {
+        intervalMs: 3000,
+      });
     } catch (err) {
       console.error("Feil ved henting av ungdomsråd:", err);
-      temaSelect.innerHTML = '<option value="" selected disabled>Kunne ikke laste temaer</option>';
-      const statusEl = document.getElementById("form-status");
-      if (statusEl) {
-        statusEl.textContent = "Kunne ikke laste ungdomsrådet. Prøv å laste siden på nytt.";
-        statusEl.dataset.type = "error";
+      form.hidden = true;
+      if (formTitle) formTitle.hidden = true;
+      if (formSubtitle) formSubtitle.hidden = true;
+      if (formStateMessage) {
+        formStateMessage.hidden = false;
+        formStateMessage.textContent =
+          "Kunne ikke laste ungdomsrådet. Prøv å laste siden på nytt.";
+        formStateMessage.dataset.type = "error";
       }
     }
   }
@@ -179,6 +232,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateVisibilityAndValidity() {
+    if (!isAcceptingInnspill) {
+      submitBtn.disabled = true;
+      return;
+    }
+
     const action = getSelectedAction();
     const guidance = document.getElementById("form-guidance");
     let guidanceText = "";
@@ -300,8 +358,12 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        console.error("Feil ved lagring av innspill:", res.status, text);
+        const data = await res.json().catch(() => ({}));
+        console.error("Feil ved lagring av innspill:", res.status, data);
+        if (res.status === 403) {
+          showCollectionState(false);
+          return;
+        }
         setFormStatus("Det oppstod en feil ved innsending. Prøv igjen senere.", "error");
         return;
       }
@@ -312,6 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
       updateVisibilityAndValidity();
       setFormStatus("Innspillet er sendt inn.", "success");
+      window.HPInnspillSync?.notify(councilId);
     } catch (err) {
       console.error("Nettverksfeil ved innsending av innspill:", err);
       setFormStatus("Nettverksfeil. Kontroller tilkoblingen og prøv igjen.", "error");

@@ -40,12 +40,16 @@
   <main>
     <div class="container forms-container">
       <section class="card forms-card">
-        <h2>Send inn forslag</h2>
-        <p class="section-subtitle">
+        <h2 id="form-title">Send inn forslag</h2>
+        <p class="section-subtitle" id="form-subtitle">
           Fyll ut skjemaet under.
         </p>
 
-        <form id="hp-form" class="hp-form">
+        <p id="form-state-message" class="submission-state" role="status" aria-live="polite">
+          Laster skjema…
+        </p>
+
+        <form id="hp-form" class="hp-form" hidden>
           <!-- Hva vil du gjøre? -->
           <label class="labelDo">Hva vil du gjøre?</label>
           <fieldset class="hp-fieldset">
@@ -230,6 +234,7 @@
     // Samme backend-base som de andre sidene
     window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
   </script>
+  <script src="innspill-sync.js" defer></script>
   <script src="forms.js" defer></script>
 </body>
 </html>

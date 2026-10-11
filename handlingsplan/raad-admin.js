@@ -7,6 +7,7 @@ let raadData = null;
 let raadPassword = "";
 let temaState = [];
 let hasUnsavedChanges = false;
+let acceptingInnspill = true;
 
 // ---- COOKIE HELPERS for per-råd-passord (deles med raad-innspill-editor) ----
 const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
@@ -74,6 +75,26 @@ function setDirty(isDirty = true) {
       : "";
   }
   if (saveBtn) saveBtn.classList.toggle("has-changes", isDirty);
+}
+
+function renderInnspillCollectionState() {
+  const stateEl = $("innspill-collection-state");
+  const toggleBtn = $("toggle-innspill-collection-btn");
+
+  if (stateEl) {
+    stateEl.textContent = acceptingInnspill
+      ? "Innsamling av innspill er åpen."
+      : "Innsamling av innspill er blokkert.";
+  }
+
+  if (toggleBtn) {
+    toggleBtn.textContent = acceptingInnspill
+      ? "Blokker innsamling"
+      : "Åpne for innspill";
+    toggleBtn.setAttribute("aria-pressed", String(!acceptingInnspill));
+    toggleBtn.classList.toggle("is-open", acceptingInnspill);
+    toggleBtn.classList.toggle("is-blocked", !acceptingInnspill);
+  }
 }
 
 function updateCurrentFiles(council) {
@@ -209,6 +230,8 @@ async function fetchCouncil() {
     }
 
     raadData = await res.json();
+    acceptingInnspill = raadData.accepting_innspill !== false;
+    renderInnspillCollectionState();
 
     const displayName =
       raadData.display_name || raadData.name || "Ukjent ungdomsråd";
@@ -243,6 +266,65 @@ async function fetchCouncil() {
   } catch (err) {
     console.error(err);
     alert("Kunne ikke hente data for dette ungdomsrådet.");
+  }
+}
+
+async function toggleInnspillCollection() {
+  if (!ensurePassword()) return;
+
+  const toggleBtn = $("toggle-innspill-collection-btn");
+  const statusEl = $("innspill-collection-status");
+  const nextValue = !acceptingInnspill;
+
+  if (toggleBtn) toggleBtn.disabled = true;
+  setNotice(
+    statusEl,
+    nextValue ? "Åpner for innspill…" : "Blokkerer innsamling…"
+  );
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/admin-config`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          password: raadPassword,
+          acceptingInnspill: nextValue,
+        }),
+      }
+    );
+
+    const updated = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setNotice(
+        statusEl,
+        updated.error || "Kunne ikke endre innsamlingen av innspill.",
+        "error"
+      );
+      return;
+    }
+
+    raadData = updated;
+    acceptingInnspill = updated.accepting_innspill !== false;
+    renderInnspillCollectionState();
+    window.HPInnspillSync?.notify(raadId);
+    setNotice(
+      statusEl,
+      acceptingInnspill
+        ? "Skjemaet er åpnet for nye innspill."
+        : "Skjemaet er blokkert for nye innspill.",
+      "success"
+    );
+  } catch (err) {
+    console.error(err);
+    setNotice(
+      statusEl,
+      "Det oppstod en feil ved endring av innsamlingen.",
+      "error"
+    );
+  } finally {
+    if (toggleBtn) toggleBtn.disabled = false;
   }
 }
 
@@ -599,6 +681,8 @@ async function saveConfig() {
 
     const updated = await res.json();
     raadData = updated;
+    acceptingInnspill = updated.accepting_innspill !== false;
+    renderInnspillCollectionState();
 
     // Oppdater visning basert på svar fra backend
     const newName =
@@ -639,6 +723,7 @@ function initButtons() {
   const addTemaBtn = $("add-tema-btn");
   const saveBtn = $("save-btn");
   const innspillEditorBtn = $("open-innspill-editor-btn");
+  const collectionToggleBtn = $("toggle-innspill-collection-btn");
   const copyFormsLinkBtn = $("copy-forms-link");
   const logoutBtn = $("admin-logout-btn");
 
@@ -646,6 +731,9 @@ function initButtons() {
   if (hpBtn) hpBtn.addEventListener("click", uploadHandlingsplan);
   if (addTemaBtn) addTemaBtn.addEventListener("click", addTema);
   if (saveBtn) saveBtn.addEventListener("click", saveConfig);
+  if (collectionToggleBtn) {
+    collectionToggleBtn.addEventListener("click", toggleInnspillCollection);
+  }
   if (copyFormsLinkBtn) copyFormsLinkBtn.addEventListener("click", copyFormsLink);
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {

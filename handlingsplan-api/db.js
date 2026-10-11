@@ -73,6 +73,11 @@ async function init() {
     ADD COLUMN IF NOT EXISTS display_name TEXT;
   `);
 
+  await pool.query(`
+    ALTER TABLE councils
+    ADD COLUMN IF NOT EXISTS accepting_innspill BOOLEAN NOT NULL DEFAULT TRUE;
+  `);
+
   // Make sure we have logo_path (har du det fra før, gjør IF NOT EXISTS at det ikke krasjer)
   await pool.query(`
     ALTER TABLE councils
@@ -203,6 +208,7 @@ async function getCouncilById(id) {
         display_name,
         year,
         created_at,
+        accepting_innspill,
         handlingsplan_data IS NOT NULL AS has_handlingsplan,
         logo_data IS NOT NULL AS has_logo
       FROM councils
@@ -220,6 +226,7 @@ async function getCouncilById(id) {
     year: row.year,
     created_at: row.created_at,
     display_name: row.display_name || row.name,
+    accepting_innspill: row.accepting_innspill !== false,
     has_handlingsplan: row.has_handlingsplan,
     has_logo: row.has_logo,
   };
@@ -234,6 +241,7 @@ async function getCouncils() {
         display_name,
         year,
         created_at,
+        accepting_innspill,
         handlingsplan_data IS NOT NULL AS has_handlingsplan,
         logo_data IS NOT NULL AS has_logo
       FROM councils
@@ -247,6 +255,7 @@ async function getCouncils() {
     display_name: row.display_name || row.name,
     year: row.year,
     created_at: row.created_at,
+    accepting_innspill: row.accepting_innspill !== false,
     has_handlingsplan: row.has_handlingsplan,
     has_logo: row.has_logo,
   }));
@@ -479,6 +488,17 @@ async function updateCouncilDisplayName(id, displayName) {
   );
 }
 
+async function updateCouncilAcceptingInnspill(id, acceptingInnspill) {
+  await pool.query(
+    `
+      UPDATE councils
+      SET accepting_innspill = $2
+      WHERE id = $1
+    `,
+    [id, acceptingInnspill]
+  );
+}
+
 async function updateInnspill(
   councilId,
   innspillId,
@@ -561,6 +581,7 @@ module.exports = {
   getTemaerForCouncil,
   saveTemaerForCouncil,
   updateCouncilDisplayName,
+  updateCouncilAcceptingInnspill,
   updateCouncilHandlingsplanFile,
   updateCouncilLogoFile,
   getCouncilHandlingsplanFile,

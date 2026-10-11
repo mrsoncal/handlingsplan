@@ -16,14 +16,49 @@
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-            <button class="btn nav" id="openFormsBtn">Åpne skjema</button>
+            <button
+              class="btn nav"
+              id="openFormsBtn"
+              type="button"
+              aria-label="Åpne skjema"
+              title="Åpne skjema"
+            >
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z" />
+                <path d="M14 2v6h6M12 12v6M9 15h6" />
+              </svg>
+              <span class="nav-label">Åpne skjema</span>
+            </button>
             <!-- Handlingsplan-lenken blir dynamisk satt i raad.js -->
-            <a class="btn nav" id="handlingsplanLink" href="#" target="_blank">
-              Handlingsplan
+            <a
+              class="btn nav"
+              id="handlingsplanLink"
+              href="#"
+              target="_blank"
+              aria-label="Åpne handlingsplan"
+              title="Åpne handlingsplan"
+            >
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2Z" />
+                <path d="M14 2v6h6M8 13h8M8 17h8" />
+              </svg>
+              <span class="nav-label">Handlingsplan</span>
             </a>
           </nav>
           <nav class="nav-r">
-            <button class="btn nav" id="raadAdminBtn">Innstillinger</button>
+            <button
+              class="btn nav"
+              id="raadAdminBtn"
+              type="button"
+              aria-label="Åpne innstillinger"
+              title="Åpne innstillinger"
+            >
+              <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.97 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.52-1.03H3v-4h.08A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7l2.83-2.83.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 10 3.05V3h4v.08a1.7 1.7 0 0 0 1.03 1.52 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 7l-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.92 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z" />
+              </svg>
+              <span class="nav-label">Innstillinger</span>
+            </button>
           </nav>
         </div>
         <img
@@ -43,6 +78,7 @@
     </main>
   </div>
 
+  <script src="innspill-sync.js"></script>
   <script src="raad.js" type="module"></script>
 </body>
 </html>

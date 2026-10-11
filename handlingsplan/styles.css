@@ -3302,3 +3302,94 @@ tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:f
   width: auto;
   margin: 0;
 }
+
+.innspill-collection-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin: 0.5rem 0 1rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: #ffffff;
+}
+
+.collection-state {
+  font-weight: 700;
+}
+
+.btn-collection-toggle.is-blocked {
+  background: #198447;
+  color: #ffffff;
+}
+
+.btn-collection-toggle.is-open {
+  background: #ffcc00;
+  color: #111111;
+}
+
+.submission-state {
+  margin: 0;
+  padding: 1.25rem;
+  border-left: 4px solid #00545f;
+  background: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Kompakt ikonmeny på smale rådssider. */
+.nav-icon {
+  display: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 700px) {
+  .navigation-bar {
+    padding-inline: 0.4rem;
+  }
+
+  .navigation-bar > .nav,
+  .navigation-bar > .nav-r {
+    gap: 0.25rem;
+  }
+
+  .btn.nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    height: 2.75rem;
+    padding: 0.625rem !important;
+    border-radius: 999px;
+  }
+
+  .btn.nav .nav-label {
+    display: none;
+  }
+
+  .btn.nav .nav-icon {
+    display: block;
+  }
+
+  #handlingsplanLink {
+    width: auto;
+    min-width: 0;
+    padding-inline: 0.4rem !important;
+  }
+
+  #handlingsplanLink .nav-label {
+    display: inline;
+  }
+
+  #handlingsplanLink .nav-icon {
+    display: none;
+  }
+}

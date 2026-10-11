@@ -10,6 +10,7 @@ let councils = [
     admin_password: "demo",
     has_handlingsplan: false,
     has_logo: false,
+    accepting_innspill: true,
   },
 ];
 
@@ -90,6 +91,7 @@ async function createCouncil({ name, password }) {
     admin_password: password.trim(),
     has_handlingsplan: false,
     has_logo: false,
+    accepting_innspill: true,
   };
   councils.push(council);
   return publicCouncil(council);
@@ -154,6 +156,11 @@ async function updateCouncilDisplayName(id, displayName) {
   if (council) council.display_name = displayName || council.name;
 }
 
+async function updateCouncilAcceptingInnspill(id, acceptingInnspill) {
+  const council = councils.find((item) => item.id === Number(id));
+  if (council) council.accepting_innspill = acceptingInnspill;
+}
+
 async function updateInnspill(councilId, innspillId, changes) {
   const item = innspill.find(
     (value) => value.id === Number(innspillId) && value.council_id === Number(councilId)
@@ -202,6 +209,7 @@ module.exports = {
   getTemaerForCouncil,
   saveTemaerForCouncil,
   updateCouncilDisplayName,
+  updateCouncilAcceptingInnspill,
   updateCouncilHandlingsplanFile,
   updateCouncilLogoFile,
   getCouncilHandlingsplanFile,

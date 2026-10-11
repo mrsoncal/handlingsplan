@@ -18,6 +18,7 @@ const {
   getTemaerForCouncil,
   saveTemaerForCouncil,
   updateCouncilDisplayName,
+  updateCouncilAcceptingInnspill,
   updateCouncilHandlingsplanFile,
   updateCouncilLogoFile,
   getCouncilHandlingsplanFile,
@@ -443,6 +444,12 @@ app.post("/api/ungdomsrad/:id/innspill", async (req, res) => {
       return res.status(404).json({ error: "Ungdomsråd ikke funnet." });
     }
 
+    if (council.accepting_innspill === false) {
+      return res
+        .status(403)
+        .json({ error: "Du kan ikke sende inn noen innspill akkurat nå." });
+    }
+
     const {
       actionType,
       tema,
@@ -484,7 +491,7 @@ app.post("/api/ungdomsrad/:id/innspill", async (req, res) => {
 app.post("/api/ungdomsrad/:id/admin-config", async (req, res) => {
   try {
     const id = req.params.id;
-    const { password, displayName, temaer } = req.body || {};
+    const { password, displayName, temaer, acceptingInnspill } = req.body || {};
 
     if (!password) {
       return res
@@ -505,9 +512,13 @@ app.post("/api/ungdomsrad/:id/admin-config", async (req, res) => {
       await updateCouncilDisplayName(id, displayName.trim() || null);
     }
 
+    if (typeof acceptingInnspill === "boolean") {
+      await updateCouncilAcceptingInnspill(id, acceptingInnspill);
+    }
+
     // Normaliser temaer-array (i tilfelle klient sender tull)
-    const cleanedTemaer = Array.isArray(temaer)
-      ? temaer.map((t, index) => {
+    if (Array.isArray(temaer)) {
+      const cleanedTemaer = temaer.map((t, index) => {
           const name = (t.name || "").trim();
           if (!name) return null;
 
@@ -520,10 +531,10 @@ app.post("/api/ungdomsrad/:id/admin-config", async (req, res) => {
             position:
               typeof t.position === "number" ? t.position : index,
           };
-        }).filter(Boolean)
-      : [];
+        }).filter(Boolean);
 
-    await saveTemaerForCouncil(id, cleanedTemaer);
+      await saveTemaerForCouncil(id, cleanedTemaer);
+    }
 
     // Hent oppdatert council + temaer og send tilbake
     const updatedCouncil = await getCouncilById(id);

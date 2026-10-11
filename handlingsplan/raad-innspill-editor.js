@@ -18,6 +18,8 @@ let innspillState = [];
 let editingId = null;
 let isLoggedIn = false;
 let currentCouncil = null;
+let innspillFingerprint = "";
+let innspillRefreshPromise = null;
 
 // ---- COOKIE HELPERS (deles med raad-admin) ----
 const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
@@ -105,7 +107,7 @@ async function fetchCouncil(id) {
 }
 
 async function fetchInnspill(id) {
-  const res = await fetch(INNSPILL_LIST_URL(id));
+  const res = await fetch(INNSPILL_LIST_URL(id), { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Kunne ikke hente innspill.");
   }
@@ -343,6 +345,43 @@ function sortInnspillForReview(items) {
     const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
     return tA - tB;
   });
+}
+
+async function refreshInnspill({ force = false } = {}) {
+  if (!raadId || innspillRefreshPromise) return innspillRefreshPromise;
+
+  innspillRefreshPromise = (async () => {
+    const nextInnspill = await fetchInnspill(raadId);
+    const nextFingerprint = JSON.stringify(nextInnspill);
+
+    if (force || nextFingerprint !== innspillFingerprint) {
+      innspillState = nextInnspill;
+      innspillFingerprint = nextFingerprint;
+
+      if (editingId !== null && !innspillState.some((item) => item.id === editingId)) {
+        closeEditDialog();
+        setEditorStatus("Innspillet som ble redigert, finnes ikke lenger.", "info");
+      }
+
+      renderInnspillTable();
+    }
+  })()
+    .catch((err) => {
+      console.warn("Kunne ikke oppdatere innspill automatisk:", err);
+    })
+    .finally(() => {
+      innspillRefreshPromise = null;
+    });
+
+  return innspillRefreshPromise;
+}
+
+function startInnspillAutoRefresh() {
+  window.HPInnspillSync?.subscribe(raadId, () => refreshInnspill());
+  window.HPInnspillSync?.startAutoRefresh(
+    () => refreshInnspill(),
+    { intervalMs: 3000 }
+  );
 }
 
 function normalizeInnspillForExport(item) {
@@ -654,6 +693,8 @@ async function handleVedtattToggleClick(id, nextIsVedtatt) {
     );
 
     renderInnspillTable();
+    innspillFingerprint = JSON.stringify(innspillState);
+    window.HPInnspillSync?.notify(raadId);
   } catch (err) {
     console.error(err);
     alert("Det oppstod en teknisk feil ved oppdatering av vedtatt-status.");
@@ -720,6 +761,8 @@ async function handleSaveClick(id) {
 
     closeEditDialog();
     renderInnspillTable();
+    innspillFingerprint = JSON.stringify(innspillState);
+    window.HPInnspillSync?.notify(raadId);
     setEditorStatus("Innspillet er lagret.", "success");
   } catch (err) {
     console.error(err);
@@ -807,6 +850,8 @@ async function handleDeleteClick(id) {
     if (editingId === id) closeEditDialog();
 
     renderInnspillTable();
+    innspillFingerprint = JSON.stringify(innspillState);
+    window.HPInnspillSync?.notify(raadId);
     setEditorStatus(`«${itemName}» er slettet.`, "success");
   } catch (err) {
     console.error(err);
@@ -1009,7 +1054,9 @@ async function init() {
     setTemaOrderFromCouncil(council);
 
     innspillState = await fetchInnspill(raadId);
+    innspillFingerprint = JSON.stringify(innspillState);
     renderInnspillTable();
+    startInnspillAutoRefresh();
 
   } catch (err) {
     console.error(err);

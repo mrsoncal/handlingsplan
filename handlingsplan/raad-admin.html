@@ -213,6 +213,18 @@
             <p class="help-text">
               Rediger eller slett innspill.
             </p>
+            <div class="innspill-collection-control">
+              <p id="innspill-collection-state" class="collection-state" aria-live="polite"></p>
+              <button
+                id="toggle-innspill-collection-btn"
+                class="btn btn-collection-toggle"
+                type="button"
+                aria-pressed="false"
+              >
+                Blokker innsamling
+              </button>
+              <p id="innspill-collection-status" class="notice" role="status" aria-live="polite"></p>
+            </div>
             <button
               id="open-innspill-editor-btn"
               class="btn"
@@ -242,6 +254,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="innspill-sync.js"></script>
     <script src="raad-admin.js"></script>
   </body>
 </html>

@@ -22,7 +22,7 @@ async function fetchCouncil(id) {
 }
 
 async function fetchInnspill(councilId) {
-  const res = await fetch(INNSPILL_URL(councilId));
+  const res = await fetch(INNSPILL_URL(councilId), { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Kunne ikke hente innspill for dette ungdomsrådet");
   }
@@ -60,7 +60,8 @@ function setupHandlingsplanLink(council) {
     link.style.display = "inline-block";
     link.href = url;
     link.target = "_blank";
-    link.textContent = "Handlingsplan";
+    const label = link.querySelector(".nav-label");
+    if (label) label.textContent = "Handlingsplan";
     link.classList.remove("disabled");
     link.setAttribute("aria-disabled", "false");
   } else {
@@ -135,6 +136,8 @@ function setTemaConfigFromCouncil(council) {
 }
 
 let currentSlide = 0;
+let innspillFingerprint = "";
+let innspillRefreshPromise = null;
 
 function applySlideAccent(slideEl, tema) {
   const color = TEMA_ACCENTS.get(tema) || "#888";
@@ -210,9 +213,13 @@ function renderInnspillCarousel(innspill) {
   const container = document.getElementById("raadContent");
   if (!container) return;
 
+  const previousTrack = document.getElementById("carousel-track");
+  const previousTema = previousTrack?.children[currentSlide]?.dataset.tema || "";
+
   const groups = sortAndGroupInnspill(innspill);
 
   if (!groups.length) {
+    currentSlide = 0;
     container.innerHTML = `
       <section class="card">
         <h2>Innspill til handlingsplanen</h2>
@@ -428,7 +435,10 @@ function renderInnspillCarousel(innspill) {
 
   track.replaceChildren(frag);
 
-  currentSlide = 0;
+  const previousTemaIndex = groups.findIndex(([tema]) => tema === previousTema);
+  currentSlide = previousTemaIndex >= 0
+    ? previousTemaIndex
+    : Math.min(currentSlide, groups.length - 1);
   updateCarousel();
 
   const prevBtn = document.getElementById("hpPrevBtn");
@@ -444,6 +454,36 @@ function renderInnspillCarousel(innspill) {
       currentSlide++;
       updateCarousel();
     });
+}
+
+async function refreshInnspill(councilId, { force = false } = {}) {
+  if (innspillRefreshPromise) return innspillRefreshPromise;
+
+  innspillRefreshPromise = (async () => {
+    const innspill = await fetchInnspill(councilId);
+    const nextFingerprint = JSON.stringify(innspill);
+
+    if (force || nextFingerprint !== innspillFingerprint) {
+      innspillFingerprint = nextFingerprint;
+      renderInnspillCarousel(innspill);
+    }
+  })()
+    .catch((err) => {
+      console.warn("Kunne ikke oppdatere innspill automatisk:", err);
+    })
+    .finally(() => {
+      innspillRefreshPromise = null;
+    });
+
+  return innspillRefreshPromise;
+}
+
+function startInnspillAutoRefresh(councilId) {
+  window.HPInnspillSync?.subscribe(councilId, () => refreshInnspill(councilId));
+  window.HPInnspillSync?.startAutoRefresh(
+    () => refreshInnspill(councilId),
+    { intervalMs: 3000 }
+  );
 }
 
 
@@ -500,7 +540,9 @@ async function init() {
 
       // Hent og vis innspill for dette rådet
       const innspill = await fetchInnspill(id);
+      innspillFingerprint = JSON.stringify(innspill);
       renderInnspillCarousel(innspill);
+      startInnspillAutoRefresh(id);
     } catch (err) {
       console.error(err);
       if (heading) heading.textContent = "Feil ved henting av ungdomsråd";

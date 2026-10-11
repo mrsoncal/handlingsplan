@@ -74,6 +74,7 @@ function publicCouncil(council: Record<string, unknown>) {
     display_name: council.display_name || council.name,
     year: council.year,
     created_at: council.created_at,
+    accepting_innspill: council.accepting_innspill !== false,
     has_handlingsplan: Boolean(council.handlingsplan_key),
     has_logo: Boolean(council.logo_key),
     logo_version: council.logo_key
@@ -127,7 +128,7 @@ export default async function (req: Request): Promise<Response> {
     if (segments.length === 2 && req.method === "GET") {
       const { data, error } = await admin.database
         .from("councils")
-        .select("id,name,display_name,year,created_at,logo_key,handlingsplan_key")
+        .select("id,name,display_name,year,created_at,accepting_innspill,logo_key,handlingsplan_key")
         .order("created_at", { ascending: true })
         .limit(500);
       if (error) throw error;
@@ -147,7 +148,7 @@ export default async function (req: Request): Promise<Response> {
         year: String(new Date().getFullYear()),
         password_salt: passwordData.salt,
         password_hash: passwordData.hash,
-      }]).select("id,name,display_name,year,created_at,logo_key,handlingsplan_key").single();
+      }]).select("id,name,display_name,year,created_at,accepting_innspill,logo_key,handlingsplan_key").single();
       if (error) throw error;
       return json(publicCouncil(data), 201);
     }
@@ -233,6 +234,10 @@ export default async function (req: Request): Promise<Response> {
     }
 
     if (segments[3] === "innspill" && segments.length === 4 && req.method === "POST") {
+      if (council.accepting_innspill === false) {
+        return json({ error: "Du kan ikke sende inn noen innspill akkurat nå." }, 403);
+      }
+
       const body = await req.json();
       const actionType = body.actionType;
       const tema = typeof body.tema === "string" ? body.tema.trim() : "";
@@ -286,9 +291,16 @@ export default async function (req: Request): Promise<Response> {
       if (!await verifyPassword(String(body.password || ""), council)) {
         return json({ error: "Feil passord for dette ungdomsrådet." }, 403);
       }
+      const councilChanges: Record<string, unknown> = {};
       if (typeof body.displayName === "string") {
+        councilChanges.display_name = body.displayName.trim() || council.name;
+      }
+      if (typeof body.acceptingInnspill === "boolean") {
+        councilChanges.accepting_innspill = body.acceptingInnspill;
+      }
+      if (Object.keys(councilChanges).length > 0) {
         const { error } = await admin.database.from("councils")
-          .update({ display_name: body.displayName.trim() || council.name }).eq("id", councilId);
+          .update(councilChanges).eq("id", councilId);
         if (error) throw error;
       }
       if (Array.isArray(body.temaer)) {
