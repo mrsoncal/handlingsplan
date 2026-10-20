@@ -751,10 +751,28 @@ select,
   color: #198447;
 }
 
-.excel-summary {
+.excel-mapping-details {
   margin-top: 16px;
-  padding: 12px 14px;
-  background: #ceecf4;
+}
+
+.excel-mapping-details summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.excel-mapping-heading {
+  margin-top: 16px;
+}
+
+.excel-mapping-heading h3,
+.manual-editor-heading h2 {
+  margin: 0 0 6px;
+}
+
+.excel-mapping-heading p {
+  margin: 0;
 }
 
 .excel-mapping {
@@ -771,64 +789,69 @@ select,
   font-weight: 700;
 }
 
-.excel-guidance {
-  margin-top: 16px;
-}
-
-.excel-guidance h3 {
-  margin: 0 0 6px;
-  font-size: 1rem;
-}
-
-.excel-guidance ul {
-  margin: 0;
-  padding-left: 22px;
-}
-
-.excel-guidance li + li {
-  margin-top: 4px;
-}
-
-.excel-preview-wrap {
-  max-height: 430px;
-  overflow: auto;
-  margin-top: 16px;
+.excel-org-mapping {
+  margin: 14px 0 0;
+  padding: 14px;
   border: 1px solid rgba(0, 82, 96, 0.28);
-  background: #ffffff;
 }
 
-.excel-preview-table {
-  min-width: 100%;
-  border-collapse: collapse;
-  white-space: nowrap;
-}
-
-.excel-preview-table th,
-.excel-preview-table td {
-  padding: 8px 10px;
-  border: 1px solid #d8e8eb;
-  text-align: left;
-}
-
-.excel-preview-table thead th,
-.excel-preview-table tbody th {
-  position: sticky;
-  z-index: 2;
-  background: #005260;
-  color: #ffffff;
-}
-
-.excel-preview-table thead th {
-  top: 0;
-}
-
-.excel-preview-table tbody th {
-  left: 0;
-}
-
-.excel-preview-table .excel-header-row td {
-  background: #ffed99;
+.excel-org-mapping legend {
+  padding: 0 6px;
   font-weight: 700;
+}
+
+.excel-org-mapping > p {
+  margin: 0 0 10px;
+}
+
+.excel-org-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.excel-priority {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ceecf4;
+  font-weight: 700;
+}
+
+.excel-remove-column {
+  background: #ffffff;
+  border: 1px solid #005260;
+  color: #005260;
+}
+
+.excel-add-column {
+  margin-top: 10px;
+}
+
+.excel-auto-number {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #fff7d1;
+  font-weight: 700;
+}
+
+.excel-auto-number input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: #005260;
+}
+
+.manual-editor-heading {
+  margin: 28px 0 12px;
 }
 
 .excel-use-button {
@@ -846,6 +869,16 @@ select,
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .excel-org-row {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .excel-remove-column {
+    grid-column: 2;
+    justify-self: start;
+  }
+
 }
 
 /* === CSV Tool layout tweaks === */
@@ -855,6 +888,21 @@ select,
 
 .csv-table tbody td {
   padding: 10px 14px;
+}
+
+.csv-table .csv-row-error-message {
+  background: #fbe7eb;
+}
+
+.csv-table .csv-row-error-message td {
+  padding-top: 0;
+  color: #8f1734;
+  font-weight: 700;
+}
+
+.csv-row-error-message ul {
+  margin: 0;
+  padding: 4px 0 8px 22px;
 }
 
 .input-delegatnummer {

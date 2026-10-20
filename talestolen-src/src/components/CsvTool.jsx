@@ -1,90 +1,39 @@
 import React, { useMemo, useState, useRef } from "react";
 import readXlsxFile, { readSheetNames } from "read-excel-file";
+import { loadDelegates, saveDelegatesToLocalStorageRaw } from "../store/bus.js";
+import {
+  REQUIRED_COLUMNS,
+  buildImportedRows,
+  compactExcelRows,
+  createParticipantRow,
+  displayExcelValue,
+  excelColumnName,
+  makeCsvContent,
+  suggestColumnMapping,
+  suggestHeaderRow,
+  validateParticipantRows,
+} from "../utils/excelImport.js";
 
 const MAX_EXCEL_FILE_SIZE = 10 * 1024 * 1024;
-const REQUIRED_COLUMNS = [
-  { key: "delegatnummer", label: "delegatnummer" },
-  { key: "fullName", label: "fullt navn" },
-  { key: "org", label: "representerer" },
-];
 
-function normalizeHeader(value) {
-  return String(value ?? "")
-    .trim()
-    .toLocaleLowerCase("no")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "");
-}
-
-const HEADER_ALIASES = {
-  delegatnummer: ["delegatnummer", "delegatenummer", "delegatnr", "nummer", "nr", "id"],
-  fullName: ["fulltnavn", "navn", "name", "fullname"],
-  org: ["representerer", "radelevradorganisasjon", "organisasjon", "elevrad", "rad", "kommune", "org"],
-};
-
-function excelColumnName(index) {
-  let value = index + 1;
-  let name = "";
-  while (value > 0) {
-    const remainder = (value - 1) % 26;
-    name = String.fromCharCode(65 + remainder) + name;
-    value = Math.floor((value - 1) / 26);
-  }
-  return name;
-}
-
-function displayExcelValue(value) {
-  if (value instanceof Date) return value.toLocaleDateString("nb-NO");
-  if (value == null) return "";
-  return String(value);
-}
-
-function compactExcelRows(rows) {
-  const hasValue = (value) => value != null && String(value).trim() !== "";
-  const firstRow = rows.findIndex((row) => row.some(hasValue));
-  if (firstRow < 0) return { rows: [], startRow: 1, columnCount: 0 };
-
-  let lastRow = rows.length - 1;
-  while (lastRow >= firstRow && !rows[lastRow].some(hasValue)) lastRow -= 1;
-
-  const activeRows = rows.slice(firstRow, lastRow + 1);
-  const columnCount = activeRows.reduce((max, row) => {
-    let lastColumn = row.length - 1;
-    while (lastColumn >= 0 && !hasValue(row[lastColumn])) lastColumn -= 1;
-    return Math.max(max, lastColumn + 1);
-  }, 0);
-
-  return {
-    rows: activeRows.map((row) =>
-      Array.from({ length: columnCount }, (_, index) => row[index] ?? null)
-    ),
-    startRow: firstRow + 1,
-    columnCount,
-  };
-}
-
-function suggestColumnMapping(rows, columnCount) {
-  const normalizedHeaders = (rows[0] || []).map(normalizeHeader);
-  const mapping = { delegatnummer: "", fullName: "", org: "" };
-  for (const field of REQUIRED_COLUMNS) {
-    const matchIndex = normalizedHeaders.findIndex((header) =>
-      HEADER_ALIASES[field.key].includes(header)
-    );
-    if (matchIndex >= 0 && matchIndex < columnCount) mapping[field.key] = String(matchIndex);
-  }
-  return mapping;
-}
-
-function createRow(id, delegatnummer = "", fullName = "", org = "") {
-  return { id, delegatnummer, fullName, org };
+function downloadCsvFile(rows) {
+  const csvContent = makeCsvContent(rows);
+  const blob = new Blob(["\ufeff", csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "delegater-talestolen.csv";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
 
 export default function CsvTool() {
   const [rows, setRows] = useState(() => {
     // Start with 5 empty rows, auto-numbered 1–5
     return Array.from({ length: 5 }, (_, i) =>
-      createRow(i + 1, String(i + 1), "", "")
+      createParticipantRow(i + 1, String(i + 1), "", "")
     );
   });
   const [globalError, setGlobalError] = useState("");
@@ -95,7 +44,9 @@ export default function CsvTool() {
   const [excelRows, setExcelRows] = useState([]);
   const [excelStartRow, setExcelStartRow] = useState(1);
   const [excelColumnCount, setExcelColumnCount] = useState(0);
-  const [excelMapping, setExcelMapping] = useState({ delegatnummer: "", fullName: "", org: "" });
+  const [excelHeaderIndex, setExcelHeaderIndex] = useState(0);
+  const [excelMapping, setExcelMapping] = useState({ delegatnummer: "", fullName: "", orgColumns: [] });
+  const [assignMissingNumbers, setAssignMissingNumbers] = useState(true);
   const [excelError, setExcelError] = useState("");
   const [excelStatus, setExcelStatus] = useState("");
   const [excelLoading, setExcelLoading] = useState(false);
@@ -115,7 +66,20 @@ export default function CsvTool() {
       setExcelRows(active.rows);
       setExcelStartRow(active.startRow);
       setExcelColumnCount(active.columnCount);
-      setExcelMapping(suggestColumnMapping(active.rows, active.columnCount));
+      const suggestedHeaderIndex = suggestHeaderRow(active.rows);
+      const suggestedMapping = suggestColumnMapping(active.rows, active.columnCount, suggestedHeaderIndex);
+      const imported = buildImportedRows({
+        rows: active.rows,
+        headerIndex: suggestedHeaderIndex,
+        mapping: suggestedMapping,
+        assignMissingNumbers,
+      }).map((row, index) => ({ ...row, id: index + 1 }));
+      setExcelHeaderIndex(suggestedHeaderIndex);
+      setExcelMapping(suggestedMapping);
+      setRows(imported);
+      nextIdRef.current = imported.length + 1;
+      setGlobalError("");
+      setExcelStatus(`${imported.length} deltakere er lagt i deltakerlisten.`);
     } catch (error) {
       console.error("[XLSX] parse error:", error);
       setExcelRows([]);
@@ -165,24 +129,60 @@ export default function CsvTool() {
     if (excelFile) await loadExcelSheet(excelFile, sheetName);
   };
 
+  const handleHeaderRowChange = (event) => {
+    const nextHeaderIndex = Number(event.target.value);
+    setExcelHeaderIndex(nextHeaderIndex);
+    setExcelMapping(suggestColumnMapping(excelRows, excelColumnCount, nextHeaderIndex));
+    setExcelStatus("");
+    setExcelError("");
+  };
+
+  const updateOrgColumn = (position, value) => {
+    setExcelMapping((current) => {
+      const nextColumns = [...current.orgColumns];
+      nextColumns[position] = value;
+      return { ...current, orgColumns: nextColumns.filter((column) => column !== "") };
+    });
+  };
+
+  const addOrgColumn = () => {
+    setExcelMapping((current) => ({
+      ...current,
+      orgColumns: [...current.orgColumns, ""],
+    }));
+  };
+
+  const removeOrgColumn = (position) => {
+    setExcelMapping((current) => ({
+      ...current,
+      orgColumns: current.orgColumns.filter((_, index) => index !== position),
+    }));
+  };
+
+  const excelImportPreview = useMemo(() => {
+    if (!excelRows.length) return [];
+    return buildImportedRows({
+      rows: excelRows,
+      headerIndex: excelHeaderIndex,
+      mapping: excelMapping,
+      assignMissingNumbers,
+    });
+  }, [excelRows, excelHeaderIndex, excelMapping, assignMissingNumbers]);
+
   const importExcelRows = () => {
     setExcelStatus("");
     setExcelError("");
     if (!excelRows.length) return;
-    if (REQUIRED_COLUMNS.some((field) => excelMapping[field.key] === "")) {
-      setExcelError("Velg hvilken Excel-kolonne som skal brukes for alle tre CSV-feltene.");
+    if (
+      excelMapping.delegatnummer === "" ||
+      excelMapping.fullName === "" ||
+      excelMapping.orgColumns.length === 0
+    ) {
+      setExcelError("Velg kolonner for delegatnummer, fullt navn og hvem deltakeren representerer.");
       return;
     }
 
-    const imported = excelRows
-      .slice(1)
-      .map((row) => ({
-        delegatnummer: displayExcelValue(row[Number(excelMapping.delegatnummer)]).trim(),
-        fullName: displayExcelValue(row[Number(excelMapping.fullName)]).trim(),
-        org: displayExcelValue(row[Number(excelMapping.org)]).trim(),
-      }))
-      .filter((row) => row.delegatnummer || row.fullName || row.org)
-      .map((row, index) => createRow(index + 1, row.delegatnummer, row.fullName, row.org));
+    const imported = excelImportPreview.map((row, index) => ({ ...row, id: index + 1 }));
 
     if (!imported.length) {
       setExcelError("Ingen deltakerrader ble funnet under overskriftsraden.");
@@ -192,7 +192,7 @@ export default function CsvTool() {
     setRows(imported);
     nextIdRef.current = imported.length + 1;
     setGlobalError("");
-    setExcelStatus(`${imported.length} rader er lagt inn i CSV-verktøyet. Kontroller markerte feil før nedlasting.`);
+    setExcelStatus(`${imported.length} deltakere er lagt i radeditoren. Kontroller eventuelle feil nedenfor.`);
   };
 
   const addRows = (count = 1) => {
@@ -204,7 +204,7 @@ export default function CsvTool() {
       const start = maxExisting || 0;
       const extra = Array.from({ length: count }, (_, idx) => {
         const rowNumber = start + idx + 1;
-        const row = createRow(nextIdRef.current, String(rowNumber), "", "");
+        const row = createParticipantRow(nextIdRef.current, String(rowNumber), "", "");
         nextIdRef.current += 1;
         return row;
       });
@@ -214,7 +214,7 @@ export default function CsvTool() {
 
   const clearAll = () => {
     if (!window.confirm("Vil du slette hele listen?")) return;
-    setRows([createRow(1, "1", "", "")]);
+    setRows([createParticipantRow(1, "1", "", "")]);
     nextIdRef.current = 2;
   };
 
@@ -246,74 +246,15 @@ export default function CsvTool() {
     setRows((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const { displayRows, rowErrors, hasAnyErrors } = useMemo(() => {
-    const trimmed = rows.map((r) => ({
-      ...r,
-      delegatnummer: String(r.delegatnummer ?? "").trim(),
-      fullName: String(r.fullName ?? "").trim(),
-      org: String(r.org ?? "").trim(),
-    }));
-
-    const active = trimmed.filter(
-      (r) => r.delegatnummer || r.fullName || r.org
-    );
-
-    const errorsById = new Map();
-    const numberCounts = new Map();
-
-    for (const r of active) {
-      const errs = [];
-      if (!r.delegatnummer) errs.push("Mangler delegatnummer");
-      if (!r.fullName) errs.push("Mangler fullt navn");
-      if (!r.org) errs.push("Mangler råd/elevråd/organisasjon");
-
-      const num = parseInt(r.delegatnummer, 10);
-      if (r.delegatnummer && Number.isNaN(num)) {
-        errs.push("Delegatnummer må være et heltall");
-      }
-
-      errorsById.set(r.id, errs);
-
-      if (r.delegatnummer && !Number.isNaN(num)) {
-        const key = String(num);
-        numberCounts.set(key, (numberCounts.get(key) || 0) + 1);
-      }
-    }
-
-    const duplicates = new Set(
-      Array.from(numberCounts.entries())
-        .filter(([, count]) => count > 1)
-        .map(([num]) => num)
-    );
-
-    for (const r of active) {
-      const errs = errorsById.get(r.id) || [];
-      if (
-        r.delegatnummer &&
-        duplicates.has(String(parseInt(r.delegatnummer, 10)))
-      ) {
-        errs.push("Delegatnummer er duplisert");
-      }
-      errorsById.set(r.id, errs);
-    }
-
-    const anyErrors = Array.from(errorsById.values()).some(
-      (list) => list.length > 0
-    );
-
-    return {
-      displayRows: trimmed,
-      rowErrors: errorsById,
-      hasAnyErrors: anyErrors,
-    };
-  }, [rows]);
+  const rowValidation = useMemo(() => validateParticipantRows(rows), [rows]);
+  const displayRows = rowValidation.normalized;
+  const rowErrors = rowValidation.errorsById;
+  const hasAnyErrors = rowValidation.hasAnyErrors;
 
   const handleDownload = () => {
     setGlobalError("");
 
-    const active = displayRows.filter(
-      (r) => r.delegatnummer || r.fullName || r.org
-    );
+    const active = rowValidation.active;
 
     if (active.length === 0) {
       setGlobalError("Legg til minst én delegat før du laster ned.");
@@ -327,48 +268,40 @@ export default function CsvTool() {
       return;
     }
 
-    const headers = [
-      "delegatnummer",
-      "fullt navn",
-      "representerer",
-    ];
-
-    const escapeVal = (v) => {
-      const s = String(v ?? "");
-      if (
-        s.includes('"') ||
-        s.includes(";") ||
-        s.includes(",") ||
-        s.includes("\n")
-      ) {
-        return '"' + s.replace(/"/g, '""') + '"';
-      }
-      return s;
-    };
-
-    const lines = [];
-    lines.push(headers.join(";"));
-    for (const r of active) {
-      const rowVals = [r.delegatnummer, r.fullName, r.org];
-      lines.push(rowVals.map(escapeVal).join(";"));
-    }
-
-    const csvContent = lines.join("\n");
-    const blob = new Blob([csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "delegater-talestolen.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    downloadCsvFile(active);
   };
 
-    return (
+  const useEditedRowsInTalestolen = () => {
+    setGlobalError("");
+    if (!rowValidation.active.length) {
+      setGlobalError("Legg til minst én delegat først.");
+      return;
+    }
+    if (rowValidation.hasAnyErrors) {
+      setGlobalError("Rett opp feilene som står under de markerte radene.");
+      return;
+    }
+    const csvContent = makeCsvContent(rowValidation.active);
+    loadDelegates(
+      rowValidation.active.map((row) => ({
+        number: row.delegatnummer,
+        name: row.fullName,
+        org: row.org,
+      }))
+    );
+    saveDelegatesToLocalStorageRaw(csvContent);
+    window.location.hash = "#admin";
+  };
+
+  const mappingIsComplete =
+    excelMapping.delegatnummer !== "" &&
+    excelMapping.fullName !== "" &&
+    excelMapping.orgColumns.length > 0;
+  const excelColumnOptions = Array.from({ length: excelColumnCount }, (_, columnIndex) => {
+    const header = displayExcelValue(excelRows[excelHeaderIndex]?.[columnIndex]).trim();
+    return { value: String(columnIndex), label: `${excelColumnName(columnIndex)}${header ? ` – ${header}` : ""}` };
+  });
+  return (
     <div className="page">
       <header className="header">
         <div className="nav-container">
@@ -394,21 +327,22 @@ export default function CsvTool() {
 
       <div className="container">
         <section className="card main-card">
-          <div className="title">CSV-verktøy for delegatliste</div>
-          <p style={{ marginBottom: 8 }}>
-            Fyll inn deltakerne under, så lager vi en CSV-fil som kan lastes opp i Talestolen.
-          </p>
-          <p className="muted" style={{ marginBottom: 16 }}>
-            Kolonnene er <b>delegatnummer</b>, <b>fullt navn</b> og{" "}
-            <b>råd/elevråd/organisasjon</b>.
-          </p>
+          <div className="title">Importer deltakere</div>
 
           <section className="excel-import-card" aria-labelledby="excel-import-title">
-            <div className="title excel-import-title" id="excel-import-title">Importer fra Excel</div>
+            <div className="title excel-import-title" id="excel-import-title">Last opp Excel-fil</div>
             <p>
-              Last opp en <b>.xlsx-fil</b>. Verktøyet viser hele det aktive området i valgt ark,
-              og lar deg velge hvilke kolonner som skal brukes i CSV-filen.
+              Velg en <b>.xlsx-fil</b> fra påmeldingssystemet.
             </p>
+
+            <label className="excel-auto-number">
+              <input
+                type="checkbox"
+                checked={assignMissingNumbers}
+                onChange={(event) => setAssignMissingNumbers(event.target.checked)}
+              />
+              <span>Tildel manglende delegatnumre automatisk</span>
+            </label>
 
             <div className="excel-upload-row">
               <input
@@ -439,17 +373,27 @@ export default function CsvTool() {
             {excelStatus && <p className="excel-message excel-message-success" role="status">{excelStatus}</p>}
 
             {excelRows.length > 0 && !excelLoading && (
-              <>
-                <div className="excel-summary">
-                  Aktivt område: <b>{excelRows.length} rader</b> og <b>{excelColumnCount} kolonner</b>
-                  {excelSheet ? <> i arket <b>{excelSheet}</b></> : null}.
-                  Første aktive rad er Excel-rad {excelStartRow} og brukes som overskriftsrad.
+              <details className="excel-mapping-details">
+                <summary>Juster kolonner</summary>
+                <div className="excel-mapping-heading">
+                  <h3>Kolonner</h3>
+                  <p>Kolonnene er valgt automatisk. Endre dem bare hvis deltakerlisten ser feil ut.</p>
                 </div>
 
-                <div className="excel-mapping" aria-label="Koble Excel-kolonner til CSV-felter">
-                  {REQUIRED_COLUMNS.map((field) => (
+                <div className="excel-mapping" aria-label="Koble Excel-kolonner til deltakerfelter">
+                  <label>
+                    Overskriftsrad
+                    <select className="input" value={excelHeaderIndex} onChange={handleHeaderRowChange}>
+                      {excelRows.slice(0, 10).map((row, index) => (
+                        <option key={index} value={index}>
+                          Excel-rad {excelStartRow + index} ({row.filter((value) => displayExcelValue(value).trim()).length} utfylte celler)
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {REQUIRED_COLUMNS.filter((field) => field.key !== "org").map((field) => (
                     <label key={field.key}>
-                      CSV-felt: {field.label}
+                      {field.label}
                       <select
                         className="input"
                         value={excelMapping[field.key]}
@@ -459,58 +403,56 @@ export default function CsvTool() {
                         }))}
                       >
                         <option value="">Velg kolonne</option>
-                        {Array.from({ length: excelColumnCount }, (_, columnIndex) => {
-                          const header = displayExcelValue(excelRows[0]?.[columnIndex]).trim();
-                          return (
-                            <option key={columnIndex} value={String(columnIndex)}>
-                              {excelColumnName(columnIndex)}{header ? ` – ${header}` : ""}
-                            </option>
-                          );
-                        })}
+                        {excelColumnOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
                       </select>
                     </label>
                   ))}
                 </div>
 
-                <div className="excel-guidance">
-                  <h3>Slik bør Excel-arket tilpasses</h3>
-                  <ul>
-                    <li>Bruk én overskriftsrad med kolonnene <b>delegatnummer</b>, <b>fullt navn</b> og <b>representerer</b>.</li>
-                    <li>Ha én deltaker per rad. Fjern tittelrader, delsummer og sammenslåtte celler.</li>
-                    <li>Delegatnummer må være unike heltall. Navn og organisasjon må være fylt ut.</li>
-                    <li>Ekstra kolonner kan ligge i arket. De vises i forhåndsvisningen, men blir ikke med i CSV-filen.</li>
-                  </ul>
-                </div>
-
-                <div className="excel-preview-wrap" tabIndex="0" aria-label="Forhåndsvisning av aktivt Excel-område">
-                  <table className="excel-preview-table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Excel-rad</th>
-                        {Array.from({ length: excelColumnCount }, (_, index) => (
-                          <th scope="col" key={index}>{excelColumnName(index)}</th>
+                <fieldset className="excel-org-mapping">
+                  <legend>Hvem deltakeren representerer</legend>
+                  <p className="muted">Vi bruker den første utfylte verdien, ovenfra og ned.</p>
+                  {excelMapping.orgColumns.map((column, position) => (
+                    <div className="excel-org-row" key={`${position}-${column}`}>
+                      <span className="excel-priority">{position + 1}</span>
+                      <select
+                        className="input"
+                        aria-label={`Representasjon, prioritet ${position + 1}`}
+                        value={column}
+                        onChange={(event) => updateOrgColumn(position, event.target.value)}
+                      >
+                        <option value="">Velg kolonne</option>
+                        {excelColumnOptions.map((option) => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {excelRows.map((row, rowIndex) => (
-                        <tr key={rowIndex} className={rowIndex === 0 ? "excel-header-row" : undefined}>
-                          <th scope="row">{excelStartRow + rowIndex}</th>
-                          {Array.from({ length: excelColumnCount }, (_, columnIndex) => (
-                            <td key={columnIndex}>{displayExcelValue(row[columnIndex])}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </select>
+                      <button
+                        type="button"
+                        className="btn excel-remove-column"
+                        aria-label={`Fjern reservekolonne ${position + 1}`}
+                        onClick={() => removeOrgColumn(position)}
+                      >
+                        Fjern
+                      </button>
+                    </div>
+                  ))}
+                  <button className="btn excel-add-column" type="button" onClick={addOrgColumn}>
+                    + Legg til reservekolonne
+                  </button>
+                </fieldset>
 
-                <button className="btn primary excel-use-button" type="button" onClick={importExcelRows}>
-                  Bruk valgte kolonner i CSV-verktøyet
+                <button className="btn primary excel-use-button" type="button" onClick={importExcelRows} disabled={!mappingIsComplete}>
+                  Oppdater deltakerlisten
                 </button>
-              </>
+              </details>
             )}
           </section>
+
+          <div className="manual-editor-heading">
+            <h2>Deltakerliste</h2>
+          </div>
 
           <div className="row" style={{ marginBottom: 12, gap: 8 }}>
             <button className="btn" type="button" onClick={() => addRows(1)}>
@@ -524,7 +466,7 @@ export default function CsvTool() {
               type="button"
               onClick={renumber}
             >
-              Renummerer automatisk
+              Nummerer alle på nytt
             </button>
             <button
               className="btn alternatives-btn"
@@ -552,57 +494,72 @@ export default function CsvTool() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => {
+                {rows.map((r, rowIndex) => {
                   const errors = rowErrors.get(r.id) || [];
                   const hasError = errors.length > 0;
+                  const errorId = `csv-row-errors-${r.id}`;
                   return (
-                    <tr
-                      key={r.id}
-                      className={hasError ? "csv-row-error" : undefined}
-                    >
-                      <td>
-                        <input
-                          className="input input-delegatnummer"
-                          type="text"
-                          value={r.delegatnummer}
-                          onChange={(e) =>
-                            updateCell(r.id, "delegatnummer", e.target.value)
-                          }
-                          placeholder="1"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          className="input input-fullname"
-                          type="text"
-                          value={r.fullName}
-                          onChange={(e) =>
-                            updateCell(r.id, "fullName", e.target.value)
-                          }
-                          placeholder="Fornavn Etternavn"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          className="input input-org"
-                          type="text"
-                          value={r.org}
-                          onChange={(e) =>
-                            updateCell(r.id, "org", e.target.value)
-                          }
-                          placeholder="F.eks. Telemark ungdomsråd"
-                        />
-                      </td>
-                      <td>
-                        <button
-                          className="btn delete-btn"
-                          type="button"
-                          onClick={() => deleteRow(r.id)}
-                        >
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
+                    <React.Fragment key={r.id}>
+                      <tr className={hasError ? "csv-row-error" : undefined}>
+                        <td>
+                          <input
+                            className="input input-delegatnummer"
+                            type="text"
+                            inputMode="numeric"
+                            value={r.delegatnummer}
+                            aria-label={`Delegatnummer, rad ${rowIndex + 1}`}
+                            aria-invalid={hasError || undefined}
+                            aria-describedby={hasError ? errorId : undefined}
+                            onChange={(e) => updateCell(r.id, "delegatnummer", e.target.value)}
+                            placeholder="1"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="input input-fullname"
+                            type="text"
+                            value={r.fullName}
+                            aria-label={`Fullt navn, rad ${rowIndex + 1}`}
+                            aria-invalid={hasError || undefined}
+                            aria-describedby={hasError ? errorId : undefined}
+                            onChange={(e) => updateCell(r.id, "fullName", e.target.value)}
+                            placeholder="Fornavn Etternavn"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            className="input input-org"
+                            type="text"
+                            value={r.org}
+                            aria-label={`Representerer, rad ${rowIndex + 1}`}
+                            aria-invalid={hasError || undefined}
+                            aria-describedby={hasError ? errorId : undefined}
+                            onChange={(e) => updateCell(r.id, "org", e.target.value)}
+                            placeholder="F.eks. Telemark ungdomsråd"
+                          />
+                        </td>
+                        <td>
+                          <button
+                            className="btn delete-btn"
+                            type="button"
+                            aria-label={`Slett rad ${rowIndex + 1}${r.fullName ? `: ${r.fullName}` : ""}`}
+                            title="Slett rad"
+                            onClick={() => deleteRow(r.id)}
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                      {hasError && (
+                        <tr className="csv-row-error-message">
+                          <td colSpan="4">
+                            <ul id={errorId}>
+                              {errors.map((error) => <li key={error}>{error}</li>)}
+                            </ul>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -618,12 +575,12 @@ export default function CsvTool() {
               flexWrap: "wrap",
             }}
           >
-            <button className="btn primary" type="button" onClick={handleDownload}>
+            <button className="btn primary" type="button" onClick={useEditedRowsInTalestolen}>
+              Bruk i Talestolen
+            </button>
+            <button className="btn" type="button" onClick={handleDownload}>
               Last ned CSV-fil
             </button>
-            <span className="muted">
-              Filen får navn <code>delegater-talestolen.csv</code>.
-            </span>
           </div>
         </section>
       </div>

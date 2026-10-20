@@ -333,6 +333,15 @@ function initBackLink() {
   if (backLink && raadId) {
     backLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
   }
+  const registrationUrl = raadId
+    ? `raad-paamelding-admin.html?id=${encodeURIComponent(raadId)}`
+    : "raad-paamelding-admin.html";
+  const registrationLink = $("registration-admin-link");
+  const registrationButton = $("open-registration-admin-btn");
+  const registrationTopLink = $("registration-top-link");
+  if (registrationLink) registrationLink.href = registrationUrl;
+  if (registrationButton) registrationButton.href = registrationUrl;
+  if (registrationTopLink) registrationTopLink.href = registrationUrl;
 }
 
 // ---------- login ----------

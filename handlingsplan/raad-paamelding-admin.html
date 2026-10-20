@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Påmeldinger – administrasjon</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="registration.css?v=20261019-3" />
+    <script>
+      window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
+    </script>
+  </head>
+  <body class="registration-admin-page">
+    <script src="raad-brand-cache.js"></script>
+    <header class="header">
+      <div class="nav-container">
+        <nav class="nav registration-top-nav">
+          <a class="btn nav" id="back-link" href="raad-oversikt.html">Tilbake</a>
+          <button class="btn nav" id="sign-out-btn" type="button" hidden>Logg ut</button>
+        </nav>
+        <img class="brand" id="raadBrandLogo" data-fallback-logo="../UFR-logo.png" alt="Telemark Ungdomsråd" />
+      </div>
+      <div class="header-space-container"><div class="header-space"></div></div>
+    </header>
+
+    <main class="container registration-shell">
+      <section class="card main-card">
+        <p class="eyebrow">Påmeldinger</p>
+        <h1 id="page-title">Administrer arrangement</h1>
+
+        <section id="auth-panel" class="registration-panel registration-auth-panel">
+          <div id="email-step">
+            <h2>Logg inn med e-post</h2>
+            <p>Du får en engangskode på e-post. Hver administrator bruker sin egen konto.</p>
+            <label class="field-label" for="auth-email">E-postadresse</label>
+            <div class="registration-inline-row">
+              <input class="input" id="auth-email" type="email" autocomplete="email" />
+              <button class="btn" id="send-code-btn" type="button">Send kode</button>
+            </div>
+          </div>
+          <div id="code-step" hidden>
+            <h2>Skriv inn koden</h2>
+            <p id="code-help"></p>
+            <label class="field-label" for="auth-code">Engangskode</label>
+            <div class="registration-inline-row">
+              <input class="input" id="auth-code" inputmode="numeric" autocomplete="one-time-code" />
+              <button class="btn" id="verify-code-btn" type="button">Logg inn</button>
+            </div>
+          </div>
+          <p class="notice" id="auth-status" role="status"></p>
+        </section>
+
+        <section id="bootstrap-panel" class="registration-panel" hidden>
+          <h2>Koble kontoen til ungdomsrådet</h2>
+          <p>Dette gjøres én gang av den første eieren. Bruk rådets eksisterende administratorpassord.</p>
+          <div class="registration-inline-row">
+            <input class="input" id="bootstrap-password" type="password" placeholder="Rådets passord" />
+            <button class="btn" id="bootstrap-btn" type="button">Aktiver som eier</button>
+          </div>
+          <p class="notice" id="bootstrap-status" role="status"></p>
+        </section>
+
+        <div id="admin-app" hidden>
+          <div class="registration-toolbar">
+            <div>
+              <p class="eyebrow">Innlogget som</p>
+              <strong id="current-user-label"></strong>
+              <span class="role-badge" id="current-role-label"></span>
+            </div>
+            <button class="btn" id="new-event-btn" type="button">+ Nytt arrangement</button>
+          </div>
+
+          <section id="new-event-panel" class="registration-panel new-event-panel" hidden>
+            <div class="registration-section-heading">
+              <div>
+                <p class="eyebrow">Nytt arrangement</p>
+                <h2>Opprett arrangement</h2>
+              </div>
+              <button class="btn secondary-link" id="cancel-new-event-btn" type="button">Avbryt</button>
+            </div>
+            <form id="new-event-form" class="registration-form-grid">
+              <label class="wide-field">Navn på arrangementet
+                <input class="input" id="new-event-title" type="text" placeholder="For eksempel Ungdomstinget 2027" autocomplete="off" required />
+              </label>
+              <label class="wide-field">Kort beskrivelse <span class="optional-label">(valgfritt)</span>
+                <textarea class="input" id="new-event-description" rows="3" placeholder="Hva gjelder påmeldingen?"></textarea>
+              </label>
+              <div class="registration-actions wide-field compact-actions">
+                <button class="btn registration-save-btn" id="create-event-btn" type="submit">Opprett arrangement</button>
+              </div>
+              <p class="notice wide-field" id="new-event-status" role="status"></p>
+            </form>
+          </section>
+
+          <div class="registration-admin-grid">
+            <aside class="registration-panel event-sidebar">
+              <h2>Arrangementer</h2>
+              <div id="event-list" class="event-list"></div>
+            </aside>
+
+            <div class="registration-workspace">
+              <section id="empty-event-state" class="registration-panel empty-state">
+                <h2>Velg eller opprett et arrangement</h2>
+                <p>Her lager du påmeldingsskjemaet og ser alle som har meldt seg på.</p>
+              </section>
+
+              <div id="event-editor" hidden>
+                <section class="registration-panel">
+                  <div class="registration-section-heading">
+                    <div>
+                      <p class="eyebrow">Arrangement</p>
+                      <h2>Oppsett og påmeldingslenke</h2>
+                    </div>
+                    <span class="status-badge" id="event-status-badge"></span>
+                  </div>
+                  <div class="registration-form-grid">
+                    <label>Navn
+                      <input class="input" id="event-title" type="text" />
+                    </label>
+                    <label>Status
+                      <select class="input" id="event-status">
+                        <option value="draft">Kladd</option>
+                        <option value="open">Åpen</option>
+                        <option value="closed">Stengt</option>
+                        <option value="archived">Arkivert</option>
+                      </select>
+                    </label>
+                    <label class="wide-field">Beskrivelse
+                      <textarea class="input" id="event-description" rows="3"></textarea>
+                    </label>
+                  </div>
+                  <div class="registration-actions">
+                    <button class="btn registration-save-btn" id="save-event-btn" type="button">Lagre arrangement</button>
+                    <button class="btn btn-copy" id="copy-registration-link-btn" type="button">Kopier påmeldingslenke</button>
+                    <a class="btn secondary-link" id="open-registration-link" target="_blank" rel="noopener">Åpne skjema</a>
+                  </div>
+                  <p class="notice" id="event-status-message" role="status"></p>
+                </section>
+
+                <section class="registration-panel form-builder-panel">
+                  <div class="registration-section-heading">
+                    <div>
+                      <p class="eyebrow">Påmeldingsskjema</p>
+                      <h2>Bygg skjemaet</h2>
+                      <p class="help-text">Klikk i et spørsmål for å endre teksten. Endringene lagres fortløpende.</p>
+                    </div>
+                    <a class="btn secondary-link" id="preview-registration-link" target="_blank" rel="noopener">Forhåndsvis skjema</a>
+                  </div>
+                  <div id="form-builder-list" class="form-builder-list"></div>
+                  <div class="question-add-bar" id="question-add-bar">
+                    <strong>Legg til spørsmål</strong>
+                    <button class="question-type-button" data-field-type="short_text" type="button"><span>＋</span>Kort svar</button>
+                    <button class="question-type-button" data-field-type="long_text" type="button"><span>＋</span>Langt svar</button>
+                    <button class="question-type-button" data-field-type="single_choice" type="button"><span>＋</span>Flervalg</button>
+                  </div>
+                  <p class="notice" id="builder-status-message" role="status"></p>
+                </section>
+
+                <section class="registration-panel">
+                  <div class="registration-section-heading">
+                    <div>
+                      <p class="eyebrow">Svar</p>
+                      <h2>Alle påmeldte</h2>
+                      <p class="help-text" id="registration-count"></p>
+                    </div>
+                    <button class="btn registration-save-btn" id="send-to-talestolen-btn" type="button">Bruk listen i Talestolen</button>
+                  </div>
+                  <div class="registration-table-wrap">
+                    <table class="registration-table">
+                      <thead><tr><th>Navn</th><th>Kontakt</th><th>Deltar som</th><th>Representerer</th><th>Påmeldt</th></tr></thead>
+                      <tbody id="registration-rows"></tbody>
+                    </table>
+                  </div>
+                  <p class="notice" id="registration-status-message" role="status"></p>
+                </section>
+
+                <section id="member-panel" class="registration-panel" hidden>
+                  <h2>Gi flere tilgang</h2>
+                  <p>Inviter med e-post og velg hvor mye personen skal kunne gjøre.</p>
+                  <form id="invite-form" class="registration-inline-row">
+                    <input class="input" id="invite-email" type="email" placeholder="navn@eksempel.no" required />
+                    <select class="input" id="invite-role">
+                      <option value="registration_manager">Påmeldingsansvarlig</option>
+                      <option value="viewer">Kun lesetilgang</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                    <button class="btn" type="submit">Send invitasjon</button>
+                  </form>
+                  <p class="notice" id="invite-status" role="status"></p>
+                  <div id="invite-list" class="invite-list"></div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="raad-paamelding-admin.js?v=20261019-3"></script>
+  </body>
+</html>

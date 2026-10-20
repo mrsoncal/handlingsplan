@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Påmelding</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="registration.css?v=20261019-3" />
+    <script>
+      window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
+    </script>
+  </head>
+  <body class="public-registration-page">
+    <header class="header">
+      <div class="nav-container"><img class="brand" src="../UFR-logo.png" alt="Telemark Ungdomsråd" /></div>
+      <div class="header-space-container"><div class="header-space"></div></div>
+    </header>
+    <main class="container public-registration-shell">
+      <section class="card main-card">
+        <p class="eyebrow" id="registration-council">Påmelding</p>
+        <h1 id="registration-title">Laster påmelding…</h1>
+        <p id="registration-description"></p>
+        <div id="registration-closed" class="registration-panel" hidden>
+          <h2>Påmeldingen er stengt</h2>
+          <p>Kontakt arrangøren dersom du mener dette er feil.</p>
+        </div>
+        <form id="public-registration-form" class="registration-panel public-registration-form" hidden>
+          <div id="public-form-fields" class="public-form-fields"></div>
+          <button class="btn registration-save-btn" type="submit">Send påmelding</button>
+          <p class="notice" id="registration-form-status" role="status"></p>
+        </form>
+        <div id="registration-success" class="registration-panel success-panel" hidden>
+          <h2>Påmeldingen er sendt</h2>
+          <p>Arrangøren kontrollerer påmeldingen før du legges til i deltakerlisten.</p>
+        </div>
+      </section>
+    </main>
+    <script src="paamelding.js?v=20261019-3"></script>
+  </body>
+</html>

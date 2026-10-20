@@ -47,6 +47,17 @@ function setupOpenFormsButton(councilId) {
   });
 }
 
+function setupRegistrationAdminLink(councilId) {
+  const link = document.getElementById("registrationAdminBtn");
+  if (!link) return;
+  if (!councilId) {
+    link.setAttribute("aria-disabled", "true");
+    link.removeAttribute("href");
+    return;
+  }
+  link.href = `raad-paamelding-admin.html?id=${encodeURIComponent(councilId)}`;
+}
+
 // === Handlingsplan-lenke ===
 function setupHandlingsplanLink(council) {
   const link = document.getElementById("handlingsplanLink");
@@ -540,6 +551,7 @@ async function init() {
   const container = document.getElementById("raadContent");
 
   setupOpenFormsButton(id);
+  setupRegistrationAdminLink(id);
 
   if (container) {
     container.innerHTML = `

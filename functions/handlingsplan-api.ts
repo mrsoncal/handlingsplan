@@ -112,6 +112,12 @@ export default async function (req: Request): Promise<Response> {
       return json({ status: "ok", message: "Handlingsplan API is running" });
     }
 
+    if (req.method === "GET" && route === "/api/public-config") {
+      const anonKey = Deno.env.get("ANON_KEY");
+      if (!anonKey) return json({ error: "Innlogging er ikke konfigurert." }, 503);
+      return json({ baseUrl, anonKey });
+    }
+
     if (req.method === "POST" && route === "/api/admin/login") {
       const configuredPassword = Deno.env.get("HANDLINGSPLAN_ADMIN_PASSWORD");
       if (!configuredPassword) return json({ error: "Globalt admin-passord er ikke konfigurert." }, 503);
@@ -119,6 +125,117 @@ export default async function (req: Request): Promise<Response> {
       if (!body.password || body.password !== configuredPassword) return json({ error: "Feil passord." }, 401);
       const signingSecret = Deno.env.get("JWT_SECRET") || apiKey;
       return json({ token: await createAdminToken(signingSecret) });
+    }
+
+    if (segments[0] === "api" && segments[1] === "paamelding" && segments.length === 3) {
+      const slug = decodeURIComponent(segments[2]);
+      if (!/^[a-z0-9-]{12,100}$/.test(slug)) return json({ error: "Ugyldig påmeldingslenke." }, 400);
+
+      const { data: event, error: eventError } = await admin.database
+        .from("registration_events")
+        .select("id,council_id,title,description,status,starts_at,closes_at")
+        .eq("public_slug", slug)
+        .maybeSingle();
+      if (eventError) throw eventError;
+      if (!event) return json({ error: "Påmeldingen finnes ikke." }, 404);
+
+      const now = Date.now();
+      const isOpen = event.status === "open"
+        && (!event.starts_at || new Date(event.starts_at).getTime() <= now)
+        && (!event.closes_at || new Date(event.closes_at).getTime() >= now);
+
+      if (req.method === "GET") {
+        const [councilResult, typeResult, fieldResult] = await Promise.all([
+          admin.database.from("councils").select("display_name,name").eq("id", event.council_id).single(),
+          admin.database.from("registration_types")
+            .select("id,name,affiliation_prompt,display_template,requires_affiliation,can_receive_delegate_number,position")
+            .eq("event_id", event.id).order("position", { ascending: true }).limit(100),
+          admin.database.from("registration_form_fields")
+            .select("id,label,field_type,help_text,is_required,position,system_key,options")
+            .eq("event_id", event.id).order("position", { ascending: true }).limit(200),
+        ]);
+        if (councilResult.error) throw councilResult.error;
+        if (typeResult.error) throw typeResult.error;
+        if (fieldResult.error) throw fieldResult.error;
+        return json({
+          event: {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            status: event.status,
+            isOpen,
+            councilName: councilResult.data.display_name || councilResult.data.name,
+          },
+          types: typeResult.data || [],
+          fields: fieldResult.data || [],
+        });
+      }
+
+      if (req.method === "POST") {
+        if (!isOpen) return json({ error: "Påmeldingen er ikke åpen." }, 409);
+        const body = await req.json();
+        const rawAnswers = body.answers && typeof body.answers === "object" ? body.answers : {};
+        const { data: fields, error: fieldsError } = await admin.database.from("registration_form_fields")
+          .select("id,label,field_type,is_required,system_key,options")
+          .eq("event_id", event.id).order("position", { ascending: true }).limit(200);
+        if (fieldsError) throw fieldsError;
+        const answerFor = (systemKey: string) => {
+          const field = (fields || []).find((item) => item.system_key === systemKey);
+          const raw = field ? rawAnswers[String(field.id)] : undefined;
+          return typeof raw === "string" ? raw.trim() : "";
+        };
+        for (const field of fields || []) {
+          const raw = rawAnswers[String(field.id)];
+          const value = typeof raw === "string" ? raw.trim() : "";
+          if (field.is_required && !value) return json({ error: `Fyll inn «${field.label}».` }, 400);
+          if (value.length > 5000) return json({ error: `Svaret på «${field.label}» er for langt.` }, 400);
+          if (field.field_type === "single_choice" && !field.system_key && value && !(field.options || []).includes(value)) {
+            return json({ error: `Velg et gyldig alternativ for «${field.label}».` }, 400);
+          }
+        }
+        const fullName = answerFor("full_name") || (typeof body.fullName === "string" ? body.fullName.trim() : "");
+        const email = answerFor("email") || (typeof body.email === "string" ? body.email.trim() : "");
+        const phone = answerFor("phone") || (typeof body.phone === "string" ? body.phone.trim() : "");
+        const affiliation = answerFor("affiliation") || (typeof body.affiliation === "string" ? body.affiliation.trim() : "");
+        const typeId = Number(answerFor("participant_type") || body.typeId);
+        if (fullName.length < 2 || fullName.length > 160 || !Number.isInteger(typeId)) {
+          return json({ error: "Navn og påmeldingstype er påkrevd." }, 400);
+        }
+        if (email && (email.length > 320 || !email.includes("@"))) {
+          return json({ error: "Skriv inn en gyldig e-postadresse." }, 400);
+        }
+        const { data: registrationType, error: typeError } = await admin.database
+          .from("registration_types").select("id,requires_affiliation")
+          .eq("id", typeId).eq("event_id", event.id).maybeSingle();
+        if (typeError) throw typeError;
+        if (!registrationType) return json({ error: "Ugyldig påmeldingstype." }, 400);
+        if (registrationType.requires_affiliation && !affiliation) {
+          return json({ error: "Fyll inn hvem du representerer." }, 400);
+        }
+        const { data, error } = await admin.database.from("registrations").insert([{
+          event_id: event.id,
+          type_id: typeId,
+          full_name: fullName,
+          email: email || null,
+          phone: phone || null,
+          affiliation: affiliation || null,
+          status: "submitted",
+        }]).select("id,created_at").single();
+        if (error) throw error;
+        const answers = (fields || []).flatMap((field) => {
+          const raw = rawAnswers[String(field.id)];
+          const value = typeof raw === "string" ? raw.trim() : "";
+          return value ? [{ event_id: event.id, registration_id: data.id, field_id: field.id, value_text: value }] : [];
+        });
+        if (answers.length) {
+          const answerResult = await admin.database.from("registration_answers").insert(answers);
+          if (answerResult.error) {
+            await admin.database.from("registrations").delete().eq("id", data.id);
+            throw answerResult.error;
+          }
+        }
+        return json({ registration: data }, 201);
+      }
     }
 
     if (segments[0] !== "api" || segments[1] !== "ungdomsrad") {
@@ -192,6 +309,28 @@ export default async function (req: Request): Promise<Response> {
         return json({ error: "Feil passord for dette ungdomsrådet." }, 401);
       }
       return json({ authenticated: true });
+    }
+
+    if (segments[3] === "registration-bootstrap" && segments.length === 4 && req.method === "POST") {
+      const body = await req.json();
+      if (!await verifyPassword(String(body.password || ""), council)) {
+        return json({ error: "Feil passord for dette ungdomsrådet." }, 403);
+      }
+      const userId = typeof body.userId === "string" ? body.userId.trim() : "";
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) return json({ error: "Ugyldig bruker." }, 400);
+      const existing = await admin.database.from("council_members")
+        .select("id").eq("council_id", councilId).limit(1);
+      if (existing.error) throw existing.error;
+      if ((existing.data || []).length) {
+        return json({ error: "Rådet har allerede en eier. Be en administrator invitere deg." }, 409);
+      }
+      const { data, error } = await admin.database.from("council_members").insert([{
+        council_id: councilId,
+        user_id: userId,
+        role: "owner",
+      }]).select("id,council_id,user_id,role").single();
+      if (error) throw error;
+      return json({ member: data }, 201);
     }
 
     if (segments[3] === "password" && segments.length === 4 && req.method === "PUT") {
