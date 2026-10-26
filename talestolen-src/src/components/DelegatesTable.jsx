@@ -25,9 +25,9 @@ export default function DelegatesTable({ state }){
   }
 
   return (
-    <div className="card" style={{marginTop:16}}>
+    <div className="card" data-tutorial="delegates" style={{marginTop:16}}>
       <div className="title">Delegater</div>
-      <div className="muted">Importerte delegater lagres lokalt i nettleseren din og kan redigeres her.</div>
+      <div className="muted">Delegatene lagres på det valgte ungdomsrådet og deles mellom innloggede enheter.</div>
       <div className="tableWrap">
         <table className="table">
           <thead>
@@ -61,13 +61,13 @@ export default function DelegatesTable({ state }){
                 <td>
                   {editing===row.number ? (
                     <div className="row" style={{gap:6}}>
-                      <button className="btn" onClick={saveEdit}>Save</button>
-                      <button className="btn" onClick={cancelEdit}>Cancel</button>
+                      <button className="btn" onClick={saveEdit}>Lagre</button>
+                      <button className="btn" onClick={cancelEdit}>Avbryt</button>
                     </div>
                   ) : (
                     <div className="row" style={{gap:6}}>
-                      <button className="btn" onClick={()=>startEdit(row)}>Edit</button>
-                      <button className="btn danger" onClick={()=>deleteDelegate(row.number)}>Delete</button>
+                      <button className="btn" onClick={()=>startEdit(row)}>Rediger</button>
+                      <button className="btn danger" onClick={()=>deleteDelegate(row.number)}>Slett</button>
                     </div>
                   )}
                 </td>

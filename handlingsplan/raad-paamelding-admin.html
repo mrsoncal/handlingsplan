@@ -4,20 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Påmeldinger – administrasjon</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="registration.css?v=20261019-3" />
+    <link rel="stylesheet" href="styles.css?v=20261023-2" />
+    <link rel="stylesheet" href="registration.css?v=20261026-1" />
     <script>
       window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
     </script>
   </head>
   <body class="registration-admin-page">
-    <script src="raad-brand-cache.js"></script>
+    <script src="raad-brand-cache.js?v=20261023-4"></script>
     <header class="header">
       <div class="nav-container">
-        <nav class="nav registration-top-nav">
-          <a class="btn nav" id="back-link" href="raad-oversikt.html">Tilbake</a>
-          <button class="btn nav" id="sign-out-btn" type="button" hidden>Logg ut</button>
-        </nav>
+        <div class="navigation-bar">
+          <nav class="nav" aria-label="Navigasjon">
+            <a class="btn nav" id="back-link" href="raad-oversikt.html">Tilbake</a>
+          </nav>
+          <nav class="nav-r" aria-label="Konto">
+            <button class="btn nav" id="sign-out-btn" type="button" hidden>Logg ut</button>
+          </nav>
+        </div>
         <img class="brand" id="raadBrandLogo" data-fallback-logo="../UFR-logo.png" alt="Telemark Ungdomsråd" />
       </div>
       <div class="header-space-container"><div class="header-space"></div></div>
@@ -51,10 +55,9 @@
         </section>
 
         <section id="bootstrap-panel" class="registration-panel" hidden>
-          <h2>Koble kontoen til ungdomsrådet</h2>
-          <p>Dette gjøres én gang av den første eieren. Bruk rådets eksisterende administratorpassord.</p>
+          <h2>Koble kontoen til denne siden</h2>
+          <p>Dette gjøres én gang av den første eieren. Rådsøkten du allerede har åpnet brukes til å bekrefte tilgangen.</p>
           <div class="registration-inline-row">
-            <input class="input" id="bootstrap-password" type="password" placeholder="Rådets passord" />
             <button class="btn" id="bootstrap-btn" type="button">Aktiver som eier</button>
           </div>
           <p class="notice" id="bootstrap-status" role="status"></p>
@@ -118,7 +121,7 @@
                       <input class="input" id="event-title" type="text" />
                     </label>
                     <label>Status
-                      <select class="input" id="event-status">
+                      <select class="input" id="event-status" aria-label="Status">
                         <option value="draft">Kladd</option>
                         <option value="open">Åpen</option>
                         <option value="closed">Stengt</option>
@@ -142,7 +145,8 @@
                     <div>
                       <p class="eyebrow">Påmeldingsskjema</p>
                       <h2>Bygg skjemaet</h2>
-                      <p class="help-text">Klikk i et spørsmål for å endre teksten. Endringene lagres fortløpende.</p>
+                      <p class="help-text">Legg til nye spørsmål, eller endre tekst, svartype og om eksisterende spørsmål er obligatoriske. Spørsmål kan også fjernes. Endringene lagres fortløpende.</p>
+                      <p class="help-text builder-identity-note" id="builder-identity-note" hidden></p>
                     </div>
                     <a class="btn secondary-link" id="preview-registration-link" target="_blank" rel="noopener">Forhåndsvis skjema</a>
                   </div>
@@ -179,7 +183,7 @@
                   <p>Inviter med e-post og velg hvor mye personen skal kunne gjøre.</p>
                   <form id="invite-form" class="registration-inline-row">
                     <input class="input" id="invite-email" type="email" placeholder="navn@eksempel.no" required />
-                    <select class="input" id="invite-role">
+                    <select class="input" id="invite-role" aria-label="Tilgangsnivå">
                       <option value="registration_manager">Påmeldingsansvarlig</option>
                       <option value="viewer">Kun lesetilgang</option>
                       <option value="admin">Administrator</option>
@@ -195,6 +199,39 @@
         </div>
       </section>
     </main>
-    <script type="module" src="raad-paamelding-admin.js?v=20261019-3"></script>
+    <footer class="site-footer">
+      <div class="footer-social">
+        <div class="container"><div class="footer-social-row">
+          <a href="https://www.facebook.com/telemarkfylkeskommune" title="Facebook - Telemark fylkeskommune" class="footer-social-btn footer-social-facebook" target="_blank" rel="noreferrer noopener"><span class="footer-social-icon"><img src="../f.png" class="footer-social-img" alt="Facebook" /></span></a>
+          <a href="https://www.instagram.com/telemarkungdom/" title="Instagram - Telemark fylkeskommune" class="footer-social-btn footer-social-instagram" target="_blank" rel="noreferrer noopener"><span class="footer-social-icon"><img src="../ig.png" class="footer-social-img" alt="Instagram" /></span></a>
+        </div></div>
+      </div>
+      <div class="footer-main">
+        <div class="container footer-main-grid">
+          <div class="footer-col">
+            <p><strong>Kontakt oss</strong></p>
+            <p>Telemark Ungdomsråd<br />Postboks 2844<br />3702 Skien</p>
+            <p>Koordinator for Telemark Ungdomsråd<br /><a href="mailto:heidi.bekkevold@telemarkfylke.no">heidi.bekkevold@telemarkfylke.no</a><br />+47 991 55 531</p>
+          </div>
+          <div class="footer-col">
+            <p><strong>Telemark Ungdomsråd</strong></p>
+            <p><strong>Leder:</strong> Helene Clausen Endresen<br /><a href="mailto:helene.c.endresen@gmail.com">helene.c.endresen@gmail.com</a><br />+47 463 14 573</p>
+            <p><strong>Nestleder:</strong> Mats Svendsen<br /><a href="mailto:mats08svendsen@gmail.com">mats08svendsen@gmail.com</a><br />+47 483 95 289</p>
+            <p><strong>Nettsideutvikler:</strong> Sondre Callaerts<br /><a href="mailto:mrsoncal@gmail.com">mrsoncal@gmail.com</a><br />+47 929 57 188</p>
+          </div>
+          <div class="footer-col" aria-hidden="true"></div>
+          <div class="footer-col footer-decoration"><svg xmlns="http://www.w3.org/2000/svg" width="158" height="243" viewBox="0 0 158 243" fill="none" aria-hidden="true"><path opacity="0.8" d="M79 81V161.985V162V243C35.3754 242.985 0.01422 206.729 0 162V81H79Z" fill="white" /><path opacity="0.4" d="M79 162C79.0063 117.264 114.362 81 157.974 81C157.983 81 157.991 81 158 81V162H79Z" fill="white" /><path opacity="0.6" d="M158 243C157.994 198.264 122.638 162 79.0261 162C79.0174 162 79.0087 162 79 162V243H158Z" fill="white" /><rect opacity="0.8" x="79" width="79" height="81" fill="white" /></svg></div>
+        </div>
+        <div class="container footer-bottom">
+          <div class="footer-logo-block"><img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" class="footer-logo" /></div>
+          <ul class="footer-links">
+            <li>© Sondre Callaerts — Frigitt til fri bruk</li>
+            <li class="footer-links-badge"><a href="https://www.telemarkfylke.no/link/22cdc346a84a49e5add33a4198ce23ed.aspx" target="_blank" rel="noreferrer noopener"><img src="https://www.telemarkfylke.no/globalassets/Administrasjon/tfk/system/layout/miljofyrtaarn-logo-svart.svg" alt="Miljøfyrtårn logo" /></a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    <script src="council-session.js"></script>
+    <script type="module" src="raad-paamelding-admin.js?v=20261026-2"></script>
   </body>
 </html>

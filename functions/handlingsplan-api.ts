@@ -3,7 +3,7 @@ import { createAdminClient } from "npm:@insforge/sdk";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Council-Session",
 };
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" };
 const bucket = "handlingsplan-files";
@@ -65,6 +65,42 @@ async function isAdminRequest(req: Request, secret: string) {
   const [expiresAt, signature] = token.split(".");
   if (!expiresAt || !signature || Number(expiresAt) < Date.now()) return false;
   return signature === await hmac(expiresAt, secret);
+}
+
+function base64UrlEncode(value: string) {
+  return btoa(value).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+function base64UrlDecode(value: string) {
+  const padded = value.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return atob(padded);
+}
+
+async function createCouncilToken(council: Record<string, unknown>, secret: string) {
+  const expiresAt = Date.now() + 8 * 60 * 60 * 1000;
+  const payload = base64UrlEncode(JSON.stringify({
+    councilId: Number(council.id),
+    expiresAt,
+    passwordVersion: String(council.password_hash || "").slice(0, 24),
+  }));
+  return {
+    token: `${payload}.${await hmac(payload, secret)}`,
+    expiresAt,
+  };
+}
+
+async function isCouncilRequest(req: Request, council: Record<string, unknown>, secret: string) {
+  const token = req.headers.get("X-Council-Session") || "";
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature || signature !== await hmac(payload, secret)) return false;
+  try {
+    const decoded = JSON.parse(base64UrlDecode(payload));
+    return Number(decoded.councilId) === Number(council.id)
+      && Number(decoded.expiresAt) > Date.now()
+      && decoded.passwordVersion === String(council.password_hash || "").slice(0, 24);
+  } catch {
+    return false;
+  }
 }
 
 function publicCouncil(council: Record<string, unknown>) {
@@ -146,7 +182,7 @@ export default async function (req: Request): Promise<Response> {
 
       if (req.method === "GET") {
         const [councilResult, typeResult, fieldResult] = await Promise.all([
-          admin.database.from("councils").select("display_name,name").eq("id", event.council_id).single(),
+          admin.database.from("councils").select("id,display_name,name,logo_key").eq("id", event.council_id).single(),
           admin.database.from("registration_types")
             .select("id,name,affiliation_prompt,display_template,requires_affiliation,can_receive_delegate_number,position")
             .eq("event_id", event.id).order("position", { ascending: true }).limit(100),
@@ -165,6 +201,7 @@ export default async function (req: Request): Promise<Response> {
             status: event.status,
             isOpen,
             councilName: councilResult.data.display_name || councilResult.data.name,
+            council: publicCouncil(councilResult.data),
           },
           types: typeResult.data || [],
           fields: fieldResult.data || [],
@@ -189,29 +226,29 @@ export default async function (req: Request): Promise<Response> {
           const value = typeof raw === "string" ? raw.trim() : "";
           if (field.is_required && !value) return json({ error: `Fyll inn «${field.label}».` }, 400);
           if (value.length > 5000) return json({ error: `Svaret på «${field.label}» er for langt.` }, 400);
-          if (field.field_type === "single_choice" && !field.system_key && value && !(field.options || []).includes(value)) {
+          if (field.field_type === "single_choice" && field.system_key !== "participant_type" && value && !(field.options || []).includes(value)) {
             return json({ error: `Velg et gyldig alternativ for «${field.label}».` }, 400);
           }
         }
-        const fullName = answerFor("full_name") || (typeof body.fullName === "string" ? body.fullName.trim() : "");
-        const email = answerFor("email") || (typeof body.email === "string" ? body.email.trim() : "");
-        const phone = answerFor("phone") || (typeof body.phone === "string" ? body.phone.trim() : "");
+        const submittedName = answerFor("full_name") || (typeof body.fullName === "string" ? body.fullName.trim() : "");
+        const fullName = submittedName.length >= 2 && submittedName.length <= 160 ? submittedName : "Navn ikke oppgitt";
+        const submittedEmail = answerFor("email") || (typeof body.email === "string" ? body.email.trim() : "");
+        const email = submittedEmail.length <= 320 && submittedEmail.includes("@") ? submittedEmail : "";
+        const submittedPhone = answerFor("phone") || (typeof body.phone === "string" ? body.phone.trim() : "");
+        const phone = submittedPhone.length <= 40 ? submittedPhone : "";
         const affiliation = answerFor("affiliation") || (typeof body.affiliation === "string" ? body.affiliation.trim() : "");
-        const typeId = Number(answerFor("participant_type") || body.typeId);
-        if (fullName.length < 2 || fullName.length > 160 || !Number.isInteger(typeId)) {
-          return json({ error: "Navn og påmeldingstype er påkrevd." }, 400);
-        }
-        if (email && (email.length > 320 || !email.includes("@"))) {
-          return json({ error: "Skriv inn en gyldig e-postadresse." }, 400);
-        }
-        const { data: registrationType, error: typeError } = await admin.database
-          .from("registration_types").select("id,requires_affiliation")
-          .eq("id", typeId).eq("event_id", event.id).maybeSingle();
+        const { data: registrationTypes, error: typeError } = await admin.database
+          .from("registration_types").select("id,name,position")
+          .eq("event_id", event.id).order("position", { ascending: true }).limit(100);
         if (typeError) throw typeError;
-        if (!registrationType) return json({ error: "Ugyldig påmeldingstype." }, 400);
-        if (registrationType.requires_affiliation && !affiliation) {
-          return json({ error: "Fyll inn hvem du representerer." }, 400);
+        if (!registrationTypes?.length) return json({ error: "Arrangementet mangler deltakertype." }, 400);
+        const typeField = (fields || []).find((field) => field.system_key === "participant_type");
+        const submittedType = answerFor("participant_type") || body.typeId;
+        const selectedType = registrationTypes.find((item) => String(item.id) === String(submittedType));
+        if (typeField?.field_type === "single_choice" && submittedType && !selectedType) {
+          return json({ error: "Ugyldig påmeldingstype." }, 400);
         }
+        const typeId = selectedType?.id || registrationTypes[0].id;
         const { data, error } = await admin.database.from("registrations").insert([{
           event_id: event.id,
           type_id: typeId,
@@ -253,11 +290,22 @@ export default async function (req: Request): Promise<Response> {
     }
 
     if (segments.length === 2 && req.method === "POST") {
-      const body = await req.json();
+      const rawBody = await req.text();
+      if (rawBody.length > 4096) return json({ error: "Forespørselen er for stor." }, 413);
+      let body: Record<string, unknown>;
+      try {
+        body = JSON.parse(rawBody);
+      } catch {
+        return json({ error: "Ugyldig forespørsel." }, 400);
+      }
+      if (!body || typeof body !== "object" || Array.isArray(body)) {
+        return json({ error: "Ugyldig forespørsel." }, 400);
+      }
       const name = typeof body.name === "string" ? body.name.trim() : "";
-      const password = typeof body.password === "string" ? body.password.trim() : "";
-      if (!name) return json({ error: "Feltet 'name' er påkrevd." }, 400);
+      const password = typeof body.password === "string" ? body.password : "";
+      if (!name || name.length > 120) return json({ error: "Navnet må være mellom 1 og 120 tegn." }, 400);
       if (password.length < 6) return json({ error: "Passordet må ha minst 6 tegn." }, 400);
+      if (password.length > 256) return json({ error: "Passordet kan ikke være lengre enn 256 tegn." }, 400);
       const passwordData = await hashPassword(password);
       const { data, error } = await admin.database.from("councils").insert([{
         name,
@@ -271,7 +319,7 @@ export default async function (req: Request): Promise<Response> {
     }
 
     const councilId = Number(segments[2]);
-    if (!Number.isInteger(councilId) || councilId < 1) return json({ error: "Ugyldig ungdomsråd-ID." }, 400);
+    if (!Number.isInteger(councilId) || councilId < 1) return json({ error: "Ugyldig side-ID." }, 400);
 
     const { data: council, error: councilError } = await admin.database
       .from("councils")
@@ -279,7 +327,9 @@ export default async function (req: Request): Promise<Response> {
       .eq("id", councilId)
       .maybeSingle();
     if (councilError) throw councilError;
-    if (!council) return json({ error: "Ungdomsråd ikke funnet." }, 404);
+    if (!council) return json({ error: "Siden ble ikke funnet." }, 404);
+    const councilSigningSecret = Deno.env.get("JWT_SECRET") || apiKey;
+    const hasCouncilSession = await isCouncilRequest(req, council, councilSigningSecret);
 
     if (segments.length === 3 && req.method === "GET") {
       const { data: themes, error } = await admin.database
@@ -306,15 +356,21 @@ export default async function (req: Request): Promise<Response> {
     if (segments[3] === "admin-login" && segments.length === 4 && req.method === "POST") {
       const body = await req.json();
       if (!await verifyPassword(String(body.password || ""), council)) {
-        return json({ error: "Feil passord for dette ungdomsrådet." }, 401);
+        return json({ error: "Feil passord for denne siden." }, 401);
       }
-      return json({ authenticated: true });
+      const session = await createCouncilToken(council, councilSigningSecret);
+      return json({ authenticated: true, ...session });
+    }
+
+    if (segments[3] === "session" && segments.length === 4 && req.method === "GET") {
+      if (!hasCouncilSession) return json({ error: "Rådsøkten er utløpt eller ugyldig." }, 401);
+      return json({ authenticated: true, council: publicCouncil(council) });
     }
 
     if (segments[3] === "registration-bootstrap" && segments.length === 4 && req.method === "POST") {
       const body = await req.json();
-      if (!await verifyPassword(String(body.password || ""), council)) {
-        return json({ error: "Feil passord for dette ungdomsrådet." }, 403);
+      if (!hasCouncilSession && !await verifyPassword(String(body.password || ""), council)) {
+        return json({ error: "Feil passord for denne siden." }, 403);
       }
       const userId = typeof body.userId === "string" ? body.userId.trim() : "";
       if (!/^[0-9a-f-]{36}$/i.test(userId)) return json({ error: "Ugyldig bruker." }, 400);
@@ -361,6 +417,58 @@ export default async function (req: Request): Promise<Response> {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
+    if (segments[3] === "delegates" && segments.length === 4 && req.method === "GET") {
+      if (!hasCouncilSession) return json({ error: "Rådsøkten er utløpt eller ugyldig." }, 401);
+      const { data, error } = await admin.database.from("council_delegates")
+        .select("delegate_number,full_name,organization,position,updated_at")
+        .eq("council_id", councilId)
+        .order("position", { ascending: true })
+        .order("id", { ascending: true })
+        .limit(2000);
+      if (error) throw error;
+      return json({
+        items: (data || []).map((item) => ({
+          number: item.delegate_number,
+          name: item.full_name,
+          org: item.organization,
+        })),
+      });
+    }
+
+    if (segments[3] === "delegates" && segments.length === 4 && req.method === "PUT") {
+      if (!hasCouncilSession) return json({ error: "Rådsøkten er utløpt eller ugyldig." }, 401);
+      const body = await req.json();
+      if (!Array.isArray(body.delegates) || body.delegates.length > 2000) {
+        return json({ error: "Delegatlisten må være en liste med maksimalt 2000 personer." }, 400);
+      }
+      const seen = new Set<string>();
+      let invalidDelegate = false;
+      const delegates = body.delegates.map((item: Record<string, unknown>, position: number) => {
+        const number = String(item.number || "").trim();
+        const name = String(item.name || "").trim();
+        const organization = String(item.org || "").trim();
+        if (!number || number.length > 40 || name.length > 200 || organization.length > 240 || seen.has(number)) {
+          invalidDelegate = true;
+        }
+        seen.add(number);
+        return {
+          council_id: councilId,
+          delegate_number: number,
+          full_name: name,
+          organization,
+          position,
+        };
+      });
+      if (invalidDelegate) return json({ error: "Delegatlisten inneholder ugyldige eller dupliserte delegatnumre." }, 400);
+      const deleted = await admin.database.from("council_delegates").delete().eq("council_id", councilId);
+      if (deleted.error) throw deleted.error;
+      if (delegates.length) {
+        const inserted = await admin.database.from("council_delegates").insert(delegates);
+        if (inserted.error) throw inserted.error;
+      }
+      return json({ saved: true, count: delegates.length });
+    }
+
     if (segments[3] === "innspill" && segments.length === 4 && req.method === "GET") {
       const { data, error } = await admin.database
         .from("innspill")
@@ -401,8 +509,8 @@ export default async function (req: Request): Promise<Response> {
     if (segments[3] === "innspill" && segments.length === 5 && ["PUT", "DELETE"].includes(req.method)) {
       const innspillId = Number(segments[4]);
       const body = await req.json();
-      if (!await verifyPassword(String(body.password || ""), council)) {
-        return json({ error: "Feil passord for dette ungdomsrådet." }, 403);
+      if (!hasCouncilSession && !await verifyPassword(String(body.password || ""), council)) {
+        return json({ error: "Feil passord for denne siden." }, 403);
       }
       if (req.method === "DELETE") {
         const { error } = await admin.database.from("innspill").delete()
@@ -427,8 +535,8 @@ export default async function (req: Request): Promise<Response> {
 
     if (segments[3] === "admin-config" && req.method === "POST") {
       const body = await req.json();
-      if (!await verifyPassword(String(body.password || ""), council)) {
-        return json({ error: "Feil passord for dette ungdomsrådet." }, 403);
+      if (!hasCouncilSession && !await verifyPassword(String(body.password || ""), council)) {
+        return json({ error: "Feil passord for denne siden." }, 403);
       }
       const councilChanges: Record<string, unknown> = {};
       if (typeof body.displayName === "string") {
@@ -503,8 +611,8 @@ export default async function (req: Request): Promise<Response> {
 
     if (fileKind && req.method === "POST") {
       const form = await req.formData();
-      if (!await verifyPassword(String(form.get("password") || ""), council)) {
-        return json({ error: "Feil passord for dette ungdomsrådet." }, 403);
+      if (!hasCouncilSession && !await verifyPassword(String(form.get("password") || ""), council)) {
+        return json({ error: "Feil passord for denne siden." }, 403);
       }
       const file = form.get(fileKind);
       if (!(file instanceof File)) return json({ error: "Ingen fil lastet opp." }, 400);

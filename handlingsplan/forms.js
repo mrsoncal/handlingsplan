@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateHeaderFromCouncil(raad) {
     window.HPBrand?.update(raad, API_BASE);
 
-    const name = raad?.display_name || raad?.name || "Ukjent ungdomsråd";
+    const name = raad?.display_name || raad?.name || "Ukjent råd eller organisasjon";
     const breadcrumbCouncil = document.getElementById("breadcrumb-council");
     if (breadcrumbCouncil) breadcrumbCouncil.textContent = name;
   }
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}`
       );
       if (!res.ok) {
-        throw new Error("Kunne ikke hente ungdomsråd.");
+        throw new Error("Kunne ikke hente siden.");
       }
 
       const council = await res.json();
@@ -182,14 +182,14 @@ document.addEventListener("DOMContentLoaded", () => {
         intervalMs: 3000,
       });
     } catch (err) {
-      console.error("Feil ved henting av ungdomsråd:", err);
+      console.error("Feil ved henting av siden:", err);
       form.hidden = true;
       if (formTitle) formTitle.hidden = true;
       if (formSubtitle) formSubtitle.hidden = true;
       if (formStateMessage) {
         formStateMessage.hidden = false;
         formStateMessage.textContent =
-          "Kunne ikke laste ungdomsrådet. Prøv å laste siden på nytt.";
+          "Kunne ikke laste siden. Prøv å laste den på nytt.";
         formStateMessage.dataset.type = "error";
       }
     }
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (!councilId) {
-      setFormStatus("Kunne ikke koble innspillet til et ungdomsråd. Åpne skjemaet fra rådssiden.", "error");
+      setFormStatus("Kunne ikke koble innspillet til en side. Åpne skjemaet fra den offentlige siden.", "error");
       return;
     }
 

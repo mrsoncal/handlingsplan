@@ -1,6 +1,7 @@
 // src/store/bus.js — adds delegates, speaking types, and type durations
-const CHANNEL = 'talestolen';
-const SNAPSHOT_KEY = 'talestolen_state_v2';
+const COUNCIL_ID = new URLSearchParams(window.location.search).get('id') || 'unassigned';
+const CHANNEL = `talestolen-${COUNCIL_ID}`;
+const SNAPSHOT_KEY = `talestolen_state_v2_${COUNCIL_ID}`;
 
 const bc = new BroadcastChannel(CHANNEL);
 const subs = new Set();
@@ -26,6 +27,8 @@ const initialState = {
 };
 
 let state = loadSnapshot() || initialState;
+let tutorialMode = false;
+let liveStateWhileTutorial = null;
 
 function notify(){ subs.forEach(fn => { try { fn(); } catch{} }); }
 function saveSnapshot(s){ localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(s)); }
@@ -34,16 +37,25 @@ function bump(s){ return { ...s, version:(s.version||0)+1, updatedAt: nowMs() };
 
 function publish(next){
   state = next;
+  if (tutorialMode) {
+    notify();
+    return;
+  }
   saveSnapshot(state);
   try { bc.postMessage({ type:'STATE', payload: state }); } catch{}
   notify();
 }
 function applyIncoming(next){
   if (!next || typeof next !== 'object') return;
-  if ((next.version ?? 0) > (state.version ?? 0)){
-    state = next;
-    saveSnapshot(state);
-    notify();
+  const liveState = tutorialMode ? liveStateWhileTutorial : state;
+  if ((next.version ?? 0) > (liveState?.version ?? 0)){
+    saveSnapshot(next);
+    if (tutorialMode) {
+      liveStateWhileTutorial = next;
+    } else {
+      state = next;
+      notify();
+    }
   }
 }
 bc.onmessage = (e) => { if (e?.data?.type === 'STATE') applyIncoming(e.data.payload); };
@@ -51,9 +63,32 @@ window.addEventListener('storage', (e) => { if (e.key === SNAPSHOT_KEY && e.newV
 
 // ---- Actions ----
 
+export function isTutorialMode(){ return tutorialMode; }
+
+export function enterTutorialMode(){
+  if (tutorialMode) return;
+  liveStateWhileTutorial = state;
+  tutorialMode = true;
+  state = {
+    ...initialState,
+    typeDurations: { ...initialState.typeDurations },
+    updatedAt: nowMs(),
+  };
+  notify();
+}
+
+export function exitTutorialMode(){
+  if (!tutorialMode) return;
+  tutorialMode = false;
+  state = liveStateWhileTutorial || loadSnapshot() || initialState;
+  liveStateWhileTutorial = null;
+  notify();
+}
+
 export function saveDelegatesToLocalStorageRaw(rawText){
+  if (tutorialMode) return;
   try {
-    localStorage.setItem('talestolen_delegates_csv_raw', String(rawText||''));
+    localStorage.setItem(`talestolen_delegates_csv_raw_${COUNCIL_ID}`, String(rawText||''));
   } catch {}
 }
 
@@ -146,6 +181,14 @@ export function addToQueueDirect({ name, org, type }){
 
 export function removeFromQueue(id){ const next = bump({ ...state, queue: state.queue.filter(x => x.id !== id) }); publish(next); }
 
+export function restoreQueueItem(item, index = state.queue.length){
+  if (!item || state.queue.some(x => x.id === item.id)) return;
+  const copy = state.queue.slice();
+  const safeIndex = Math.max(0, Math.min(Number(index) || 0, copy.length));
+  copy.splice(safeIndex, 0, item);
+  publish(bump({ ...state, queue: copy }));
+}
+
 export function startNext(){ if (state.currentSpeaker) return; const nextUp = state.queue[0]; if (!nextUp) return; startSpecific(nextUp.id); }
 
 export function startSpecific(id){
@@ -169,6 +212,24 @@ export function startSpecific(id){
 }
 
 export function skipCurrent(){ if (!state.currentSpeaker) return; const next = bump({ ...state, currentSpeaker: null }); publish(next); }
+
+export function restoreCurrentSpeaker(speaker, secondsLeft){
+  if (!speaker || state.currentSpeaker) return;
+  const now = nowMs();
+  const remainingMs = Math.max(0, Number(secondsLeft) || 0) * 1000;
+  const restored = {
+    ...speaker,
+    startTimeMs: now,
+    endTimeMs: now + remainingMs,
+    pausedAtMs: speaker.paused ? now : null,
+    accPauseMs: 0,
+  };
+  publish(bump({ ...state, currentSpeaker: restored }));
+}
+
+export function startNewMeetingSession(){
+  publish(bump({ ...state, queue: [], currentSpeaker: null }));
+}
 
 export function resetTimer(){
   if (!state.currentSpeaker) return;
@@ -222,5 +283,3 @@ function insertWithPriority(queue, item, currentSpeaker){
     return (a.requestedAt ?? 0) - (b.requestedAt ?? 0);
   });
 }
-
-

@@ -3,21 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ungdomsråd – velg ungdomsråd</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Velg råd eller organisasjon</title>
+  <link rel="stylesheet" href="styles.css?v=20261023-7" />
 </head>
-<body>
+<body class="raad-selector-page">
   <div class="page">
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
-          <nav class="nav">
-            <a class="btn nav" href="../index.html">Tilbake til verktøy</a>
-          </nav>
+          <nav class="nav" aria-hidden="true"></nav>
           <nav class="nav-r">
             <!-- Admin login / logout som på de andre sidene -->
             <button class="btn nav" id="login-button">Global admin</button>
-            <button class="btn nav" id="logout-button" style="display: none;">
+            <button class="btn nav" id="logout-button" title="Logg ut som global admin" style="display: none;">
               Logg ut
             </button>
           </nav>
@@ -66,29 +64,51 @@
       </div>
     </div>
 
-    <!-- Nytt ungdomsråd overlay (popup) -->
+    <!-- Rådsspesifikk innlogging -->
+    <div class="login-overlay" id="councilAccessOverlay" role="dialog" aria-modal="true" aria-labelledby="council-access-title" style="display: none;">
+      <div class="login-box" tabindex="-1">
+        <button class="modal-close" id="closeCouncilAccessModal" type="button" aria-label="Lukk innlogging">×</button>
+        <form id="councilAccessForm" class="council-form">
+          <h2 id="council-access-title">Åpne side</h2>
+          <p id="council-access-name" class="muted"></p>
+          <label class="form-row" for="councilAccessPassword">
+            Passord for siden
+            <input class="new-council-input" id="councilAccessPassword" type="password" autocomplete="current-password" required />
+          </label>
+          <p id="council-access-status" class="form-status" role="status" aria-live="polite"></p>
+          <div class="form-row modal-actions">
+            <button type="button" class="btn-cancel" id="cancelCouncilAccess">Avbryt</button>
+            <button type="submit" class="btn">Fortsett</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Opprett ny side -->
     <div class="login-overlay" id="newCouncilOverlay" role="dialog" aria-modal="true" aria-labelledby="new-council-title" style="display: none;">
       <div class="login-box" tabindex="-1">
         <button class="modal-close" id="closeNewCouncilModal" type="button" aria-label="Lukk skjema">×</button>
         <form id="newCouncilForm" class="council-form">
-            <h2 id="new-council-title">Legg til nytt ungdomsråd</h2>
+            <h2 id="new-council-title">Opprett ny side</h2>
+            <p class="muted">For et råd, en institusjon eller en organisasjon. Du velger selv navn og passord.</p>
 
             <div>
                 <label for="councilName" class="form-row">
-                Navn på ungdomsråd
+                Navn på råd eller organisasjon
                 <input
                     class="new-council-input"
                     id="councilName"
                     name="name"
                     type="text"
-                    placeholder="f.eks. Telemark Ungdomsråd"
+                    placeholder="F.eks. Skien ungdomsråd eller Elevrådet ved Skien vgs"
+                    maxlength="120"
                     required
                 />
                 </label>
             </div>
 
             <div class="password-wrapper">
-              <label for="councilPassword">Passord</label>
+              <label for="councilPassword">Passord for administrasjon</label>
               <div class="new-council-div">
                 <input
                 class="new-council-input"
@@ -97,6 +117,8 @@
                 type="password"
                 placeholder="Sett et passord"
                 minlength="6"
+                maxlength="256"
+                autocomplete="new-password"
                 required
               />
               <button
@@ -112,9 +134,11 @@
                 />
               </button>
               </div>
-              <p class="warning">
-                Passordet kan senere endres av en innlogget global administrator.
-              </p>
+              <label class="form-row" for="councilPasswordConfirm">
+                Gjenta passordet
+                <input class="new-council-input" id="councilPasswordConfirm" type="password" minlength="6" maxlength="256" autocomplete="new-password" required />
+              </label>
+              <p class="input-help-text">Ta vare på passordet. Global admin kan hjelpe hvis du mister det.</p>
             </div>
 
 
@@ -146,7 +170,7 @@
       </div>
     </div>
 
-    <!-- Endre passord for ett ungdomsråd -->
+    <!-- Endre passord for én side -->
     <div class="login-overlay" id="changePasswordOverlay" role="dialog" aria-modal="true" aria-labelledby="change-password-title" style="display: none;">
       <div class="login-box" tabindex="-1">
         <button class="modal-close" id="closeChangePasswordModal" type="button" aria-label="Lukk passordendring">×</button>
@@ -192,7 +216,8 @@
 
     <main class="container">
       <section class="card">
-        <h2>Velg ungdomsråd</h2>
+        <h1>Velg råd eller organisasjon</h1>
+        <p class="lead-text">Alle kan opprette sin egen side. Bruk sidens passord for Handlingsplan, Talestolen og Påmelding.</p>
 
         <!-- Søkefelt for å filtrere råd -->
         <div class="raad-search">
@@ -200,7 +225,7 @@
             class="raadSearch"
             id="raadSearch"
             type="search"
-            placeholder="Søk etter ungdomsråd..."
+            placeholder="Søk etter råd eller organisasjon..."
             autocomplete="off"
           />
         </div>
@@ -208,13 +233,13 @@
         <div id="raadGrid" class="raad-grid">
           <!-- Første kort: legg til nytt råd (hele kortet er klikkbart) -->
           <article class="raad-card raad-card-add" id="raadAddCard" role="button" tabindex="0">
-            <h3 class="raad-card-title">Legg til nytt ungdomsråd</h3>
+            <h3 class="raad-card-title">Opprett ny side</h3>
           </article>
           <!-- Øvrige råd-kort legges inn her med JS -->
         </div>
 
         <p id="councilListEmpty" class="muted">
-          Ingen ungdomsråd er opprettet ennå. Bruk kortet «Legg til nytt ungdomsråd» for å opprette ett.
+          Ingen råd eller organisasjoner er opprettet ennå. Bruk kortet «Opprett ny side» for å lage din egen.
         </p>
       </section>
     </main>
@@ -292,9 +317,10 @@
   </div>
 
   <script>
-    // Sett API base-URL til backend på Render (tilpass om nødvendig)
+    // API base-URL for Handlingsplan-funksjonen i InsForge.
     window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
   </script>
-  <script src="raad-oversikt.js" type="module"></script>
+  <script src="council-session.js"></script>
+  <script src="raad-oversikt.js?v=20261023-5" type="module"></script>
 </body>
 </html>

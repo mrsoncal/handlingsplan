@@ -16,7 +16,7 @@ function getCouncilIdFromUrl() {
 async function fetchCouncil(id) {
   const res = await fetch(`${COUNCILS_URL}/${encodeURIComponent(id)}`);
   if (!res.ok) {
-    throw new Error("Kunne ikke hente ungdomsråd");
+    throw new Error("Kunne ikke hente siden");
   }
   return await res.json();
 }
@@ -24,7 +24,7 @@ async function fetchCouncil(id) {
 async function fetchInnspill(councilId) {
   const res = await fetch(INNSPILL_URL(councilId), { cache: "no-store" });
   if (!res.ok) {
-    throw new Error("Kunne ikke hente innspill for dette ungdomsrådet");
+    throw new Error("Kunne ikke hente innspill for denne siden");
   }
   const json = await res.json();
   return Array.isArray(json.items) ? json.items : json;
@@ -36,7 +36,7 @@ function setupOpenFormsButton(councilId) {
 
   if (!councilId) {
     btn.disabled = true;
-    btn.textContent = "Ingen ungdomsråd valgt";
+    btn.textContent = "Ingen side valgt";
     return;
   }
 
@@ -68,7 +68,7 @@ function setupHandlingsplanLink(council) {
       council.id
     )}/handlingsplan-file`;
 
-    link.style.display = "inline-block";
+    link.style.removeProperty("display");
     link.href = url;
     link.target = "_blank";
     const label = link.querySelector(".nav-label");
@@ -86,23 +86,6 @@ function updateHeaderBrand(council) {
   window.HPBrand?.update(council, API_BASE);
 }
 
-
-// === Admin-overlay for opplasting av handlingsplan ===
-function setupAdminOverlay(councilId) {
-  const adminBtn = document.getElementById("raadAdminBtn");
-
-  if (!adminBtn) return;
-
-  if (!councilId) {
-    adminBtn.disabled = true;
-    return;
-  }
-
-  adminBtn.addEventListener("click", () => {
-    // Redirect to the new admin page
-    window.location.href = `raad-admin.html?id=${encodeURIComponent(councilId)}`;
-  });
-}
 
 // === Innspill-visning: tema-farger & karusell ===
 
@@ -234,7 +217,7 @@ function renderInnspillCarousel(innspill) {
     container.innerHTML = `
       <section class="card">
         <h2>Innspill til handlingsplanen</h2>
-        <p>Det er ikke registrert noen innspill for dette ungdomsrådet ennå.</p>
+        <p>Det er ikke registrert noen innspill for denne siden ennå.</p>
       </section>
     `;
     return;
@@ -366,14 +349,6 @@ function renderInnspillCarousel(innspill) {
         tr.classList.add("hp-delete-row");
       }
 
-
-      // Behold merket ved handlingsteksten på desktop.
-      if (isVedtatt) {
-        const badge = document.createElement("span");
-        badge.className = "vedtatt-label-inline vedtatt-label-desktop";
-        badge.textContent = "Vedtatt ✓";
-        actionSpan.appendChild(badge);
-      }
 
       const punktSpan = document.createElement("span");
       punktSpan.className = "punkt-nummer";
@@ -563,10 +538,10 @@ async function init() {
   }
 
   if (!id) {
-    if (heading) heading.textContent = "Ingen ungdomsråd valgt";
+    if (heading) heading.textContent = "Ingen side valgt";
     if (container) {
       container.innerHTML =
-        "<p>Ingen ungdomsråd er valgt. Gå tilbake til oversikten.</p>";
+        "<p>Ingen side er valgt. Gå tilbake til oversikten.</p>";
     }
     return;
   }
@@ -577,7 +552,7 @@ async function init() {
       // Oppdater tema-farger basert på raad-admin-innstillinger
       setTemaConfigFromCouncil(council);
 
-      const title = council.display_name || council.name || "Ukjent ungdomsråd";
+      const title = council.display_name || council.name || "Ukjent råd eller organisasjon";
 
       if (heading) heading.textContent = `Handlingsplan – ${title}`;
       const breadcrumbCouncil = document.getElementById("breadcrumb-council");
@@ -589,12 +564,6 @@ async function init() {
       // Koble Handlingsplan-knappen til opplastet fil (hvis finnes)
       setupHandlingsplanLink(council);
 
-      // Admin-opplasting: etter opplasting oppdatere lenken
-      setupAdminOverlay(id, (updatedCouncil) => {
-      council = updatedCouncil;
-      setupHandlingsplanLink(council);
-      });
-
       // Hent og vis innspill for dette rådet
       const innspill = await fetchInnspill(id);
       innspillFingerprint = JSON.stringify(innspill);
@@ -602,11 +571,11 @@ async function init() {
       startInnspillAutoRefresh(id);
     } catch (err) {
       console.error(err);
-      if (heading) heading.textContent = "Feil ved henting av ungdomsråd";
+      if (heading) heading.textContent = "Feil ved henting av siden";
 
       if (container) {
         container.innerHTML =
-          "<p>Det oppstod en feil ved henting av ungdomsrådet. Prøv igjen, eller gå tilbake til oversikten.</p>";
+          "<p>Det oppstod en feil ved henting av siden. Prøv igjen, eller gå tilbake til oversikten.</p>";
       }
   }
 }

@@ -3,32 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ungdomsråd – Admin</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>Handlingsplan – innstillinger</title>
+    <link rel="stylesheet" href="styles.css?v=20261024-2" />
     <script>
       // Sett dette til backend URL-en din
       window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
     </script>
   </head>
   <body class="raad-admin">
-    <script src="raad-brand-cache.js"></script>
+    <script src="raad-brand-cache.js?v=20261023-4"></script>
 
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
           <nav class="nav">
-<<<<<<< Updated upstream
             <a
               class="btn nav"
               id="back-link"
-              aria-label="Tilbake til rådssiden"
-              title="Tilbake til rådssiden"
+              aria-label="Tilbake til rådsportalen"
+              title="Tilbake til rådsportalen"
             >
               <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M9 7 4 12l5 5" />
                 <path d="M4 12h10a6 6 0 0 1 6 6" />
               </svg>
-              <span class="nav-label">Til rådssiden</span>
+              <span class="nav-label">Rådsportal</span>
             </a>
           </nav>
           <nav class="nav-r">
@@ -46,11 +45,6 @@
               </svg>
               <span class="nav-label">Logg ut</span>
             </button>
-=======
-            <a class="btn nav" id="back-link">Til rådssiden</a>
-            <a class="btn nav" id="registration-top-link" href="raad-paamelding-admin.html">Påmeldinger</a>
-            <button class="btn nav admin-logout-btn" id="admin-logout-btn" type="button" hidden>Logg ut</button>
->>>>>>> Stashed changes
           </nav>
         </div>
         <img
@@ -68,40 +62,16 @@
     <nav class="breadcrumbs container" aria-label="Brødsmulesti">
       <a id="breadcrumb-council-link" href="#"><span id="breadcrumb-council">Laster…</span></a>
       <span aria-hidden="true">/</span>
-      <span aria-current="page">Innstillinger</span>
+      <span aria-current="page">Handlingsplan</span>
     </nav>
 
 
     <div class="container">
       <section class="card main-card">
-        <h2>Innstillinger for <span id="raad-name">…</span></h2>
+        <h2>Handlingsplan for <span id="raad-name">…</span></h2>
+        <p id="admin-load-status" class="notice" role="status">Kontrollerer rådstilgangen …</p>
 
-        <!-- RÅD-SPESIFIKT LOGIN -->
-        <div id="login-section">
-          <div class="login-module">
-            <div
-              class="form-row"
-            >
-              <label for="raad-password" class="field-label">
-                Skriv inn passord for å redigere ungdomsrådet.
-              </label>
-              <input
-                id="raad-password"
-                type="password"
-                class="input"
-                placeholder="Passord"
-              />
-              <button id="raad-login-btn" class="btn">Logg inn</button>
-            </div>
-            <p
-              id="raad-login-error"
-              style="color: #b7173d; margin-top: 0.5rem"
-            ></p>
-          </div>
-          
-        </div>
-
-        <!-- ADMIN-INNHOLD, VISER SEG ETTER LOGIN -->
+        <!-- Vis innstillingene etter at rådsøkten er validert. -->
         <div id="admin-section" style="display: none">
           <nav class="settings-nav" aria-label="Innstillinger">
             <a href="#general-settings">Grunninfo</a>
@@ -110,20 +80,28 @@
             <a href="#plan-settings">Handlingsplan</a>
             <a href="#theme-settings">Temaer</a>
             <a href="#submission-settings">Innspill</a>
-            <a id="registration-admin-link" href="raad-paamelding-admin.html">Påmelding</a>
           </nav>
+
+          <div class="admin-section-part" id="public-page-settings">
+            <h3>Offentlig rådsside</h3>
+            <div class="public-page-actions">
+              <a class="btn council-public-btn" id="open-public-plan" href="#">Åpne offentlig rådsside ↗</a>
+              <button class="btn btn-copy" id="copy-public-plan-link" type="button">Kopier lenke</button>
+            </div>
+            <p id="copy-public-plan-status" class="notice" role="status" aria-live="polite"></p>
+          </div>
 
           <!-- Navn -->
           <div class="admin-section-part" id="general-settings">
             <h3>Grunninformasjon</h3>
             <label for="raad-name-input" class="field-label">
-              Navn på ungdomsråd
+              Navn på råd eller organisasjon
             </label>
             <input
               id="raad-name-input"
               class="input"
               type="text"
-              placeholder="Navn på ungdomsråd"
+              placeholder="Navn på råd eller organisasjon"
             />
           </div>
 
@@ -131,7 +109,7 @@
           <div class="admin-section-part" id="share-settings">
             <h3>Del skjema for innspill</h3>
             <p class="help-text">
-              QR-koden og lenken åpner skjemaet direkte for dette ungdomsrådet.
+              QR-koden og lenken åpner skjemaet direkte for denne siden.
             </p>
             <div class="qr-share-layout">
               <div class="qr-code-download">
@@ -263,18 +241,6 @@
             </button>
           </div>
 
-          <div class="admin-section-part" id="registration-settings">
-            <h3>Påmeldinger og deltakerlister</h3>
-            <p class="help-text">
-              Lag arrangementer, del et påmeldingsskjema og send godkjente deltakere direkte til Talestolen.
-            </p>
-            <a id="open-registration-admin-btn" class="btn" href="raad-paamelding-admin.html">
-              Administrer påmeldinger
-            </a>
-          </div>
-          
-
-
           <!-- LAGRE-KNAPP -->
           <div class="admin-section-part" id="save-button">
             <span id="unsaved-indicator" aria-live="polite"></span>
@@ -293,7 +259,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="council-session.js"></script>
     <script src="innspill-sync.js"></script>
-    <script src="raad-admin.js"></script>
+    <script src="raad-admin.js?v=20261024-3"></script>
   </body>
 </html>

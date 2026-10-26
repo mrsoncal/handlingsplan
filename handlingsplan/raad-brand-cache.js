@@ -15,7 +15,7 @@
   function applyBrand(brand) {
     const image = document.getElementById("raadBrandLogo");
     if (!image || !brand?.src) return false;
-    image.src = brand.src;
+    image.src = brand.src === "default-group-logo.svg" ? "../UFR-logo.png" : brand.src;
     image.alt = brand.alt || "Ungdomsråd";
     return true;
   }

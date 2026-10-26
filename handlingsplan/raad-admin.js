@@ -4,43 +4,19 @@ const API_BASE = window.HP_API_BASE || "";
 const raadId = new URLSearchParams(location.search).get("id");
 
 let raadData = null;
-let raadPassword = "";
 let temaState = [];
 let hasUnsavedChanges = false;
 let acceptingInnspill = true;
+let councilSession = raadId ? window.HPCouncilSession?.get(raadId) : null;
+let councilToken = councilSession?.token || "";
 
-// ---- COOKIE HELPERS for per-råd-passord (deles med raad-innspill-editor) ----
-const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
-const COUNCIL_LOGIN_URL = raadId
-  ? `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/admin-login`
+function councilAuthHeaders() {
+  return councilToken ? { "X-Council-Session": councilToken } : {};
+}
+
+const COUNCIL_SESSION_URL = raadId
+  ? `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/session`
   : "";
-
-function setPasswordCookie(pw) {
-  if (!PW_COOKIE_NAME) return;
-  const days = 1;
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${PW_COOKIE_NAME}=${encodeURIComponent(
-    pw
-  )}; expires=${expires}; path=/handlingsplan/`;
-}
-
-function getPasswordFromCookie() {
-  if (!PW_COOKIE_NAME) return "";
-  const name = PW_COOKIE_NAME + "=";
-  const parts = document.cookie.split(";");
-  for (const part of parts) {
-    const c = part.trim();
-    if (c.startsWith(name)) {
-      return decodeURIComponent(c.substring(name.length));
-    }
-  }
-  return "";
-}
-
-function clearPasswordCookie() {
-  if (!PW_COOKIE_NAME) return;
-  document.cookie = `${PW_COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/handlingsplan/`;
-}
 
 
 // ---------- helpers ----------
@@ -172,45 +148,76 @@ async function copyFormsLink() {
 }
 
 function ensurePassword() {
-  if (raadPassword) return true;
-
-  const errorEl = $("raad-login-error");
-  if (errorEl) errorEl.textContent = "Du må logge inn med riktig admin-passord først.";
+  if (councilToken) return true;
+  window.HPCouncilSession?.require(raadId);
   return false;
 }
 
-async function validateCouncilPassword(password) {
-  const response = await fetch(COUNCIL_LOGIN_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.error || "Kunne ikke kontrollere passordet.");
+async function copyPublicPageLink() {
+  const link = $("open-public-plan");
+  const statusEl = $("copy-public-plan-status");
+  if (!link || !raadId) return;
+
+  const url = link.href;
+  setNotice(statusEl, "Kopierer lenken …");
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+    } else {
+      const input = document.createElement("textarea");
+      input.value = url;
+      input.style.position = "fixed";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      let copied = false;
+      try {
+        input.select();
+        copied = document.execCommand("copy");
+      } finally {
+        input.remove();
+      }
+      if (!copied) throw new Error("Kunne ikke kopiere lenken");
+    }
+    setNotice(statusEl, "Lenken er kopiert.", "success");
+  } catch (err) {
+    console.error(err);
+    setNotice(statusEl, "Kunne ikke kopiere lenken. Åpne rådssiden og kopier adressen derfra.", "error");
   }
 }
 
 function showAdmin() {
-  const loginSection = $("login-section");
   const adminSection = $("admin-section");
-  if (loginSection) loginSection.style.display = "none";
   if (adminSection) adminSection.style.display = "block";
+  const loadStatus = $("admin-load-status");
+  if (loadStatus) loadStatus.hidden = true;
   const logoutBtn = $("admin-logout-btn");
   if (logoutBtn) logoutBtn.hidden = false;
 }
 
-async function autoLoginFromCookie() {
-  const cookiePw = getPasswordFromCookie();
-  if (!cookiePw) return;
-
+async function autoLoginFromSession() {
+  councilSession = raadId ? window.HPCouncilSession?.get(raadId) : null;
+  councilToken = councilSession?.token || "";
+  if (!councilToken) {
+    window.HPCouncilSession?.require(raadId);
+    return false;
+  }
   try {
-    await validateCouncilPassword(cookiePw);
-    raadPassword = cookiePw;
+    const response = await fetch(COUNCIL_SESSION_URL, {
+      headers: councilAuthHeaders(),
+      cache: "no-store",
+    });
+    if (response.status === 401 || response.status === 403) {
+      window.HPCouncilSession?.clear(raadId);
+      window.location.replace(`raad-oversikt.html?council=${encodeURIComponent(raadId)}`);
+      return false;
+    }
+    if (!response.ok) throw new Error("Rådstilgangen kunne ikke kontrolleres.");
     showAdmin();
+    return true;
   } catch {
-    raadPassword = "";
-    clearPasswordCookie();
+    const loadStatus = $("admin-load-status");
+    if (loadStatus) loadStatus.textContent = "Kunne ikke kontakte rådet. Last siden på nytt for å prøve igjen.";
+    return false;
   }
 }
 
@@ -226,7 +233,7 @@ async function fetchCouncil() {
       `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}`
     );
     if (!res.ok) {
-      throw new Error("Kunne ikke hente ungdomsråd.");
+      throw new Error("Kunne ikke hente siden.");
     }
 
     raadData = await res.json();
@@ -234,13 +241,13 @@ async function fetchCouncil() {
     renderInnspillCollectionState();
 
     const displayName =
-      raadData.display_name || raadData.name || "Ukjent ungdomsråd";
+      raadData.display_name || raadData.name || "Ukjent råd eller organisasjon";
 
     setText("raad-name", displayName);
     setText("breadcrumb-council", displayName);
     const breadcrumbCouncilLink = $("breadcrumb-council-link");
     if (breadcrumbCouncilLink) {
-      breadcrumbCouncilLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
+      breadcrumbCouncilLink.href = `raad-portal.html?id=${encodeURIComponent(raadId)}`;
     }
 
     const nameInput = $("raad-name-input");
@@ -265,7 +272,11 @@ async function fetchCouncil() {
     renderTemaList();
   } catch (err) {
     console.error(err);
-    alert("Kunne ikke hente data for dette ungdomsrådet.");
+    const loadStatus = $("admin-load-status");
+    if (loadStatus) {
+      loadStatus.hidden = false;
+      loadStatus.textContent = "Kunne ikke hente rådsdata. Last siden på nytt for å prøve igjen.";
+    }
   }
 }
 
@@ -287,9 +298,8 @@ async function toggleInnspillCollection() {
       `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/admin-config`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...councilAuthHeaders() },
         body: JSON.stringify({
-          password: raadPassword,
           acceptingInnspill: nextValue,
         }),
       }
@@ -330,52 +340,9 @@ async function toggleInnspillCollection() {
 
 function initBackLink() {
   const backLink = $("back-link");
-  if (backLink && raadId) {
-    backLink.href = `raad.html?id=${encodeURIComponent(raadId)}`;
-  }
-  const registrationUrl = raadId
-    ? `raad-paamelding-admin.html?id=${encodeURIComponent(raadId)}`
-    : "raad-paamelding-admin.html";
-  const registrationLink = $("registration-admin-link");
-  const registrationButton = $("open-registration-admin-btn");
-  const registrationTopLink = $("registration-top-link");
-  if (registrationLink) registrationLink.href = registrationUrl;
-  if (registrationButton) registrationButton.href = registrationUrl;
-  if (registrationTopLink) registrationTopLink.href = registrationUrl;
-}
-
-// ---------- login ----------
-
-function initLogin() {
-  const loginBtn = $("raad-login-btn");
-
-  if (!loginBtn) return;
-
-  loginBtn.addEventListener("click", async () => {
-    const pwInput = $("raad-password");
-    const errorEl = $("raad-login-error");
-    const password = pwInput?.value.trim() || "";
-    if (!password) {
-      if (errorEl) errorEl.textContent = "Vennligst skriv inn passord.";
-      return;
-    }
-
-    loginBtn.disabled = true;
-    if (errorEl) errorEl.textContent = "Kontrollerer passord…";
-    try {
-      await validateCouncilPassword(password);
-      raadPassword = password;
-      setPasswordCookie(password);
-      if (errorEl) errorEl.textContent = "";
-      showAdmin();
-    } catch (err) {
-      raadPassword = "";
-      clearPasswordCookie();
-      if (errorEl) errorEl.textContent = err.message || "Feil passord.";
-    } finally {
-      loginBtn.disabled = false;
-    }
-  });
+  if (backLink) backLink.href = `raad-portal.html?id=${encodeURIComponent(raadId)}`;
+  const publicPlan = $("open-public-plan");
+  if (publicPlan) publicPlan.href = `raad.html?id=${encodeURIComponent(raadId)}`;
 }
 
 // ---------- logo & handlingsplan ----------
@@ -395,13 +362,13 @@ async function uploadLogo() {
 
   const fd = new FormData();
   fd.append("logo", fileInput.files[0]);
-  fd.append("password", raadPassword);
 
   try {
     const res = await fetch(
       `${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/logo`,
       {
         method: "POST",
+        headers: councilAuthHeaders(),
         body: fd,
       }
     );
@@ -443,7 +410,6 @@ async function uploadHandlingsplan() {
 
   const fd = new FormData();
   fd.append("handlingsplan", fileInput.files[0]);
-  fd.append("password", raadPassword);
 
   try {
     const res = await fetch(
@@ -452,6 +418,7 @@ async function uploadHandlingsplan() {
       )}/handlingsplan`,
       {
         method: "POST",
+        headers: councilAuthHeaders(),
         body: fd,
       }
     );
@@ -669,9 +636,9 @@ async function saveConfig() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...councilAuthHeaders(),
         },
         body: JSON.stringify({
-          password: raadPassword,
           displayName,
           temaer: cleanedTemaer,
         }),
@@ -734,6 +701,7 @@ function initButtons() {
   const innspillEditorBtn = $("open-innspill-editor-btn");
   const collectionToggleBtn = $("toggle-innspill-collection-btn");
   const copyFormsLinkBtn = $("copy-forms-link");
+  const copyPublicPageLinkBtn = $("copy-public-plan-link");
   const logoutBtn = $("admin-logout-btn");
 
   if (logoBtn) logoBtn.addEventListener("click", uploadLogo);
@@ -744,19 +712,14 @@ function initButtons() {
     collectionToggleBtn.addEventListener("click", toggleInnspillCollection);
   }
   if (copyFormsLinkBtn) copyFormsLinkBtn.addEventListener("click", copyFormsLink);
+  if (copyPublicPageLinkBtn) copyPublicPageLinkBtn.addEventListener("click", copyPublicPageLink);
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       if (hasUnsavedChanges && !window.confirm("Du har ulagrede endringer. Vil du logge ut likevel?")) return;
       setDirty(false);
-      raadPassword = "";
-      clearPasswordCookie();
-      logoutBtn.hidden = true;
-      const loginSection = $("login-section");
-      const adminSection = $("admin-section");
-      if (loginSection) loginSection.style.display = "block";
-      if (adminSection) adminSection.style.display = "none";
-      const passwordInput = $("raad-password");
-      if (passwordInput) passwordInput.value = "";
+      councilToken = "";
+      window.HPCouncilSession?.clear(raadId);
+      window.location.replace("raad-oversikt.html");
     });
   }
   if (innspillEditorBtn && raadId) {
@@ -781,6 +744,11 @@ function initButtons() {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+  if (!raadId || !window.HPCouncilSession?.get(raadId)) {
+    window.HPCouncilSession?.require(raadId);
+    return;
+  }
+
   const themeList = $("tema-list");
   if (themeList) {
     themeList.innerHTML = '<div class="skeleton-panel" aria-label="Laster temaer" aria-busy="true"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>';
@@ -799,8 +767,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initBackLink();
   renderShareTools();
+  if (!await autoLoginFromSession()) return;
   await fetchCouncil();
-  await autoLoginFromCookie();
-  initLogin();
   initButtons();
 });

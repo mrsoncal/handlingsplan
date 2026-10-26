@@ -8,6 +8,9 @@ let addCardEl = null;
 let activeModal = null;
 let modalReturnTarget = null;
 let passwordCouncil = null;
+let accessCouncil = null;
+let requestedCouncilHandled = false;
+let authBindingsReady = false;
 
 function getFocusableElements(modal) {
   return Array.from(modal.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
@@ -76,6 +79,9 @@ function setupAuthUI() {
     logoutButton.style.display = "inline-block";
     document.body.classList.add("logged-in");
   }
+
+  if (authBindingsReady) return;
+  authBindingsReady = true;
 
   loginButton.addEventListener("click", () => {
     openModal(loginSection, loginButton);
@@ -149,20 +155,78 @@ function setupAuthUI() {
 
 // --- NAVIGASJON ---
 
-function goToCouncil(council) {
-  window.location.href = `raad.html?id=${encodeURIComponent(council.id)}`;
+function councilAdminUrl(council) {
+  return `raad-portal.html?id=${encodeURIComponent(council.id)}`;
+}
+
+function goToCouncil(council, trigger) {
+  if (window.HPCouncilSession?.get(council.id)) {
+    window.location.href = councilAdminUrl(council);
+    return;
+  }
+  accessCouncil = council;
+  const overlay = document.getElementById("councilAccessOverlay");
+  const form = document.getElementById("councilAccessForm");
+  const name = document.getElementById("council-access-name");
+  const status = document.getElementById("council-access-status");
+  form?.reset();
+  if (name) name.textContent = council.display_name || council.name || `Råd/organisasjon #${council.id}`;
+  if (status) {
+    status.textContent = "";
+    status.className = "form-status";
+  }
+  openModal(overlay, trigger);
+  document.getElementById("councilAccessPassword")?.focus();
+}
+
+async function createCouncilSession(council, password) {
+  const response = await fetch(`${COUNCILS_URL}/${encodeURIComponent(council.id)}/admin-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || "Feil passord for denne siden.");
+  window.HPCouncilSession?.set(council.id, {
+    token: result.token,
+    expiresAt: result.expiresAt,
+    councilName: council.display_name || council.name || "",
+  });
+  return result;
+}
+
+async function handleCouncilAccess(event) {
+  event.preventDefault();
+  if (!accessCouncil) return;
+  const form = event.currentTarget;
+  const submit = form.querySelector('button[type="submit"]');
+  const status = document.getElementById("council-access-status");
+  const password = document.getElementById("councilAccessPassword")?.value || "";
+  submit.disabled = true;
+  if (status) status.textContent = "Kontrollerer passord …";
+  try {
+    await createCouncilSession(accessCouncil, password);
+    window.location.href = councilAdminUrl(accessCouncil);
+  } catch (error) {
+    if (status) {
+      status.textContent = error.message || "Innloggingen mislyktes.";
+      status.className = "form-status form-status-error";
+    }
+  } finally {
+    submit.disabled = false;
+  }
 }
 
 // --- DELETE ---
 
 async function deleteCouncil(council) {
   if (!isAdmin()) {
-    alert("Du må være logget inn som admin for å slette et ungdomsråd.");
+    alert("Du må være logget inn som global admin for å slette en side.");
     return;
   }
 
   const confirmDelete = confirm(
-    `Er du sikker på at du vil slette ungdomsrådet "${council.display_name || council.name}"? ` +
+    `Er du sikker på at du vil slette "${council.display_name || council.name}"? ` +
       "Denne handlingen kan ikke angres."
   );
 
@@ -183,13 +247,13 @@ async function deleteCouncil(council) {
     );
 
     if (!res.ok && res.status !== 204) {
-      throw new Error("Kunne ikke slette ungdomsråd.");
+      throw new Error("Kunne ikke slette siden.");
     }
 
     await fetchCouncils();
   } catch (err) {
     console.error(err);
-    alert("Det oppstod en feil ved sletting av ungdomsråd.");
+    alert("Det oppstod en feil ved sletting av siden.");
   }
 }
 
@@ -204,7 +268,7 @@ function openPasswordModal(council, trigger) {
   form.reset();
   form.dataset.submitting = "false";
   if (councilLabel) {
-    councilLabel.textContent = council.display_name || council.name || `Ungdomsråd #${council.id}`;
+    councilLabel.textContent = council.display_name || council.name || `Råd/organisasjon #${council.id}`;
   }
   if (status) {
     status.textContent = "";
@@ -268,6 +332,7 @@ async function handlePasswordChange(event) {
       status.textContent = "Passordet er endret.";
       status.className = "form-status form-status-success";
     }
+    window.HPCouncilSession?.clear(passwordCouncil.id);
     window.setTimeout(() => closeModal(document.getElementById("changePasswordOverlay")), 650);
   } catch (error) {
     console.error(error);
@@ -304,6 +369,7 @@ function renderCouncils() {
   }
 
   gridEl.innerHTML = "";
+  const admin = isAdmin();
   if (addCardEl) {
     gridEl.appendChild(addCardEl);
   }
@@ -311,8 +377,7 @@ function renderCouncils() {
   if (!allCouncils.length) {
     if (emptyEl) {
       emptyEl.style.display = "block";
-      emptyEl.textContent =
-        "Ingen ungdomsråd er opprettet ennå. Bruk kortet «Legg til nytt ungdomsråd» for å opprette ett.";
+      emptyEl.textContent = "Ingen råd eller organisasjoner er opprettet ennå. Bruk kortet «Opprett ny side» for å lage din egen.";
     }
     return;
   }
@@ -320,7 +385,7 @@ function renderCouncils() {
   if (!list.length) {
     if (emptyEl) {
       emptyEl.style.display = "block";
-      emptyEl.textContent = "Ingen ungdomsråd matcher søket.";
+      emptyEl.textContent = "Ingen råd eller organisasjoner matcher søket.";
     }
     return;
   }
@@ -329,14 +394,12 @@ function renderCouncils() {
     emptyEl.style.display = "none";
   }
 
-  const admin = isAdmin();
-
   list.forEach((council) => {
     const card = document.createElement("article");
     card.className = "raad-card";
 
     const name =
-      council.display_name || council.name || `Ungdomsråd #${council.id}`;
+      council.display_name || council.name || `Råd/organisasjon #${council.id}`;
     const created = council.created_at
       ? new Date(council.created_at).toLocaleDateString("nb-NO")
       : "";
@@ -370,7 +433,16 @@ function renderCouncils() {
 
     const title = document.createElement("h3");
     title.className = "raad-card-title";
-    title.textContent = name;
+    const portalLink = document.createElement("a");
+    portalLink.className = "raad-card-primary-link";
+    portalLink.href = councilAdminUrl(council);
+    portalLink.textContent = name;
+    portalLink.setAttribute("aria-label", `Åpne portal for ${name}`);
+    portalLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      goToCouncil(council, portalLink);
+    });
+    title.appendChild(portalLink);
     body.appendChild(title);
 
     if (created) {
@@ -403,18 +475,12 @@ function renderCouncils() {
         deleteCouncil(council);
       });
       actions.appendChild(deleteBtn);
+      body.appendChild(actions);
     }
-
-    body.appendChild(actions);
 
     // === Combine into card ===
     card.appendChild(iconWrap);
     card.appendChild(body);
-
-    // Hele kortet er klikkbart
-    card.addEventListener("click", () => {
-      goToCouncil(council);
-    });
 
     gridEl.appendChild(card);
   });
@@ -440,28 +506,35 @@ async function fetchCouncils() {
 
   try {
     const res = await fetch(COUNCILS_URL);
-    if (!res.ok) throw new Error("Kunne ikke hente ungdomsråd.");
+    if (!res.ok) throw new Error("Kunne ikke hente råd og organisasjoner.");
     const councils = await res.json();
 
     allCouncils = Array.isArray(councils) ? councils : [];
     renderCouncils();
+    if (!requestedCouncilHandled) {
+      requestedCouncilHandled = true;
+      const requestedId = new URLSearchParams(window.location.search).get("council");
+      const requestedCouncil = allCouncils.find((item) => String(item.id) === String(requestedId || ""));
+      if (requestedCouncil) window.setTimeout(() => goToCouncil(requestedCouncil), 0);
+    }
   } catch (err) {
     console.error(err);
     if (emptyEl) {
       emptyEl.style.display = "block";
       emptyEl.textContent =
-        "Det oppstod en feil ved henting av ungdomsråd. Prøv å laste siden på nytt.";
+        "Det oppstod en feil ved henting av råd og organisasjoner. Prøv å laste siden på nytt.";
     }
   } finally {
     gridEl.setAttribute("aria-busy", "false");
   }
 }
 
-// --- NYTT UNGDOMSRÅD ---
+// --- NY SIDE ---
 
 async function handleNewCouncil(event) {
   event.preventDefault();
   const form = event.currentTarget;
+  let createdCouncil = null;
 
   if (form.dataset.submitting === "true") {
     return;
@@ -470,21 +543,28 @@ async function handleNewCouncil(event) {
 
     const nameInput = form.querySelector("#councilName");
     const passwordInput = form.querySelector("#councilPassword");
+    const confirmPasswordInput = form.querySelector("#councilPasswordConfirm");
     const logoFileInput = form.querySelector("#councilLogoFile");
 
     const name = nameInput?.value.trim();
-    const password = passwordInput?.value.trim();
+    const password = passwordInput?.value || "";
     const logoFile = logoFileInput?.files?.[0] || null;
 
 
   if (!name) {
-    alert("Skriv inn navn på ungdomsråd.");
+    alert("Skriv inn navn på rådet eller organisasjonen.");
     form.dataset.submitting = "false";
     return;
   }
 
   if (!password) {
-    alert("Sett et passord for ungdomsrådet.");
+    alert("Sett et passord for siden.");
+    form.dataset.submitting = "false";
+    return;
+  }
+
+  if (password !== confirmPasswordInput?.value) {
+    alert("Passordene er ikke like.");
     form.dataset.submitting = "false";
     return;
   }
@@ -492,18 +572,16 @@ async function handleNewCouncil(event) {
   try {
     const res = await fetch(COUNCILS_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, password }),
     });
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
-      throw new Error(error.error || "Kunne ikke opprette ungdomsråd.");
+      throw new Error(error.error || "Kunne ikke opprette siden.");
     }
 
-    const created = await res.json();
+    createdCouncil = await res.json();
 
 
     if (logoFile) {
@@ -513,7 +591,7 @@ async function handleNewCouncil(event) {
         fd.append("logo", logoFile);
 
         const uploadRes = await fetch(
-          `${COUNCILS_URL}/${encodeURIComponent(created.id)}/logo`,
+          `${COUNCILS_URL}/${encodeURIComponent(createdCouncil.id)}/logo`,
           {
             method: "POST",
             body: fd,
@@ -521,31 +599,26 @@ async function handleNewCouncil(event) {
         );
 
         if (!uploadRes.ok) {
-          console.warn("Logo-opplasting feilet, men rådet ble opprettet likevel.");
+          console.warn("Logo-opplasting feilet, men siden ble opprettet likevel.");
         }
       } catch (logoErr) {
         console.error("Feil ved opplasting av logo:", logoErr);
       }
     }
 
-    if (nameInput) nameInput.value = "";
-    if (passwordInput) passwordInput.value = "";
-    if (logoFileInput) logoFileInput.value = "";
-
-
-    if (nameInput) nameInput.value = "";
-    if (passwordInput) passwordInput.value = "";
-
-    // Lukk overlay og gå rett til nytt råd
-    const overlay = document.getElementById("newCouncilOverlay");
-    if (overlay) {
-      overlay.style.display = "none";
-    }
-
-    goToCouncil(created);
+    await createCouncilSession(createdCouncil, password);
+    form.reset();
+    closeModal(document.getElementById("newCouncilOverlay"));
+    window.location.href = councilAdminUrl(createdCouncil);
   } catch (err) {
     console.error(err);
-    alert("Det oppstod en feil ved opprettelse av ungdomsråd.");
+    if (createdCouncil) {
+      await fetchCouncils();
+      closeModal(document.getElementById("newCouncilOverlay"));
+      alert("Siden ble opprettet, men automatisk innlogging mislyktes. Velg siden i oversikten og logg inn med passordet du nettopp satte.");
+    } else {
+      alert(err.message || "Det oppstod en feil ved opprettelse av siden.");
+    }
   } finally {
     form.dataset.submitting = "false";
   }
@@ -572,6 +645,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const newCouncilOverlay = document.getElementById("newCouncilOverlay");
   const cancelNewCouncilBtn = document.getElementById("cancelNewCouncil");
   const changePasswordOverlay = document.getElementById("changePasswordOverlay");
+  const councilAccessOverlay = document.getElementById("councilAccessOverlay");
 
   if (addCard && newCouncilOverlay) {
     const showNewCouncilModal = () => openModal(newCouncilOverlay, addCard);
@@ -602,6 +676,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("closeNewCouncilModal")?.addEventListener("click", () => closeModal(newCouncilOverlay));
   document.getElementById("closeLoginModal")?.addEventListener("click", () => closeModal(document.getElementById("login-section")));
+  document.getElementById("councilAccessForm")?.addEventListener("submit", handleCouncilAccess);
+  document.getElementById("cancelCouncilAccess")?.addEventListener("click", () => closeModal(councilAccessOverlay));
+  document.getElementById("closeCouncilAccessModal")?.addEventListener("click", () => closeModal(councilAccessOverlay));
+  councilAccessOverlay?.addEventListener("click", (event) => {
+    const box = councilAccessOverlay.querySelector(".login-box");
+    if (box && !box.contains(event.target)) closeModal(councilAccessOverlay);
+  });
 
   document.getElementById("changePasswordForm")?.addEventListener("submit", handlePasswordChange);
   document.getElementById("cancelChangePassword")?.addEventListener("click", () => closeModal(changePasswordOverlay));

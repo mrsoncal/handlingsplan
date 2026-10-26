@@ -1,6 +1,11 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 import readXlsxFile, { readSheetNames } from "read-excel-file";
 import { loadDelegates, saveDelegatesToLocalStorageRaw } from "../store/bus.js";
+import AppNavigation from "./AppNavigation.jsx";
+import SiteFooter from "./SiteFooter.jsx";
+import CsvTutorial from "./CsvTutorial.jsx";
+import ColumnDropdown from "./ColumnDropdown.jsx";
+import { TutorialIntro } from "./Tutorial.jsx";
 import {
   REQUIRED_COLUMNS,
   buildImportedRows,
@@ -29,7 +34,7 @@ function downloadCsvFile(rows) {
   URL.revokeObjectURL(url);
 }
 
-export default function CsvTool() {
+export default function CsvTool({ delegateSaveError = "" }) {
   const [rows, setRows] = useState(() => {
     // Start with 5 empty rows, auto-numbered 1–5
     return Array.from({ length: 5 }, (_, i) =>
@@ -50,29 +55,47 @@ export default function CsvTool() {
   const [excelError, setExcelError] = useState("");
   const [excelStatus, setExcelStatus] = useState("");
   const [excelLoading, setExcelLoading] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorialIntro, setShowTutorialIntro] = useState(() => {
+    try { return localStorage.getItem("csv_tutorial_intro_dismissed_v1") !== "1"; }
+    catch { return true; }
+  });
+  const [tutorialDemoLoaded, setTutorialDemoLoaded] = useState(false);
+  const [tutorialMappingOpen, setTutorialMappingOpen] = useState(false);
+  const [tutorialMappingApplied, setTutorialMappingApplied] = useState(false);
+  const tutorialSnapshotRef = useRef(null);
+  const tutorialLoadRef = useRef(0);
   const nextIdRef = useRef(6);
 
-  const loadExcelSheet = async (file, sheetName) => {
+  const loadExcelSheet = async (file, sheetName, { tutorialDemo = false, isCurrent = () => true } = {}) => {
     setExcelLoading(true);
     setExcelError("");
     setExcelStatus("");
     try {
       const parsedRows = await readXlsxFile(file, { sheet: sheetName });
+      if (!isCurrent()) return false;
       const active = compactExcelRows(parsedRows);
       if (!active.rows.length) throw new Error("Arket inneholder ingen aktive celler.");
       if (active.rows.length > 10000 || active.columnCount > 200) {
         throw new Error("Arket er for stort. Maksimum er 10 000 aktive rader og 200 aktive kolonner.");
       }
-      setExcelRows(active.rows);
+      const suggestedHeaderIndex = suggestHeaderRow(active.rows);
+      // A tutorial should stay small even if its example workbook grows later.
+      const sourceRows = tutorialDemo ? active.rows.slice(0, suggestedHeaderIndex + 11) : active.rows;
+      setExcelRows(sourceRows);
       setExcelStartRow(active.startRow);
       setExcelColumnCount(active.columnCount);
-      const suggestedHeaderIndex = suggestHeaderRow(active.rows);
-      const suggestedMapping = suggestColumnMapping(active.rows, active.columnCount, suggestedHeaderIndex);
+      const automaticMapping = suggestColumnMapping(active.rows, active.columnCount, suggestedHeaderIndex);
+      // Leave the VGS column for the user to add during the guided exercise.
+      const suggestedMapping = tutorialDemo
+        ? { ...automaticMapping, orgColumns: automaticMapping.orgColumns.slice(0, 1) }
+        : automaticMapping;
+      if (tutorialDemo) setAssignMissingNumbers(true);
       const imported = buildImportedRows({
-        rows: active.rows,
+        rows: sourceRows,
         headerIndex: suggestedHeaderIndex,
         mapping: suggestedMapping,
-        assignMissingNumbers,
+        assignMissingNumbers: tutorialDemo || assignMissingNumbers,
       }).map((row, index) => ({ ...row, id: index + 1 }));
       setExcelHeaderIndex(suggestedHeaderIndex);
       setExcelMapping(suggestedMapping);
@@ -80,13 +103,36 @@ export default function CsvTool() {
       nextIdRef.current = imported.length + 1;
       setGlobalError("");
       setExcelStatus(`${imported.length} deltakere er lagt i deltakerlisten.`);
+      return true;
     } catch (error) {
+      if (!isCurrent()) return false;
       console.error("[XLSX] parse error:", error);
       setExcelRows([]);
       setExcelColumnCount(0);
       setExcelError(error.message || "Kunne ikke lese Excel-filen.");
+      return false;
     } finally {
+      if (isCurrent()) setExcelLoading(false);
+    }
+  };
+
+  const loadExcelWorkbook = async (file, options = {}) => {
+    setExcelFile(file);
+    setExcelFileName(file.name);
+    setExcelLoading(true);
+    try {
+      const sheetNames = await readSheetNames(file);
+      if (options.isCurrent && !options.isCurrent()) return false;
+      if (!sheetNames.length) throw new Error("Excel-filen inneholder ingen ark.");
+      setExcelSheets(sheetNames);
+      setExcelSheet(sheetNames[0]);
+      return await loadExcelSheet(file, sheetNames[0], options);
+    } catch (error) {
+      if (options.isCurrent && !options.isCurrent()) return false;
+      console.error("[XLSX] workbook error:", error);
+      setExcelError(error.message || "Kunne ikke åpne Excel-filen.");
       setExcelLoading(false);
+      return false;
     }
   };
 
@@ -107,21 +153,77 @@ export default function CsvTool() {
       return;
     }
 
-    setExcelFile(file);
-    setExcelFileName(file.name);
-    setExcelLoading(true);
+    await loadExcelWorkbook(file);
+  };
+
+  const loadTutorialDemo = async () => {
+    const loadId = ++tutorialLoadRef.current;
+    const isCurrent = () => tutorialLoadRef.current === loadId && tutorialSnapshotRef.current !== null;
+    setExcelError("");
     try {
-      const sheetNames = await readSheetNames(file);
-      if (!sheetNames.length) throw new Error("Excel-filen inneholder ingen ark.");
-      setExcelSheets(sheetNames);
-      setExcelSheet(sheetNames[0]);
-      await loadExcelSheet(file, sheetNames[0]);
+      const response = await fetch(`${import.meta.env.BASE_URL}demo-paamelding.xlsx?v=2`);
+      if (!isCurrent()) return false;
+      if (!response.ok) throw new Error("Demoarket kunne ikke hentes.");
+      const file = new File([await response.blob()], "demo-paamelding.xlsx", {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      if (!isCurrent()) return false;
+      const loaded = await loadExcelWorkbook(file, { tutorialDemo: true, isCurrent });
+      if (loaded && isCurrent()) setTutorialDemoLoaded(true);
+      return loaded;
     } catch (error) {
-      console.error("[XLSX] workbook error:", error);
-      setExcelError(error.message || "Kunne ikke åpne Excel-filen.");
-      setExcelLoading(false);
+      if (isCurrent()) setExcelError(error.message || "Demoarket kunne ikke åpnes.");
+      return false;
     }
   };
+
+  const openTutorial = () => {
+    tutorialLoadRef.current += 1;
+    dismissTutorialIntro();
+    tutorialSnapshotRef.current = {
+      rows, globalError, excelFile, excelFileName, excelSheets, excelSheet,
+      excelRows, excelStartRow, excelColumnCount, excelHeaderIndex, excelMapping,
+      assignMissingNumbers, excelError, excelStatus, nextId: nextIdRef.current,
+      detailsOpen: Boolean(document.querySelector(".excel-mapping-details")?.open),
+    };
+    const details = document.querySelector(".excel-mapping-details");
+    if (details) details.open = false;
+    setTutorialDemoLoaded(false);
+    setTutorialMappingOpen(false);
+    setTutorialMappingApplied(false);
+    setShowTutorial(true);
+  };
+
+  const dismissTutorialIntro = useCallback(() => {
+    try { localStorage.setItem("csv_tutorial_intro_dismissed_v1", "1"); } catch {}
+    setShowTutorialIntro(false);
+  }, []);
+
+  const closeTutorial = useCallback(() => {
+    tutorialLoadRef.current += 1;
+    const saved = tutorialSnapshotRef.current;
+    if (saved) {
+      setRows(saved.rows);
+      setGlobalError(saved.globalError);
+      setExcelFile(saved.excelFile);
+      setExcelFileName(saved.excelFileName);
+      setExcelSheets(saved.excelSheets);
+      setExcelSheet(saved.excelSheet);
+      setExcelRows(saved.excelRows);
+      setExcelStartRow(saved.excelStartRow);
+      setExcelColumnCount(saved.excelColumnCount);
+      setExcelHeaderIndex(saved.excelHeaderIndex);
+      setExcelMapping(saved.excelMapping);
+      setAssignMissingNumbers(saved.assignMissingNumbers);
+      setExcelError(saved.excelError);
+      setExcelStatus(saved.excelStatus);
+      nextIdRef.current = saved.nextId;
+      const details = document.querySelector(".excel-mapping-details");
+      if (details) details.open = saved.detailsOpen;
+    }
+    tutorialSnapshotRef.current = null;
+    setShowTutorial(false);
+  }, []);
 
   const handleSheetChange = async (event) => {
     const sheetName = event.target.value;
@@ -129,15 +231,17 @@ export default function CsvTool() {
     if (excelFile) await loadExcelSheet(excelFile, sheetName);
   };
 
-  const handleHeaderRowChange = (event) => {
-    const nextHeaderIndex = Number(event.target.value);
+  const handleHeaderRowChange = (value) => {
+    const nextHeaderIndex = Number(value);
     setExcelHeaderIndex(nextHeaderIndex);
     setExcelMapping(suggestColumnMapping(excelRows, excelColumnCount, nextHeaderIndex));
     setExcelStatus("");
     setExcelError("");
+    setTutorialMappingApplied(false);
   };
 
   const updateOrgColumn = (position, value) => {
+    setTutorialMappingApplied(false);
     setExcelMapping((current) => {
       const nextColumns = [...current.orgColumns];
       nextColumns[position] = value;
@@ -146,6 +250,7 @@ export default function CsvTool() {
   };
 
   const addOrgColumn = () => {
+    setTutorialMappingApplied(false);
     setExcelMapping((current) => ({
       ...current,
       orgColumns: [...current.orgColumns, ""],
@@ -153,6 +258,7 @@ export default function CsvTool() {
   };
 
   const removeOrgColumn = (position) => {
+    setTutorialMappingApplied(false);
     setExcelMapping((current) => ({
       ...current,
       orgColumns: current.orgColumns.filter((_, index) => index !== position),
@@ -193,6 +299,7 @@ export default function CsvTool() {
     nextIdRef.current = imported.length + 1;
     setGlobalError("");
     setExcelStatus(`${imported.length} deltakere er lagt i radeditoren. Kontroller eventuelle feil nedenfor.`);
+    if (showTutorial) setTutorialMappingApplied(true);
   };
 
   const addRows = (count = 1) => {
@@ -303,33 +410,17 @@ export default function CsvTool() {
   });
   return (
     <div className="page">
-      <header className="header">
-        <div className="nav-container">
-          <div className="navigation-bar">
-            <nav className="nav">
-              <a className="btn nav" href="#admin">Admin</a>
-              <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
-              <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
-            </nav>
-            <nav className="nav-r">
-              <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">
-                CSV Verktøy
-              </a>
-            </nav>
-          </div>
-          <img className="brand" src={`${import.meta.env.BASE_URL}TU-logov2.png`} alt="Telemark Ungdomsråd" />
-        </div>
-
-        <div className="header-space-container">
-          <div className="header-space" />
-        </div>
-      </header>
+      <AppNavigation active="import" />
+      {delegateSaveError && <p className="delegate-save-error" role="alert">{delegateSaveError}</p>}
 
       <div className="container">
         <section className="card main-card">
-          <div className="title">Importer deltakere</div>
+          <div className="csv-tool-heading">
+            <div className="title">Importer deltakere</div>
+            <button type="button" className="tutorial-trigger" onClick={openTutorial} aria-label="Vis veiledning for CSV-verktøyet" title="Slik bruker du CSV-verktøyet">?</button>
+          </div>
 
-          <section className="excel-import-card" aria-labelledby="excel-import-title">
+          <section className="excel-import-card" aria-labelledby="excel-import-title" data-csv-tutorial="upload">
             <div className="title excel-import-title" id="excel-import-title">Last opp Excel-fil</div>
             <p>
               Velg en <b>.xlsx-fil</b> fra påmeldingssystemet.
@@ -373,61 +464,50 @@ export default function CsvTool() {
             {excelStatus && <p className="excel-message excel-message-success" role="status">{excelStatus}</p>}
 
             {excelRows.length > 0 && !excelLoading && (
-              <details className="excel-mapping-details">
-                <summary>Juster kolonner</summary>
+              <details className="excel-mapping-details" onToggle={(event) => setTutorialMappingOpen(event.currentTarget.open)}>
+                <summary data-csv-tutorial="mapping-toggle">Juster kolonner</summary>
                 <div className="excel-mapping-heading">
                   <h3>Kolonner</h3>
                   <p>Kolonnene er valgt automatisk. Endre dem bare hvis deltakerlisten ser feil ut.</p>
                 </div>
 
-                <div className="excel-mapping" aria-label="Koble Excel-kolonner til deltakerfelter">
-                  <label>
-                    Overskriftsrad
-                    <select className="input" value={excelHeaderIndex} onChange={handleHeaderRowChange}>
-                      {excelRows.slice(0, 10).map((row, index) => (
-                        <option key={index} value={index}>
-                          Excel-rad {excelStartRow + index} ({row.filter((value) => displayExcelValue(value).trim()).length} utfylte celler)
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                <div className="excel-mapping" aria-label="Koble Excel-kolonner til deltakerfelter" data-csv-tutorial="columns">
+                  <ColumnDropdown
+                    label="Overskriftsrad"
+                    value={excelHeaderIndex}
+                    options={excelRows.slice(0, 10).map((row, index) => ({
+                      value: String(index),
+                      label: `Excel-rad ${excelStartRow + index} (${row.filter((cell) => displayExcelValue(cell).trim()).length} utfylte celler)`,
+                    }))}
+                    onChange={handleHeaderRowChange}
+                  />
                   {REQUIRED_COLUMNS.filter((field) => field.key !== "org").map((field) => (
-                    <label key={field.key}>
-                      {field.label}
-                      <select
-                        className="input"
-                        value={excelMapping[field.key]}
-                        onChange={(event) => setExcelMapping((current) => ({
-                          ...current,
-                          [field.key]: event.target.value,
-                        }))}
-                      >
-                        <option value="">Velg kolonne</option>
-                        {excelColumnOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <ColumnDropdown
+                      key={field.key}
+                      label={field.label}
+                      value={excelMapping[field.key]}
+                      options={[{ value: "", label: "Velg kolonne" }, ...excelColumnOptions]}
+                      onChange={(nextValue) => {
+                          setTutorialMappingApplied(false);
+                          setExcelMapping((current) => ({ ...current, [field.key]: nextValue }));
+                        }}
+                    />
                   ))}
                 </div>
 
-                <fieldset className="excel-org-mapping">
+                <fieldset className="excel-org-mapping" data-csv-tutorial="representation">
                   <legend>Hvem deltakeren representerer</legend>
                   <p className="muted">Vi bruker den første utfylte verdien, ovenfra og ned.</p>
                   {excelMapping.orgColumns.map((column, position) => (
-                    <div className="excel-org-row" key={`${position}-${column}`}>
+                    <div className="excel-org-row" key={position}>
                       <span className="excel-priority">{position + 1}</span>
-                      <select
-                        className="input"
-                        aria-label={`Representasjon, prioritet ${position + 1}`}
+                      <ColumnDropdown
+                        label={`Representasjon, prioritet ${position + 1}`}
+                        className="excel-org-dropdown"
                         value={column}
-                        onChange={(event) => updateOrgColumn(position, event.target.value)}
-                      >
-                        <option value="">Velg kolonne</option>
-                        {excelColumnOptions.map((option) => (
-                          <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                      </select>
+                        options={[{ value: "", label: "Velg kolonne" }, ...excelColumnOptions]}
+                        onChange={(nextValue) => updateOrgColumn(position, nextValue)}
+                      />
                       <button
                         type="button"
                         className="btn excel-remove-column"
@@ -443,7 +523,7 @@ export default function CsvTool() {
                   </button>
                 </fieldset>
 
-                <button className="btn primary excel-use-button" type="button" onClick={importExcelRows} disabled={!mappingIsComplete}>
+                <button className="btn primary excel-use-button" type="button" onClick={importExcelRows} disabled={!mappingIsComplete} data-csv-tutorial="apply">
                   Oppdater deltakerlisten
                 </button>
               </details>
@@ -483,7 +563,7 @@ export default function CsvTool() {
             </div>
           )}
 
-          <div className="tableWrap">
+          <div className="tableWrap" data-csv-tutorial="editor">
             <table className="table csv-table">
               <thead>
                 <tr>
@@ -498,9 +578,11 @@ export default function CsvTool() {
                   const errors = rowErrors.get(r.id) || [];
                   const hasError = errors.length > 0;
                   const errorId = `csv-row-errors-${r.id}`;
+                  const numberError = errors.some((error) => /delegatnummer/i.test(error));
+                  const nameError = errors.some((error) => /fullt navn/i.test(error));
+                  const orgError = errors.some((error) => /representerer/i.test(error));
                   return (
-                    <React.Fragment key={r.id}>
-                      <tr className={hasError ? "csv-row-error" : undefined}>
+                      <tr key={r.id} className={hasError ? "csv-row-error" : undefined}>
                         <td>
                           <input
                             className="input input-delegatnummer"
@@ -508,11 +590,12 @@ export default function CsvTool() {
                             inputMode="numeric"
                             value={r.delegatnummer}
                             aria-label={`Delegatnummer, rad ${rowIndex + 1}`}
-                            aria-invalid={hasError || undefined}
-                            aria-describedby={hasError ? errorId : undefined}
+                            aria-invalid={numberError || undefined}
+                            aria-describedby={numberError ? errorId : undefined}
                             onChange={(e) => updateCell(r.id, "delegatnummer", e.target.value)}
                             placeholder="1"
                           />
+                          {hasError && <span className="csv-sr-only" id={errorId}>{errors.join(". ")}</span>}
                         </td>
                         <td>
                           <input
@@ -520,8 +603,8 @@ export default function CsvTool() {
                             type="text"
                             value={r.fullName}
                             aria-label={`Fullt navn, rad ${rowIndex + 1}`}
-                            aria-invalid={hasError || undefined}
-                            aria-describedby={hasError ? errorId : undefined}
+                            aria-invalid={nameError || undefined}
+                            aria-describedby={nameError ? errorId : undefined}
                             onChange={(e) => updateCell(r.id, "fullName", e.target.value)}
                             placeholder="Fornavn Etternavn"
                           />
@@ -532,8 +615,9 @@ export default function CsvTool() {
                             type="text"
                             value={r.org}
                             aria-label={`Representerer, rad ${rowIndex + 1}`}
-                            aria-invalid={hasError || undefined}
-                            aria-describedby={hasError ? errorId : undefined}
+                            aria-invalid={orgError || undefined}
+                            aria-describedby={orgError ? errorId : undefined}
+                            data-csv-tutorial={showTutorial && r.fullName === "Hedda Eksempel" ? "fix" : undefined}
                             onChange={(e) => updateCell(r.id, "org", e.target.value)}
                             placeholder="F.eks. Telemark ungdomsråd"
                           />
@@ -550,16 +634,6 @@ export default function CsvTool() {
                           </button>
                         </td>
                       </tr>
-                      {hasError && (
-                        <tr className="csv-row-error-message">
-                          <td colSpan="4">
-                            <ul id={errorId}>
-                              {errors.map((error) => <li key={error}>{error}</li>)}
-                            </ul>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -567,6 +641,7 @@ export default function CsvTool() {
           </div>
 
           <div
+            data-csv-tutorial="actions"
             style={{
               marginTop: 12,
               display: "flex",
@@ -575,86 +650,33 @@ export default function CsvTool() {
               flexWrap: "wrap",
             }}
           >
-            <button className="btn primary" type="button" onClick={useEditedRowsInTalestolen}>
+            <button className="btn primary" type="button" onClick={useEditedRowsInTalestolen} disabled={showTutorial}>
               Bruk i Talestolen
             </button>
-            <button className="btn" type="button" onClick={handleDownload}>
+            <button className="btn" type="button" onClick={handleDownload} disabled={showTutorial}>
               Last ned CSV-fil
             </button>
           </div>
         </section>
       </div>
-      <footer className="site-footer">
-        <div className="footer-social">
-          <div className="container">
-            <div className="footer-social-row">
-              <a href="https://www.facebook.com/telemarkfylkeskommune"
-                title="Facebook - Telemark fylkeskommune"
-                className="footer-social-btn footer-social-facebook"
-                target="_blank" rel="noreferrer noopener">
-                <span className="footer-social-icon">
-                    <img src={`${import.meta.env.BASE_URL}f.png`} className="footer-social-img" alt="Facebook" />
-                </span>
-
-              </a>
-              <a href="https://www.instagram.com/telemarkungdom/"
-                title="Instagram - Telemark fylkeskommune"
-                className="footer-social-btn footer-social-instagram"
-                target="_blank" rel="noreferrer noopener">
-                <span className="footer-social-icon">
-                    <img src={`${import.meta.env.BASE_URL}ig.png`} className="footer-social-img" alt="Instagram" />
-                </span>
-
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="footer-main">
-          <div className="container footer-main-grid">
-            <div className="footer-col">
-              <p><strong>Kontakt oss</strong></p>
-              <p>Telemark Ungdomsråd<br/>Postboks 2844<br/>3702 Skien</p>
-              <p>Koordinator for Telemark Ungdomsråd<br/><a href="mailto:heidi.bekkevold@telemarkfylke.no">heidi.bekkevold@telemarkfylke.no</a><br/>+47 991 55 531</p>
-            </div>
-
-            <div className="footer-col">
-              <p><strong>Telemark Ungdomsråd</strong></p>
-              <p><strong>Leder:</strong> Jan Sander Ravn Gudbrandsen<br/><a href="mailto:jan.sander.ravn.gudbrandsen@telemarkfylke.no">jan.sander.ravn.gudbrandsen@telemarkfylke.no</a><br/>+47 969 06 790</p>
-              <p><strong>Nestleder:</strong> Helene Clausen Endresen<br/><a href="mailto:helene.c.endresen@gmail.com">helene.c.endresen@gmail.com</a><br/>+47 463 14 573</p>
-              <p><strong>Nettsideutvikler:</strong> Sondre Callaerts<br/><a href="mailto:mrsoncal@gmail.com">mrsoncal@gmail.com</a><br/>+47 929 57 188</p>
-            </div>
-
-            <div className="footer-col">
-              <p><strong></strong></p>
-              <p></p>
-            </div>
-
-            <div className="footer-col footer-decoration">
-              <svg xmlns="http://www.w3.org/2000/svg" width="158" height="243" viewBox="0 0 158 243" fill="none" aria-hidden="true">
-                <path opacity="0.8" d="M79 81V161.985V162V243C35.3754 242.985 0.01422 206.729 0 162V81H79Z" fill="white"></path>
-                <path opacity="0.4" d="M79 162C79.0063 117.264 114.362 81 157.974 81C157.983 81 157.991 81 158 81V162H79Z" fill="white"></path>
-                <path opacity="0.6" d="M158 243C157.994 198.264 122.638 162 79.0261 162C79.0174 162 79.0087 162 79 162V243H158Z" fill="white"></path>
-                <rect opacity="0.8" x="79" width="79" height="81" fill="white"></rect>
-              </svg>
-            </div>
-          </div>
-
-          <div className="container footer-bottom">
-            <div className="footer-logo-block">
-              <img src={`${import.meta.env.BASE_URL}TU-logo-bw-wide.png`} alt="Telemark Ungdomsråd" className="footer-logo" />
-            </div>
-            <ul className="footer-links">
-              <p>© Sondre Callaerts — Frigitt til fri bruk</p>
-              <li className="footer-links-badge">
-                <a href="https://www.telemarkfylke.no/link/22cdc346a84a49e5add33a4198ce23ed.aspx" target="_blank" rel="noreferrer noopener">
-                  <img src="https://www.telemarkfylke.no/globalassets/Administrasjon/tfk/system/layout/miljofyrtaarn-logo-svart.svg" alt="Miljøfyrtårn logo" />
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
+      {showTutorialIntro && !showTutorial && <TutorialIntro
+        onDismiss={dismissTutorialIntro}
+        title="Ny i CSV-verktøyet?"
+        description="Trykk på spørsmålstegnet for en praktisk veiledning i Excel-import, kolonnevalg og ferdig deltakerliste."
+      />}
+      {showTutorial && <CsvTutorial
+        onClose={closeTutorial}
+        onLoadDemo={loadTutorialDemo}
+        demoLoaded={tutorialDemoLoaded}
+        demoLoading={excelLoading}
+        demoError={excelError}
+        mappingOpen={tutorialMappingOpen}
+        orgMapped={excelMapping.orgColumns.includes("4")}
+        mappingApplied={tutorialMappingApplied}
+        rowsValid={tutorialMappingApplied && !hasAnyErrors && rowValidation.active.length === 8}
+        csvPreview={makeCsvContent(rowValidation.active)}
+      />}
     </div>
   );
 }

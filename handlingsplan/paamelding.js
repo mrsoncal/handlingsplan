@@ -1,7 +1,10 @@
+import { enhanceRegistrationSelect } from "./registration-dropdown.js";
+
 const API_BASE = window.HP_API_BASE || "";
 const slug = new URLSearchParams(location.search).get("event") || "";
 const state = { event: null, types: [], fields: [] };
 const $ = (id) => document.getElementById(id);
+const fallbackLogo = "../UFR-logo.png";
 
 function notice(message, type = "") {
   $("registration-form-status").textContent = message;
@@ -32,7 +35,7 @@ function renderField(field) {
     label.appendChild(help);
   }
   let input;
-  if (field.system_key === "participant_type") {
+  if (field.system_key === "participant_type" && field.field_type === "single_choice") {
     input = document.createElement("select");
     input.appendChild(new Option("Velg ett alternativ", ""));
     state.types.forEach((type) => input.appendChild(new Option(type.name, type.id)));
@@ -54,10 +57,12 @@ function renderField(field) {
   }
   input.className = "input";
   input.id = fieldInputId(field);
+  if (input instanceof HTMLSelectElement) input.setAttribute("aria-label", field.label);
   input.required = Boolean(field.is_required);
   input.dataset.fieldId = field.id;
   label.htmlFor = input.id;
   label.appendChild(input);
+  if (input instanceof HTMLSelectElement) enhanceRegistrationSelect(input);
   return label;
 }
 
@@ -67,6 +72,24 @@ function renderFormFields() {
   state.fields.forEach((field) => container.appendChild(renderField(field)));
 }
 
+async function loadCouncilLogo() {
+  let council = state.event.council;
+  if (!council?.id) {
+    const response = await fetch(`${API_BASE}/api/ungdomsrad`);
+    if (!response.ok) return;
+    const councils = await response.json();
+    const matches = councils.filter((item) => (item.display_name || item.name) === state.event.councilName);
+    if (matches.length !== 1) return;
+    [council] = matches;
+  }
+  const logo = $("registration-council-logo");
+  logo.alt = `Logo for ${state.event.councilName}`;
+  logo.onerror = () => { logo.onerror = null; logo.src = fallbackLogo; };
+  logo.src = council.has_logo
+    ? `${API_BASE}/api/ungdomsrad/${encodeURIComponent(council.id)}/logo-file?v=${encodeURIComponent(council.logo_version || "current")}`
+    : fallbackLogo;
+}
+
 async function loadForm() {
   const response = await fetch(`${API_BASE}/api/paamelding/${encodeURIComponent(slug)}`);
   const result = await response.json().catch(() => ({}));
@@ -74,6 +97,7 @@ async function loadForm() {
   state.event = result.event;
   state.types = result.types || [];
   state.fields = result.fields || [];
+  loadCouncilLogo().catch(() => {});
   document.title = `${state.event.title} – påmelding`;
   $("registration-council").textContent = state.event.councilName;
   $("registration-title").textContent = state.event.title;

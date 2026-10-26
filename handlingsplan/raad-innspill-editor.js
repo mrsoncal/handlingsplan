@@ -20,6 +20,12 @@ let isLoggedIn = false;
 let currentCouncil = null;
 let innspillFingerprint = "";
 let innspillRefreshPromise = null;
+let councilSession = raadId ? window.HPCouncilSession?.get(raadId) : null;
+let councilToken = councilSession?.token || "";
+
+function councilAuthHeaders() {
+  return councilToken ? { "X-Council-Session": councilToken } : {};
+}
 
 // ---- COOKIE HELPERS (deles med raad-admin) ----
 const PW_COOKIE_NAME = raadId ? `raad_admin_pw_${raadId}` : null;
@@ -85,14 +91,12 @@ function updateLoginVisibility() {
 }
 
 function logoutCouncilAdmin() {
-  clearPasswordCookie();
+  window.HPCouncilSession?.clear(raadId);
   raadPassword = "";
+  councilToken = "";
   isLoggedIn = false;
   editingId = null;
-  updateLoginVisibility();
-  const passwordInput = $("raad-password");
-  if (passwordInput) passwordInput.value = "";
-  setEditorStatus("Du er logget ut.", "success");
+  window.location.replace("raad-oversikt.html");
 }
 
 
@@ -101,7 +105,7 @@ function logoutCouncilAdmin() {
 async function fetchCouncil(id) {
   const res = await fetch(`${COUNCILS_URL}/${encodeURIComponent(id)}`);
   if (!res.ok) {
-    throw new Error("Kunne ikke hente ungdomsråd.");
+    throw new Error("Kunne ikke hente siden.");
   }
   return await res.json();
 }
@@ -230,63 +234,26 @@ async function validateCouncilPassword(password) {
 }
 
 async function initLoginModule() {
-  const loginBtn = $("raad-login-btn");
-  const pwInput = $("raad-password");
-  const errorEl = $("raad-login-error");
-
-  const cookiePw = getPasswordFromCookie();
-  if (cookiePw) {
-    try {
-      await validateCouncilPassword(cookiePw);
-      raadPassword = cookiePw;
-      isLoggedIn = true;
-      if (pwInput) pwInput.value = "";
-      if (errorEl) errorEl.textContent = "";
-      updateLoginVisibility();
-    } catch {
-      clearPasswordCookie();
-      raadPassword = "";
-      isLoggedIn = false;
-      updateLoginVisibility();
-    }
+  councilSession = window.HPCouncilSession?.get(raadId);
+  councilToken = councilSession?.token || "";
+  if (!councilToken) return false;
+  const response = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(raadId)}/session`, {
+    headers: councilAuthHeaders(),
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    window.HPCouncilSession?.clear(raadId);
+    return false;
   }
-
-  if (loginBtn && pwInput) {
-    loginBtn.addEventListener("click", async () => {
-      const pw = pwInput.value.trim();
-      if (!pw) {
-        if (errorEl) {
-          errorEl.textContent = "Vennligst skriv inn passord.";
-        }
-        return;
-      }
-
-      loginBtn.disabled = true;
-      if (errorEl) errorEl.textContent = "Kontrollerer passord…";
-      try {
-        await validateCouncilPassword(pw);
-        raadPassword = pw;
-        isLoggedIn = true;
-        setPasswordCookie(pw);
-        if (errorEl) errorEl.textContent = "";
-        updateLoginVisibility();
-      } catch (err) {
-        raadPassword = "";
-        isLoggedIn = false;
-        clearPasswordCookie();
-        if (errorEl) errorEl.textContent = err.message || "Feil passord.";
-        updateLoginVisibility();
-      } finally {
-        loginBtn.disabled = false;
-      }
-    });
-  }
+  isLoggedIn = true;
+  updateLoginVisibility();
+  return true;
 }
 
 
 function ensurePassword() {
   // Hvis allerede satt i minnet og vi anser oss som innlogget
-  if (raadPassword && isLoggedIn) return true;
+  if (councilToken && isLoggedIn) return true;
 
   // Ellers: be brukeren logge inn
   const errorEl = $("raad-login-error");
@@ -415,7 +382,7 @@ function normalizeInnspillForExport(item) {
 
 function buildAiExportMarkdown() {
   const councilName =
-    currentCouncil?.display_name || currentCouncil?.name || "Ukjent ungdomsråd";
+    currentCouncil?.display_name || currentCouncil?.name || "Ukjent råd eller organisasjon";
   const themes = Array.isArray(currentCouncil?.temaer)
     ? currentCouncil.temaer.map((tema, index) => ({
         navn: tema.name || null,
@@ -463,7 +430,7 @@ Hvis handlingsplanfilen ikke kan leses, skal du si tydelig fra og ikke gi endeli
 
 ## Rådsinformasjon
 
-- Ungdomsråd: ${councilName}
+- Råd/organisasjon: ${councilName}
 - Råds-ID: ${raadId || "ukjent"}
 - Eksportert: ${exportTime}
 - Antall innspill: ${items.length}
@@ -614,6 +581,7 @@ async function handleVedtattToggleClick(id, nextState) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...councilAuthHeaders(),
       },
       body: JSON.stringify({
         password: raadPassword,
@@ -662,6 +630,7 @@ async function handleVedtattToggleClick(id, nextIsVedtatt) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...councilAuthHeaders(),
       },
       body: JSON.stringify({
         password: raadPassword,
@@ -730,6 +699,7 @@ async function handleSaveClick(id) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...councilAuthHeaders(),
       },
       body: JSON.stringify({
         password: raadPassword,
@@ -831,6 +801,7 @@ async function handleDeleteClick(id) {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        ...councilAuthHeaders(),
       },
       body: JSON.stringify({ password: raadPassword }),
     });
@@ -867,7 +838,7 @@ function renderInnspillTable() {
 
   if (!innspillState.length) {
     wrapper.innerHTML =
-      "<p>Det er ikke registrert noen innspill for dette ungdomsrådet ennå.</p>";
+      "<p>Det er ikke registrert noen innspill for denne siden ennå.</p>";
     return;
   }
 
@@ -1021,13 +992,22 @@ function initEditDialog() {
 // ---- INIT ----
 
 async function init() {
+  clearPasswordCookie();
   if (!raadId) {
-    alert("Mangler id for ungdomsråd i URL-en.");
+    alert("Mangler side-ID i URL-en.");
+    return;
+  }
+
+  if (!window.HPCouncilSession?.get(raadId)) {
+    window.HPCouncilSession?.require(raadId);
     return;
   }
 
   initBackLink();
-  await initLoginModule();
+  if (!await initLoginModule()) {
+    window.location.replace("raad-oversikt.html");
+    return;
+  }
   initEditDialog();
   const exportBtn = $("export-ai-btn");
   if (exportBtn) exportBtn.addEventListener("click", exportInnspillForAi);
@@ -1048,7 +1028,7 @@ async function init() {
     }
     const breadcrumbCouncil = $("breadcrumb-council");
     if (breadcrumbCouncil) {
-      breadcrumbCouncil.textContent = council.display_name || council.name || "Ukjent ungdomsråd";
+      breadcrumbCouncil.textContent = council.display_name || council.name || "Ukjent råd eller organisasjon";
     }
     updateHeaderBrand(council);
     setTemaOrderFromCouncil(council);

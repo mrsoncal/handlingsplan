@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <title>Innspill – Tabellvisning</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20261020-3" />
     <script>
       // Samme base-URL som de andre håndlingsplan-sidene
       window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
     </script>
   </head>
   <body id="raad-innspill-editor-body">
-    <script src="raad-brand-cache.js"></script>
+    <script src="raad-brand-cache.js?v=20261023-4"></script>
     <header class="header">
       <div class="nav-container">
         <div class="navigation-bar">
@@ -46,7 +46,7 @@
                     class="form-row"
                 >
                     <label for="raad-password" class="field-label">
-                    Skriv inn passord for å redigere ungdomsrådet.
+                    Skriv inn passord for å redigere denne siden.
                     </label>
                     <input
                     id="raad-password"
@@ -157,7 +157,8 @@
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="council-session.js"></script>
     <script src="innspill-sync.js"></script>
-    <script src="raad-innspill-editor.js"></script>
+    <script src="raad-innspill-editor.js?v=20261023-3"></script>
   </body>
 </html>

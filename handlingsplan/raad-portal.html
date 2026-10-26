@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal for råd og organisasjoner</title>
+    <link rel="stylesheet" href="styles.css?v=20261023-8" />
+    <script>
+      window.HP_API_BASE = "https://qeb2527k.function2.insforge.app/handlingsplan-api";
+    </script>
+  </head>
+  <body class="council-portal-page">
+    <div class="page">
+    <header class="header">
+      <div class="nav-container">
+        <div class="navigation-bar">
+          <nav class="nav" aria-label="Navigasjon">
+            <a class="btn nav" href="raad-oversikt.html">Velg råd</a>
+          </nav>
+          <nav class="nav-r">
+            <button class="btn nav" id="portal-logout" type="button" title="Logg ut av rådet">Logg ut</button>
+          </nav>
+        </div>
+        <img class="brand" src="../TU-logov2.png" alt="Telemark Ungdomsråd" />
+      </div>
+      <div class="header-space-container"><div class="header-space"></div></div>
+    </header>
+
+    <main class="container portal-shell" id="portal-content" hidden>
+      <section class="card">
+      <h1 id="portal-council-name">Laster side …</h1>
+
+      <div class="council-tool-grid">
+        <a class="council-tool-card" id="portal-plan-link" href="#">
+          <strong>Handlingsplan</strong>
+          <span>Åpne handlingsplan</span>
+        </a>
+        <a class="council-tool-card" id="portal-talestolen-link" href="#">
+          <strong>Talestolen</strong>
+          <span>Åpne Talestolen</span>
+        </a>
+        <a class="council-tool-card" id="portal-registration-link" href="#">
+          <strong>Påmelding</strong>
+          <span>Åpne påmelding</span>
+        </a>
+      </div>
+      </section>
+    </main>
+    <div class="container portal-status" id="portal-status" role="status">
+      <p id="portal-status-message">Kontrollerer rådstilgangen …</p>
+      <button class="btn" id="portal-retry" type="button" hidden>Prøv igjen</button>
+    </div>
+
+    <footer class="site-footer">
+      <div class="footer-social">
+        <div class="container">
+          <div class="footer-social-row">
+            <a href="https://www.facebook.com/telemarkfylkeskommune"
+              title="Facebook - Telemark fylkeskommune"
+              class="footer-social-btn footer-social-facebook"
+              target="_blank" rel="noreferrer noopener">
+              <span class="footer-social-icon">
+                  <img src="../f.png" class="footer-social-img" />
+              </span>
+
+            </a>
+            <a href="https://www.instagram.com/telemarkungdom/"
+              title="Instagram - Telemark fylkeskommune"
+              class="footer-social-btn footer-social-instagram"
+              target="_blank" rel="noreferrer noopener">
+              <span class="footer-social-icon">
+                  <img src="../ig.png" class="footer-social-img" />
+              </span>
+
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-main">
+        <div class="container footer-main-grid">
+          <div class="footer-col">
+            <p><strong>Kontakt oss</strong></p>
+            <p>Telemark Ungdomsråd<br>Postboks 2844<br>3702 Skien</p>
+            <p>Koordinator for Telemark Ungdomsråd<br><a href="mailto:heidi.bekkevold@telemarkfylke.no">heidi.bekkevold@telemarkfylke.no</a><br>+47 991 55 531</p>
+          </div>
+
+          <div class="footer-col">
+            <p><strong>Telemark Ungdomsråd</strong></p>
+            <p><strong>Leder:</strong> Helene Clausen Endresen<br><a href="mailto:helene.c.endresen@gmail.com">helene.c.endresen@gmail.com</a><br>+47 463 14 573</p>
+            <p><strong>Nestleder:</strong> Mats Svendsen<br><a href="mailto:mats08svendsen@gmail.com">mats08svendsen@gmail.com</a><br>+47 483 95 289</p>
+            <p><strong>Nettsideutvikler:</strong> Sondre Callaerts<br><a href="mailto:mrsoncal@gmail.com">mrsoncal@gmail.com</a><br>+47 929 57 188</p>
+          </div>
+
+          <div class="footer-col">
+            <p><strong></strong></p>
+            <p></p>
+          </div>
+
+          <div class="footer-col footer-decoration">
+            <svg xmlns="http://www.w3.org/2000/svg" width="158" height="243" viewBox="0 0 158 243" fill="none" aria-hidden="true">
+              <path opacity="0.8" d="M79 81V161.985V162V243C35.3754 242.985 0.01422 206.729 0 162V81H79Z" fill="white"></path>
+              <path opacity="0.4" d="M79 162C79.0063 117.264 114.362 81 157.974 81C157.983 81 157.991 81 158 81V162H79Z" fill="white"></path>
+              <path opacity="0.6" d="M158 243C157.994 198.264 122.638 162 79.0261 162C79.0174 162 79.0087 162 79 162V243H158Z" fill="white"></path>
+              <rect opacity="0.8" x="79" width="79" height="81" fill="white"></rect>
+            </svg>
+          </div>
+        </div>
+
+        <div class="container footer-bottom">
+          <div class="footer-logo-block">
+            <img src="../TU-logo-bw-wide.png" alt="Telemark Ungdomsråd" class="footer-logo" />
+          </div>
+          <ul class="footer-links">
+            <p>© Sondre Callaerts — Frigitt til fri bruk</p>
+            <li class="footer-links-badge">
+              <a href="https://www.telemarkfylke.no/link/22cdc346a84a49e5add33a4198ce23ed.aspx" target="_blank" rel="noreferrer noopener">
+                <img src="https://www.telemarkfylke.no/globalassets/Administrasjon/tfk/system/layout/miljofyrtaarn-logo-svart.svg" alt="Miljøfyrtårn logo" />
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    </div>
+
+    <script src="council-session.js"></script>
+    <script src="raad-portal.js?v=20261023-3"></script>
+  </body>
+</html>

@@ -1,7 +1,27 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@insforge/sdk@latest/+esm";
+import { enhanceRegistrationSelect, syncRegistrationSelect } from "./registration-dropdown.js";
 
 const API_BASE = window.HP_API_BASE || "";
 const councilId = Number(new URLSearchParams(location.search).get("id"));
+const councilSession = window.HPCouncilSession?.get(councilId);
+
+function councilAuthHeaders() {
+  return councilSession?.token ? { "X-Council-Session": councilSession.token } : {};
+}
+
+async function validateCouncilAccess() {
+  const response = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}/session`, {
+    headers: councilAuthHeaders(),
+    cache: "no-store",
+  });
+  if (response.status === 401 || response.status === 403) {
+    window.HPCouncilSession?.clear(councilId);
+    window.HPCouncilSession?.require(councilId);
+    return false;
+  }
+  if (!response.ok) throw new Error("Rådstilgangen kunne ikke kontrolleres. Prøv å laste siden på nytt.");
+  return true;
+}
 const state = {
   client: null,
   user: null,
@@ -60,10 +80,10 @@ function publicRegistrationUrl(event = state.event) {
 
 async function fetchCouncil() {
   const response = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}`);
-  if (!response.ok) throw new Error("Ungdomsrådet kunne ikke lastes.");
+  if (!response.ok) throw new Error("Siden kunne ikke lastes.");
   state.council = await response.json();
   $("page-title").textContent = `Påmeldinger for ${state.council.display_name || state.council.name}`;
-  $("back-link").href = `raad-admin.html?id=${encodeURIComponent(councilId)}`;
+  $("back-link").href = `raad-portal.html?id=${encodeURIComponent(councilId)}`;
   window.HPBrand?.update(state.council, API_BASE);
 }
 
@@ -125,12 +145,10 @@ async function afterLogin() {
 }
 
 async function bootstrapOwner() {
-  const password = $("bootstrap-password").value;
-  if (!password) return notice("bootstrap-status", "Skriv inn rådets passord.", "error");
   const response = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}/registration-bootstrap`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password, userId: state.user.id }),
+    headers: { "Content-Type": "application/json", ...councilAuthHeaders() },
+    body: JSON.stringify({ userId: state.user.id }),
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok) return notice("bootstrap-status", result.error || "Tilgangen kunne ikke aktiveres.", "error");
@@ -239,9 +257,9 @@ async function createEvent(submitEvent) {
     return;
   }
   const defaults = [
-    { event_id: data.id, name: "Ungdomsråd", affiliation_prompt: "Hvilket ungdomsråd representerer du?", display_template: "{tilhorighet} ungdomsråd", position: 0 },
-    { event_id: data.id, name: "VGS", affiliation_prompt: "Hvilken videregående skole representerer du?", display_template: "{tilhorighet} VGS", position: 1 },
-    { event_id: data.id, name: "Ekstern", affiliation_prompt: "Hvilken organisasjon representerer du?", display_template: "{tilhorighet}", position: 2 },
+    { event_id: data.id, name: "Råd", affiliation_prompt: "Hvilket råd representerer du?", display_template: "{tilhorighet}", position: 0 },
+    { event_id: data.id, name: "Skole", affiliation_prompt: "Hvilken skole representerer du?", display_template: "{tilhorighet}", position: 1 },
+    { event_id: data.id, name: "Organisasjon", affiliation_prompt: "Hvilken organisasjon representerer du?", display_template: "{tilhorighet}", position: 2 },
   ];
   const typeResult = await state.client.database.from("registration_types").insert(defaults);
   if (typeResult.error) console.warn("Could not create default registration types", typeResult.error);
@@ -269,6 +287,7 @@ async function selectEvent(eventId) {
   $("event-title").value = state.event.title || "";
   $("event-description").value = state.event.description || "";
   $("event-status").value = state.event.status;
+  syncRegistrationSelect($("event-status"));
   $("event-status-badge").textContent = statusLabels[state.event.status] || state.event.status;
   const shareUrl = publicRegistrationUrl();
   $("open-registration-link").href = shareUrl;
@@ -322,7 +341,6 @@ async function loadFields() {
 }
 
 function questionIcon(field) {
-  if (field.system_key === "participant_type") return "●";
   if (field.field_type === "long_text") return "≡";
   if (field.field_type === "single_choice") return "●";
   return "—";
@@ -331,6 +349,18 @@ function questionIcon(field) {
 function renderFormBuilder() {
   const list = $("form-builder-list");
   list.innerHTML = "";
+  const note = $("builder-identity-note");
+  const warnings = [];
+  const nameField = state.fields.find((field) => field.system_key === "full_name");
+  const typeField = state.fields.find((field) => field.system_key === "participant_type");
+  if (!nameField || !nameField.is_required) {
+    warnings.push("Hvis en påmelding mangler navn, må det fylles inn i oversikten før deltakeren kan brukes i Talestolen.");
+  }
+  if (!typeField || !typeField.is_required || typeField.field_type !== "single_choice") {
+    warnings.push("Hvis deltakertype ikke velges, brukes første deltakertype automatisk.");
+  }
+  note.textContent = warnings.join(" ");
+  note.hidden = warnings.length === 0;
   if (!state.fields.length) {
     list.innerHTML = '<div class="builder-empty"><strong>Skjemaet har ingen spørsmål ennå.</strong><p>Legg til et spørsmål under.</p></div>';
     return;
@@ -360,13 +390,14 @@ function buildQuestionCard(field, index) {
   type.setAttribute("aria-label", "Svartype");
   Object.entries(fieldTypeLabels).forEach(([value, text]) => type.add(new Option(text, value)));
   type.value = field.field_type;
-  type.disabled = !state.canManage || Boolean(field.system_key);
+  type.disabled = !state.canManage;
   type.addEventListener("change", () => updateField(field.id, { field_type: type.value }));
   top.append(icon, label, type);
+  enhanceRegistrationSelect(type, { className: "question-type-dropdown" });
 
   const preview = document.createElement("div");
   preview.className = "question-preview";
-  if (field.system_key === "participant_type") {
+  if (field.system_key === "participant_type" && field.field_type === "single_choice") {
     preview.appendChild(buildParticipantOptions());
   } else if (field.field_type === "single_choice") {
     preview.appendChild(buildCustomOptions(field));
@@ -394,16 +425,16 @@ function buildQuestionCard(field, index) {
   const required = document.createElement("input");
   required.type = "checkbox";
   required.checked = field.is_required;
-  required.disabled = !state.canManage || field.system_key === "full_name" || field.system_key === "participant_type";
+  required.disabled = !state.canManage;
   required.addEventListener("change", () => updateField(field.id, { is_required: required.checked }));
   requiredLabel.append(required, document.createTextNode(" Obligatorisk"));
   right.appendChild(requiredLabel);
-  if (!field.system_key && state.canManage) {
+  if (state.canManage) {
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "question-delete-button";
     remove.textContent = "Fjern";
-    remove.addEventListener("click", () => armDelete(remove, () => deleteField(field.id)));
+    remove.addEventListener("click", () => armDelete(remove, () => deleteField(field.id), "Trykk igjen: spørsmål og svar slettes"));
     right.appendChild(remove);
   }
   footer.append(moveGroup, right);
@@ -422,10 +453,10 @@ function iconButton(text, label, handler) {
   return button;
 }
 
-function armDelete(button, action) {
+function armDelete(button, action, warning = "Trykk igjen for å fjerne") {
   if (button.dataset.armed === "true") return action();
   button.dataset.armed = "true";
-  button.textContent = "Trykk igjen for å fjerne";
+  button.textContent = warning;
   setTimeout(() => {
     button.dataset.armed = "false";
     button.textContent = "Fjern";
@@ -618,6 +649,35 @@ function renderRegistrations() {
     const nameCell = document.createElement("td");
     nameCell.innerHTML = `<strong></strong>`;
     nameCell.querySelector("strong").textContent = registration.full_name;
+    if (registration.full_name === "Navn ikke oppgitt" && state.canManage) {
+      const editName = document.createElement("button");
+      editName.type = "button";
+      editName.className = "registration-name-edit";
+      editName.textContent = "Fyll inn navn";
+      editName.addEventListener("click", () => {
+        nameCell.replaceChildren();
+        const input = document.createElement("input");
+        input.className = "input";
+        input.type = "text";
+        input.maxLength = 160;
+        input.setAttribute("aria-label", "Navn på deltaker");
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "registration-name-edit";
+        save.textContent = "Lagre navn";
+        save.addEventListener("click", async () => {
+          const name = input.value.trim();
+          if (name.length < 2) return notice("registration-status-message", "Skriv inn deltakerens navn.", "error");
+          const { error } = await state.client.database.from("registrations").update({ full_name: name }).eq("id", registration.id);
+          if (error) return notice("registration-status-message", errorMessage(error), "error");
+          await loadRegistrations();
+          notice("registration-status-message", "Navnet er lagret.", "success");
+        });
+        nameCell.append(input, save);
+        input.focus();
+      });
+      nameCell.appendChild(editName);
+    }
     const contactCell = document.createElement("td");
     contactCell.innerHTML = `<span></span><small></small>`;
     contactCell.querySelector("span").textContent = registration.email || "–";
@@ -662,14 +722,27 @@ function talestolenOrganization(registration) {
 
 async function sendToTalestolen() {
   if (!state.registrations.length) return notice("registration-status-message", "Det er ingen påmeldte å sende til Talestolen ennå.", "error");
+  if (state.registrations.some((item) => item.full_name === "Navn ikke oppgitt" && state.types.some((type) => type.id === item.type_id && type.can_receive_delegate_number))) {
+    return notice("registration-status-message", "Fyll inn manglende navn i oversikten før deltakerne sendes til Talestolen.", "error");
+  }
   await assignMissingNumbers();
   const participants = state.registrations.filter((item) => item.delegate_number);
   if (!participants.length) return notice("registration-status-message", "Ingen av de påmeldte kan få delegatnummer.", "error");
-  const delegates = Object.fromEntries(participants.map((item) => {
+  const delegateRows = participants.map((item) => {
     const number = String(item.delegate_number);
-    return [number, { number, name: item.full_name, org: talestolenOrganization(item) }];
-  }));
-  const snapshotKey = "talestolen_state_v2";
+    return { number, name: item.full_name, org: talestolenOrganization(item) };
+  });
+  const response = await fetch(`${API_BASE}/api/ungdomsrad/${encodeURIComponent(councilId)}/delegates`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...councilAuthHeaders() },
+    body: JSON.stringify({ delegates: delegateRows }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return notice("registration-status-message", result.error || "Delegatlisten kunne ikke lagres i Talestolen.", "error");
+  }
+  const delegates = Object.fromEntries(delegateRows.map((item) => [item.number, item]));
+  const snapshotKey = `talestolen_state_v2_${councilId}`;
   let snapshot = {};
   try { snapshot = JSON.parse(localStorage.getItem(snapshotKey) || "{}"); } catch { snapshot = {}; }
   snapshot = {
@@ -687,7 +760,7 @@ async function sendToTalestolen() {
     item.delegate_number, item.full_name, talestolenOrganization(item),
   ].map(escapeCsv).join(";"))].join("\n");
   localStorage.setItem("talestolen_delegates_csv_raw", csv);
-  location.href = "../talestolen/";
+  location.href = `../talestolen/?id=${encodeURIComponent(councilId)}`;
 }
 
 async function loadInvitations() {
@@ -737,12 +810,19 @@ function bindEvents() {
 }
 
 async function init() {
+  enhanceRegistrationSelect($("event-status"));
+  enhanceRegistrationSelect($("invite-role"));
   if (!Number.isInteger(councilId) || councilId < 1) {
-    $("auth-panel").innerHTML = "<p>Ugyldig ungdomsråd.</p>";
+    $("auth-panel").innerHTML = "<p>Ugyldig side.</p>";
     return;
   }
-  bindEvents();
+  if (!councilSession) {
+    window.HPCouncilSession?.require(councilId);
+    return;
+  }
   try {
+    if (!await validateCouncilAccess()) return;
+    bindEvents();
     await Promise.all([fetchCouncil(), initializeClient()]);
     await restoreSession();
   } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MessageSquareReply, Pause, Play, RotateCcw, Square, Trash2 } from "lucide-react";
 import {
   subscribe,
@@ -7,23 +7,39 @@ import {
   addToQueueByDelegate,
   addToQueueDirect,
   removeFromQueue,
+  restoreQueueItem,
   setTypeDuration,
   loadDelegates,
   updateDelegate,
   deleteDelegate,
   saveDelegatesToLocalStorageRaw,
+  isTutorialMode,
   startNext,
   startSpecific,
   pauseTimer,
   resumeTimer,
   skipCurrent,
+  restoreCurrentSpeaker,
   resetTimer,
   normalizeType,
 } from "./store/bus.js";
 
 import DelegatesTable from "./components/DelegatesTable.jsx";
+import AppNavigation from "./components/AppNavigation.jsx";
+import SiteFooter from "./components/SiteFooter.jsx";
+import Tutorial, { TutorialIntro } from "./components/Tutorial.jsx";
+import { readDelegatesCsvFile } from "./utils/delegatesCsv.js";
 import "./app-extra.css";
 import CsvTool from "./components/CsvTool.jsx";
+import {
+  clearCouncilSession,
+  fetchCouncilDelegates,
+  getCouncilId,
+  getCouncilSession,
+  redirectToCouncilSelector,
+  saveCouncilDelegates,
+  validateCouncilSession,
+} from "./api/councilApi.js";
 
 
 /* ============================
@@ -56,6 +72,33 @@ function useTimerRerender(enabled) {
   }, [enabled]);
 }
 
+const DISPLAY_PRESENCE_KEYS = {
+  timer: "talestolen_presence_timer",
+  queue: "talestolen_presence_queue",
+};
+
+function useDisplayPresence(display) {
+  useEffect(() => {
+    const key = DISPLAY_PRESENCE_KEYS[display];
+    if (!key) return undefined;
+    const instanceId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const announce = () => {
+      try {
+        localStorage.setItem(key, JSON.stringify({ instanceId, updatedAt: Date.now() }));
+      } catch {}
+    };
+    announce();
+    const heartbeat = window.setInterval(announce, 2000);
+    return () => {
+      window.clearInterval(heartbeat);
+      try {
+        const presence = JSON.parse(localStorage.getItem(key) || "null");
+        if (presence?.instanceId === instanceId) localStorage.removeItem(key);
+      } catch {}
+    };
+  }, [display]);
+}
+
 const speakingTypes = [
   { value: "innlegg", label: "Innlegg" },
   { value: "replikk", label: "Replikk" },
@@ -82,6 +125,35 @@ function TypeDropdown({ value, onChange, label, id }) {
     };
   }, [open]);
 
+  const focusOption = (position) => {
+    window.requestAnimationFrame(() => {
+      const options = [...(rootRef.current?.querySelectorAll('[role="option"]') || [])];
+      if (!options.length) return;
+      const nextPosition = (position + options.length) % options.length;
+      options[nextPosition]?.focus();
+    });
+  };
+
+  const handleOptionKeyDown = (event, index) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusOption(index + 1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusOption(index - 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      focusOption(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      focusOption(speakingTypes.length - 1);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      rootRef.current?.querySelector(".type-select-trigger")?.focus();
+    }
+  };
+
   return (
     <div className="type-select" ref={rootRef}>
       <button
@@ -92,19 +164,28 @@ function TypeDropdown({ value, onChange, label, id }) {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((isOpen) => !isOpen)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setOpen(true);
+            focusOption(event.key === "ArrowDown" ? 0 : speakingTypes.length - 1);
+          }
+        }}
       >
         <span>{selected.label}</span>
         <span className="type-select-chevron" aria-hidden="true" />
       </button>
       {open && (
         <div className="type-select-menu" role="listbox" aria-label={label}>
-          {speakingTypes.map((option) => (
+          {speakingTypes.map((option, index) => (
             <button
               type="button"
               className="type-select-option"
               role="option"
               aria-selected={option.value === value}
+              tabIndex={option.value === value ? 0 : -1}
               key={option.value}
+              onKeyDown={(event) => handleOptionKeyDown(event, index)}
               onClick={() => {
                 onChange(option.value);
                 setOpen(false);
@@ -167,124 +248,121 @@ function TimeStepper({ label, value, onChange }) {
 export default function App() {
   const state = useStore();
   const hash = useHash();
+  const councilId = useMemo(() => getCouncilId(), []);
+  const [councilAccess, setCouncilAccess] = useState({ loading: true, ready: false, error: "", council: null });
+  const [delegateSaveError, setDelegateSaveError] = useState("");
+  const lastSavedDelegatesRef = useRef(null);
+  const delegateSaveQueueRef = useRef(Promise.resolve());
   useTimerRerender(hash !== "#queue");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function bootstrapCouncil() {
+      if (!councilId || !getCouncilSession(councilId)) {
+        redirectToCouncilSelector(councilId);
+        return;
+      }
+      try {
+        const [sessionResult, delegates] = await Promise.all([
+          validateCouncilSession(councilId),
+          fetchCouncilDelegates(councilId),
+        ]);
+        if (cancelled) return;
+        loadDelegates(delegates);
+        lastSavedDelegatesRef.current = JSON.stringify(
+          Object.values(getState().delegates || {}).map(({ number, name, org }) => ({ number, name, org }))
+        );
+        setCouncilAccess({ loading: false, ready: true, error: "", council: sessionResult.council || null });
+      } catch (error) {
+        if (cancelled) return;
+        if (error.status === 401 || error.status === 403) {
+          clearCouncilSession(councilId);
+          redirectToCouncilSelector(councilId);
+          return;
+        }
+        setCouncilAccess({ loading: false, ready: false, error: error.message || "Talestolen kunne ikke åpnes.", council: null });
+      }
+    }
+    bootstrapCouncil();
+    return () => { cancelled = true; };
+  }, [councilId]);
+
+  useEffect(() => {
+    if (!councilAccess.ready || !councilId || isTutorialMode()) return undefined;
+    const delegates = Object.values(state.delegates || {}).map(({ number, name, org }) => ({ number, name, org }));
+    const snapshot = JSON.stringify(delegates);
+    if (snapshot === lastSavedDelegatesRef.current) return undefined;
+    const timeout = window.setTimeout(() => {
+      if (isTutorialMode()) return;
+      delegateSaveQueueRef.current = delegateSaveQueueRef.current
+        .catch(() => {})
+        .then(async () => {
+          if (isTutorialMode() || snapshot === lastSavedDelegatesRef.current) return;
+          await saveCouncilDelegates(councilId, delegates);
+          lastSavedDelegatesRef.current = snapshot;
+          setDelegateSaveError("");
+        })
+        .catch((error) => {
+          if (error.status === 401 || error.status === 403) {
+            clearCouncilSession(councilId);
+            redirectToCouncilSelector(councilId);
+            return;
+          }
+          console.error("Kunne ikke lagre delegatlisten", error);
+          setDelegateSaveError("Delegatlisten kunne ikke lagres i rådet. Endringene finnes foreløpig bare på denne enheten.");
+        });
+    }, 500);
+    return () => window.clearTimeout(timeout);
+  }, [councilAccess.ready, councilId, state.delegates]);
+
+  if (councilAccess.loading) {
+    return <main className="access-state"><p>Åpner Talestolen for valgt ungdomsråd …</p></main>;
+  }
+  if (councilAccess.error) {
+    return <main className="access-state"><h1>Talestolen kunne ikke åpnes</h1><p>{councilAccess.error}</p><button className="btn" onClick={() => redirectToCouncilSelector(councilId)}>Til rådvelgeren</button></main>;
+  }
 
   if (hash === "#timer") return <TimerFull state={state} />;
   if (hash === "#queue") return <QueueFull state={state} />;
-  if (hash === "#csv-verktoy") return <CsvTool />;
-  return <AdminView state={state} />;
-}
-
-/* ============================
-   CSV utils
-   ============================ */
-function parseCSV(text) {
-  if (!text) return [];
-  let s = String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
-  const lines = s.split("\n").filter(Boolean);
-  if (!lines.length) return [];
-
-  const delim = detectDelimiter(lines[0]);
-  const split = (line) => splitRow(line, delim);
-  const sample = lines[0];
-  const hasHeader =
-    /[A-Za-z]/.test(sample.split(delim)[0]) && /[A-Za-z]/.test(sample);
-
-  let rows = [];
-  if (hasHeader) {
-    const headers = split(lines[0]).map((h) => h.trim().toLowerCase());
-    for (let i = 1; i < lines.length; i++) {
-      const cells = split(lines[i]);
-      const row = {};
-      headers.forEach((h, idx) => (row[h] = (cells[idx] ?? "").trim()));
-      rows.push(normalizeRow(row));
-    }
-  } else {
-    for (const line of lines) {
-      const [number = "", name = "", org = ""] = split(line).map((x) =>
-        (x ?? "").trim()
-      );
-      rows.push({ number, name, org });
-    }
-  }
-  return rows.filter((r) => String(r.number || "").trim() !== "");
-}
-function detectDelimiter(line) {
-  const counts = {
-    ",": (line.match(/,/g) || []).length,
-    ";": (line.match(/;/g) || []).length,
-    "\t": (line.match(/\t/g) || []).length,
-  };
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] || ",";
-}
-function splitRow(line, delim) {
-  const out = [];
-  let cur = "";
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        cur += '"';
-        i++;
-      } else inQuotes = !inQuotes;
-    } else if (ch === delim && !inQuotes) {
-      out.push(cur);
-      cur = "";
-    } else {
-      cur += ch;
-    }
-  }
-  out.push(cur);
-  return out;
-}
-function normalizeRow(row) {
-  const r = {};
-  const get = (keys) => {
-    for (const k of keys) {
-      const v = row[k];
-      if (v != null && String(v).trim() !== "") return String(v).trim();
-    }
-    return "";
-  };
-  r.number = get([
-    "number",
-    "nr",
-    "delegatenummer",
-    "delegatnummer",
-    "Delegatnummer",
-    "delegate number",
-    "delegatenr",
-    "id",
-  ]);
-  r.name = get([
-    "name",
-    "navn",
-    "Fullt Navn",
-    "fullt navn",
-  ]);
-  r.org = get([
-    "org",
-    "organisasjon",
-    "kommune",
-    "representerer",
-    "org.",
-    "råd/eleråd/organisasjon",
-    "Råd/eleråd/organisasjon",
-  ]);
-  return r;
+  if (hash === "#csv-verktoy") return <CsvTool delegateSaveError={delegateSaveError} />;
+  return <AdminView state={state} delegateSaveError={delegateSaveError} />;
 }
 
 /* ============================
    Admin
    ============================ */
-function AdminView({ state }) {
+function AdminView({ state, delegateSaveError }) {
+  const introStorageKey = "talestolen_tutorial_intro_seen_v1";
+  const [showTutorialIntro, setShowTutorialIntro] = useState(() => {
+    try { return localStorage.getItem(introStorageKey) !== "1"; } catch { return true; }
+  });
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialFileName, setTutorialFileName] = useState("");
+  const dismissTutorialIntro = useCallback(() => {
+    setShowTutorialIntro(false);
+    try { localStorage.setItem(introStorageKey, "1"); } catch {}
+  }, []);
+  const openTutorial = useCallback(() => {
+    dismissTutorialIntro();
+    setTutorialFileName("");
+    setShowTutorial(true);
+  }, [dismissTutorialIntro]);
+  const closeTutorial = useCallback(() => {
+    setShowTutorial(false);
+    setTutorialFileName("");
+  }, []);
   const [speakerQuery, setSpeakerQuery] = useState("");
   const [type, setType] = useState("innlegg");
   const [manualOrg, setManualOrg] = useState("");
   const [lastInnlegg, setLastInnlegg] = useState(null);
   const [csvFileName, setCsvFileName] = useState("");
+  const [csvImportProgress, setCsvImportProgress] = useState(null);
+  const [csvImportError, setCsvImportError] = useState("");
+  const csvImportRunRef = useRef(0);
+  const [undoNotice, setUndoNotice] = useState(null);
+  const undoTimerRef = useRef(null);
+
+  useEffect(() => () => window.clearTimeout(undoTimerRef.current), []);
 
   // When current speaker switches to an innlegg, remember them
   useEffect(() => {
@@ -325,27 +403,33 @@ function AdminView({ state }) {
   const sendSync = () => { /* no-op */ };
 
   /* ---- handlers ---- */
-  function handleCSV(e) {
+  async function handleCSV(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const run = ++csvImportRunRef.current;
+    const startedAt = Date.now();
     setCsvFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const text = String(reader.result || "");
-        const rows = parseCSV(text);
-        if (rows.length) {
-          try {
-            saveDelegatesToLocalStorageRaw(text);
-          } catch {}
-          loadDelegates(rows);
-        }
-      } catch (err) {
-        console.error("[CSV] parse error:", err);
-      }
-    };
-    reader.onerror = (err) => console.error("[CSV] FileReader error:", err);
-    reader.readAsText(file, "utf-8");
+    setCsvImportError("");
+    setCsvImportProgress(5);
+    try {
+      const { text, rows } = await readDelegatesCsvFile(file, {
+        onProgress: (progress) => {
+          if (run === csvImportRunRef.current) setCsvImportProgress(Math.min(95, 5 + Math.round(progress * 0.9)));
+        },
+      });
+      if (run !== csvImportRunRef.current) return;
+      if (!rows.length) throw new Error("CSV-filen inneholder ingen gyldige delegater.");
+      try { saveDelegatesToLocalStorageRaw(text); } catch {}
+      loadDelegates(rows);
+      setCsvImportProgress(100);
+      await new Promise((resolve) => window.setTimeout(resolve, Math.max(0, 700 - (Date.now() - startedAt))));
+    } catch (error) {
+      console.error("[CSV] parse error:", error);
+      if (run === csvImportRunRef.current) setCsvImportError(error.message || "CSV-filen kunne ikke leses.");
+    } finally {
+      if (run === csvImportRunRef.current) setCsvImportProgress(null);
+      e.target.value = "";
+    }
   }
   function handleAddSpeaker(event) {
     event.preventDefault();
@@ -359,35 +443,30 @@ function AdminView({ state }) {
     setManualOrg("");
   }
 
+  function offerUndo(message, undo) {
+    window.clearTimeout(undoTimerRef.current);
+    setUndoNotice({ message, undo });
+    undoTimerRef.current = window.setTimeout(() => setUndoNotice(null), 7000);
+  }
+
+  function undoLastAction() {
+    if (!undoNotice) return;
+    undoNotice.undo();
+    window.clearTimeout(undoTimerRef.current);
+    setUndoNotice(null);
+  }
+
   return (
     <div className="page">
-      <header className="header">
-        <div className="nav-container">
-          <div className="navigation-bar">
-            <nav className="nav">
-              <a className="btn nav" href="#admin">Admin</a>
-              <a className="btn nav" href="#timer" target="talestolen-timer">Timer</a>
-              <a className="btn nav" href="#queue" target="talestolen-queue">Taleliste</a>
-            </nav>
-            <nav className="nav-r">
-              <a className="btn nav-r" href="#csv-verktoy" target="talestolen-csv">CSV Verktøy</a>
-            </nav>
-          </div>     
-            <img className="brand" src={`${import.meta.env.BASE_URL}TU-logov2.png`} alt="Telemark Ungdomsråd" />    
-        </div>
-
-        <div className="header-space-container">
-          <div className="header-space">
-          </div>
-        </div>
-      </header>
+      <AppNavigation active="admin" onOpenTutorial={openTutorial} />
+      {delegateSaveError && <p className="delegate-save-error" role="alert">{delegateSaveError}</p>}
       <div className="container">
         <section className="card main-card">
 
           {/* Row: upload + type defaults */}
           <div className="split">
 
-            <div className="card">
+            <div className="card" data-tutorial="upload">
               <div className={Object.keys(state.delegates).length === 0 ? 'csv-alert' : ''}>
                 <div className="title">Last opp delegater (CSV)</div>
 
@@ -411,10 +490,12 @@ function AdminView({ state }) {
                       <span className="csv-upload-icon" aria-hidden="true">↑</span>
                       Velg CSV-fil
                     </label>
-                    <span className={`csv-file-name ${csvFileName ? 'has-file' : ''}`}>
-                      {csvFileName || 'Ingen fil valgt'}
+                    <span className={`csv-file-name ${tutorialFileName || csvFileName ? 'has-file' : ''}`}>
+                      {tutorialFileName || csvFileName || 'Ingen fil valgt'}
                     </span>
                   </div>
+                  {csvImportProgress !== null && <div className="csv-import-progress" role="progressbar" aria-label="Laster inn delegater" aria-valuemin={0} aria-valuemax={100} aria-valuenow={csvImportProgress}><span style={{ width: `${csvImportProgress}%` }} /></div>}
+                  {csvImportError && <p className="csv-import-error" role="alert">{csvImportError}</p>}
                   <div className="spacer"></div>
                   <div className="row">
                     <div className="muted">
@@ -424,7 +505,7 @@ function AdminView({ state }) {
               </div>
             </div>
 
-            <div className="card time-defaults">
+            <div className="card time-defaults" data-tutorial="durations">
               <div className="title">Taletid (sekunder)</div>
               <div className="grid-3">
                 <TimeStepper
@@ -460,7 +541,7 @@ function AdminView({ state }) {
 
           <div className="spacer"></div>
 
-          <div className="card speaker-add-card">
+          <div className="card speaker-add-card" data-tutorial="add-speaker">
             <div className="title">Legg til i talelista</div>
             <form className="speaker-add-form" onSubmit={handleAddSpeaker}>
               <div className="form-field speaker-search-field">
@@ -519,7 +600,7 @@ function AdminView({ state }) {
 
           {/* Row: current speaker + queue */}
           <div className="split">
-            <div className="card">
+            <div className="card" data-tutorial="current-speaker">
               <div className="title">Snakker Nå</div>
               <div className="list">
                 {cur ? (
@@ -534,7 +615,7 @@ function AdminView({ state }) {
                       <div className="muted">{cur.org || " "}</div>
                       <div className="muted">
                         Type: <b>{labelFor(cur.type)}</b> • Tid:{" "}
-                        {cur.baseDurationSec}s • {cur.paused ? "Pauset" : "Tiden går"}
+                        {cur.baseDurationSec}s{cur.paused && " • Pauset"}
                       </div>
                     </div>
                     <div className="badge">{remain}</div>
@@ -581,8 +662,13 @@ function AdminView({ state }) {
                       aria-label="Avslutt taler"
                       title="Avslutt taler"
                       onClick={() => {
+                        const endedSpeaker = { ...cur };
+                        const secondsLeft = remainingSeconds(cur);
                         skipCurrent();
                         sendSync("timer:reset");
+                        offerUndo(`${cur.name} ble avsluttet.`, () => {
+                          restoreCurrentSpeaker(endedSpeaker, secondsLeft);
+                        });
                       }}
                     >
                       <Square aria-hidden="true" />
@@ -630,7 +716,7 @@ function AdminView({ state }) {
               </div>
             </div>
 
-            <div className="card">
+            <div className="card" data-tutorial="queue">
               <div className="title">Taleliste</div>
               <div className="list">
                 {state.queue.length === 0 ? (
@@ -667,7 +753,12 @@ function AdminView({ state }) {
                           className="btn danger icon-button"
                           aria-label={`Fjern ${q.name}`}
                           title="Fjern"
-                          onClick={() => removeFromQueue(q.id)}
+                          onClick={() => {
+                            removeFromQueue(q.id);
+                            offerUndo(`${q.name} ble fjernet fra køen.`, () => {
+                              restoreQueueItem(q, i);
+                            });
+                          }}
                         >
                           <Trash2 aria-hidden="true" />
                         </button>
@@ -683,77 +774,25 @@ function AdminView({ state }) {
           <DelegatesTable state={state} />
         </section>
       </div>
-      <footer className="site-footer">
-        <div className="footer-social">
-          <div className="container">
-            <div className="footer-social-row">
-              <a href="https://www.facebook.com/telemarkfylkeskommune"
-                title="Facebook - Telemark fylkeskommune"
-                className="footer-social-btn footer-social-facebook"
-                target="_blank" rel="noreferrer noopener">
-                <span className="footer-social-icon">
-                    <img src={`${import.meta.env.BASE_URL}f.png`} className="footer-social-img" alt="Facebook" />
-                </span>
-
-              </a>
-              <a href="https://www.instagram.com/telemarkungdom/"
-                title="Instagram - Telemark fylkeskommune"
-                className="footer-social-btn footer-social-instagram"
-                target="_blank" rel="noreferrer noopener">
-                <span className="footer-social-icon">
-                    <img src={`${import.meta.env.BASE_URL}ig.png`} className="footer-social-img" alt="Instagram" />
-                </span>
-
-              </a>
-            </div>
-          </div>
+      {showTutorialIntro && !showTutorial && <TutorialIntro onDismiss={dismissTutorialIntro} />}
+      {showTutorial && <Tutorial onClose={closeTutorial} onDemoFileLoaded={() => setTutorialFileName("demo-delegater.csv")} timerDisplay={remain} />}
+      {undoNotice && (
+        <div className="undo-toast" role="status" aria-live="polite">
+          <span>{undoNotice.message}</span>
+          <button type="button" className="undo-toast-button" onClick={undoLastAction}>
+            Angre
+          </button>
+          <button
+            type="button"
+            className="undo-toast-close"
+            aria-label="Lukk angremelding"
+            onClick={() => setUndoNotice(null)}
+          >
+            ×
+          </button>
         </div>
-
-        <div className="footer-main">
-          <div className="container footer-main-grid">
-            <div className="footer-col">
-              <p><strong>Kontakt oss</strong></p>
-              <p>Telemark Ungdomsråd<br/>Postboks 2844<br/>3702 Skien</p>
-              <p>Koordinator for Telemark Ungdomsråd<br/><a href="mailto:heidi.bekkevold@telemarkfylke.no">heidi.bekkevold@telemarkfylke.no</a><br/>+47 991 55 531</p>
-            </div>
-
-            <div className="footer-col">
-              <p><strong>Telemark Ungdomsråd</strong></p>
-              <p><strong>Leder:</strong> Jan Sander Ravn Gudbrandsen<br/><a href="mailto:jan.sander.ravn.gudbrandsen@telemarkfylke.no">jan.sander.ravn.gudbrandsen@telemarkfylke.no</a><br/>+47 969 06 790</p>
-              <p><strong>Nestleder:</strong> Helene Clausen Endresen<br/><a href="mailto:helene.c.endresen@gmail.com">helene.c.endresen@gmail.com</a><br/>+47 463 14 573</p>
-              <p><strong>Nettsideutvikler:</strong> Sondre Callaerts<br/><a href="mailto:mrsoncal@gmail.com">mrsoncal@gmail.com</a><br/>+47 929 57 188</p>
-            </div>
-
-            <div className="footer-col">
-              <p><strong></strong></p>
-              <p></p>
-            </div>
-
-            <div className="footer-col footer-decoration">
-              <svg xmlns="http://www.w3.org/2000/svg" width="158" height="243" viewBox="0 0 158 243" fill="none" aria-hidden="true">
-                <path opacity="0.8" d="M79 81V161.985V162V243C35.3754 242.985 0.01422 206.729 0 162V81H79Z" fill="white"></path>
-                <path opacity="0.4" d="M79 162C79.0063 117.264 114.362 81 157.974 81C157.983 81 157.991 81 158 81V162H79Z" fill="white"></path>
-                <path opacity="0.6" d="M158 243C157.994 198.264 122.638 162 79.0261 162C79.0174 162 79.0087 162 79 162V243H158Z" fill="white"></path>
-                <rect opacity="0.8" x="79" width="79" height="81" fill="white"></rect>
-              </svg>
-            </div>
-          </div>
-
-          <div className="container footer-bottom">
-            <div className="footer-logo-block">
-              <img src={`${import.meta.env.BASE_URL}TU-logo-bw-wide.png`} alt="Telemark Ungdomsråd" className="footer-logo" />
-            </div>
-            <ul className="footer-links">
-              <p>© Sondre Callaerts — Frigitt til fri bruk</p>
-              <li className="footer-links-badge">
-                <a href="https://www.telemarkfylke.no/link/22cdc346a84a49e5add33a4198ce23ed.aspx" target="_blank" rel="noreferrer noopener">
-                  <img src="https://www.telemarkfylke.no/globalassets/Administrasjon/tfk/system/layout/miljofyrtaarn-logo-svart.svg" alt="Miljøfyrtårn logo" />
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </footer>
+      )}
+      <SiteFooter />
     </div>
   );
 }
@@ -762,6 +801,7 @@ function AdminView({ state }) {
    Timer & Queue views
    ============================ */
 function TimerFull({ state }) {
+  useDisplayPresence("timer");
   const cur = state.currentSpeaker;
   const secs = cur ? remainingSeconds(cur) : 0;
   const text = fmt(secs);
@@ -797,6 +837,7 @@ function TimerFull({ state }) {
 }
 
 function QueueFull({ state }) {
+  useDisplayPresence("queue");
   const cur = state?.currentSpeaker ?? null;
   const queue = Array.isArray(state?.queue) ? state.queue : [];
 

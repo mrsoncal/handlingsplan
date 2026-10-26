@@ -94,7 +94,7 @@
   display: block;
 }
 
-/* Header / nav copied from Talestolen admin */
+/* Samme header-mål som rådsportalen. */
 .header {
   display: flex;
   flex-direction: column;
@@ -164,10 +164,23 @@
   max-width: fit-content;
   padding-bottom: .625rem !important;
   padding-top: .625rem !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.btn.nav:hover { 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #1677b8;
+  outline-offset: 3px;
+}
+
+.btn.nav:hover,
+.btn.nav-r:hover {
   color: #a69939;
 }
 
@@ -176,7 +189,7 @@
   text-align: left;
   max-width: 1140px;
   width: 50%;
-  gap: 30px; 
+  gap: 30px;
   padding-top: 4px; 
   padding-bottom: 4px; 
   text-decoration: none !important;
@@ -188,11 +201,90 @@
   justify-content: right;
   max-width: 1140px;
   width: 50%;
-  gap: 30px; 
+  gap: 30px;
   padding-top: 4px; 
   padding-bottom: 4px; 
   text-decoration: none !important;
   align-items: center;
+}
+
+.display-shortcuts {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  box-sizing: border-box;
+  width: min(100%, 1140px);
+  padding: 0 2.75rem;
+  margin: -0.5rem auto 0.9rem;
+}
+
+.display-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0;
+  color: #005260;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.display-shortcut:hover {
+  opacity: 0.8;
+}
+
+.header-status-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: #7b8588;
+}
+
+.header-status-dot.is-connected {
+  background: #198447;
+  box-shadow: 0 0 0 3px rgba(25, 132, 71, 0.15);
+}
+
+.undo-toast {
+  position: fixed;
+  z-index: 90;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  max-width: min(520px, calc(100vw - 40px));
+  min-height: 52px;
+  padding: 8px 10px 8px 16px;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 14px;
+  background: #1e1e1e;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.undo-toast-button,
+.undo-toast-close {
+  border: 0;
+  background: transparent;
+  color: #ffcc00;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.undo-toast-button {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.undo-toast-close {
+  padding: 4px 7px;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
 }
 
 .container {
@@ -337,6 +429,50 @@ select,
   align-items: center;
   gap: 12px;
   min-width: 0;
+}
+
+.csv-import-progress {
+  height: 10px;
+  margin: 12px 0 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d5e8eb;
+}
+
+.csv-import-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #22a447;
+  transition: width 300ms ease;
+}
+
+.csv-import-progress[aria-valuenow="100"] > span {
+  animation: csv-import-finish 500ms ease-out;
+}
+
+.csv-import-progress-indeterminate > span {
+  width: 38%;
+  animation: csv-import-running 1.2s ease-in-out infinite;
+}
+
+@keyframes csv-import-running {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(270%); }
+}
+
+.csv-import-error {
+  color: #b7173d;
+  font-weight: 700;
+}
+
+@keyframes csv-import-finish {
+  50% { filter: brightness(1.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .csv-import-progress > span { transition: none; animation: none; }
+  .csv-import-progress-indeterminate > span { width: 100%; }
 }
 
 .csv-upload-input {
@@ -592,6 +728,13 @@ select,
   .speaker-add-button {
     width: 100%;
   }
+
+  .undo-toast {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
+  }
 }
 
 .csv-helper {
@@ -689,12 +832,51 @@ select,
 
 
 /* CSV Tool specific styling */
+.csv-tool-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.csv-tool-heading .title {
+  margin: 0;
+}
+
+body.csv-tutorial-active .csv-tutorial-focus {
+  position: relative;
+  z-index: 1001;
+}
+
+.csv-tutorial-preview {
+  overflow-x: auto;
+  padding: 12px;
+  background: #eef8fa;
+  color: #163238;
+  font: 0.76rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre;
+}
+
+/* Keep the table's normal row sizes. Long lists scroll inside the focus area. */
+body.csv-tutorial-list-step [data-csv-tutorial="editor"] {
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+}
+
 .csv-table .csv-row-error {
   background: #efc0ca;
 }
 
-.csv-table .csv-row-error .input {
+.csv-table .csv-row-error .input[aria-invalid="true"] {
   border-color: #b7173d;
+}
+
+.csv-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .excel-import-card {
@@ -789,6 +971,119 @@ select,
   font-weight: 700;
 }
 
+.column-dropdown {
+  position: relative;
+  min-width: 0;
+}
+
+.column-dropdown.is-open {
+  z-index: 30;
+}
+
+.column-dropdown-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.column-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1e1e1e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.column-dropdown-trigger:hover,
+.column-dropdown-trigger[aria-expanded="true"] {
+  border-color: #005260;
+}
+
+.column-dropdown-trigger:focus-visible {
+  outline: 3px solid #1677b8;
+  outline-offset: 2px;
+}
+
+.column-dropdown-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.column-dropdown-chevron {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #005260;
+  border-bottom: 2px solid #005260;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.column-dropdown-trigger[aria-expanded="true"] .column-dropdown-chevron {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.column-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max(100%, 260px);
+  max-width: min(420px, calc(100vw - 36px));
+  max-height: 280px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 5px;
+  border: 1px solid #8fb8c1;
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(0, 45, 53, 0.22);
+}
+
+.column-dropdown.opens-up .column-dropdown-menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
+
+.column-dropdown-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: #1e1e1e;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.column-dropdown-option:hover,
+.column-dropdown-option:focus-visible,
+.column-dropdown-option[aria-selected="true"] {
+  background: #ceecf4;
+  outline: none;
+}
+
+.excel-org-dropdown .column-dropdown-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .excel-org-mapping {
   margin: 14px 0 0;
   padding: 14px;
@@ -858,7 +1153,47 @@ select,
   margin-top: 14px;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 700px) {
+  .navigation-bar {
+    width: 100%;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav,
+  .nav-r {
+    width: 100%;
+    max-width: none;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+  }
+
+  .btn.nav,
+  .btn.nav-r {
+    min-height: 38px;
+    padding: 6px 4px !important;
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .nav-container .brand {
+    height: 4.5rem;
+    bottom: -5rem;
+  }
+
+  .header-space-container {
+    padding-top: 4rem;
+  }
+
+  .header-space {
+    min-height: 2rem;
+  }
+}
+
+@media (max-width: 900px) {
   .excel-mapping {
     grid-template-columns: 1fr;
   }
@@ -888,21 +1223,6 @@ select,
 
 .csv-table tbody td {
   padding: 10px 14px;
-}
-
-.csv-table .csv-row-error-message {
-  background: #fbe7eb;
-}
-
-.csv-table .csv-row-error-message td {
-  padding-top: 0;
-  color: #8f1734;
-  font-weight: 700;
-}
-
-.csv-row-error-message ul {
-  margin: 0;
-  padding: 4px 0 8px 22px;
 }
 
 .input-delegatnummer {
@@ -1118,4 +1438,30 @@ select,
   .footer-social-row {
     justify-content: flex-start;
   }
+}
+
+.access-state {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  background: #ceecf4;
+}
+
+.access-state h1,
+.access-state p {
+  margin: 0;
+}
+
+.delegate-save-error {
+  margin: 1rem auto;
+  width: min(calc(100% - 2rem), 70rem);
+  padding: 0.85rem 1rem;
+  border-left: 4px solid #b7173d;
+  background: #fff0f3;
+  color: #7c0c28;
+  font-weight: 700;
 }

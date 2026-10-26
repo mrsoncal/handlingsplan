@@ -1463,10 +1463,10 @@ object-fit: contain;
 
 .raad-grid {
   display: grid;
-  /* ALWAYS create at least 3 columns */
-  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
   gap: 1rem;
-  margin-bottom: 6rem;
+  max-width: 72rem;
+  margin-bottom: 4rem;
 }
 
 @media (max-width: 900px) {
@@ -1477,8 +1477,9 @@ object-fit: contain;
 }
 
 .raad-card {
+  position: relative;
   background: #ceecf4;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 0;
   padding: 0.9rem 1rem;
   display: flex;
@@ -1487,6 +1488,14 @@ object-fit: contain;
   justify-content: flex-start;
   gap: 0.75rem;
   min-height: 130px;        /* keeps a nice, consistent card height */
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.raad-card:hover,
+.raad-card:focus-within,
+.raad-card:focus-visible {
+  border-color: #005260;
+  transform: translateY(-2px);
 }
 
 .raad-card:hover {
@@ -1528,6 +1537,7 @@ object-fit: contain;
 /* Right content column */
 .raad-card-body {
   flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1538,8 +1548,14 @@ object-fit: contain;
 .raad-card-actions {
   margin-top: 0.5rem;
   display: flex;
-  justify-content: flex-start;  /* align with text */
+  flex-wrap: wrap;
+  justify-content: flex-start;
   gap: 0.5rem;
+}
+
+.raad-card-actions > * {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .raad-card-title {
@@ -3062,6 +3078,10 @@ input[type="color"] {
   font-weight: 600;
 }
 
+.vedtatt-label-desktop {
+  display: none;
+}
+
 /* Vi bruker nå første kolonne til både tekst + nummer, så skjul den gamle "Punkt (nr)"-kolonnen */
 .hp-table th:nth-child(2),
 .hp-table td:nth-child(2) {
@@ -3235,6 +3255,251 @@ tr:nth-child(even):not(.vedtatt):not(.filler-row):not(.hp-delete-row):hover td:f
 @media (min-width: 601px) {
   .hp-header-cell .punkt-nummer {
     display: none;
+  }
+
+  .carousel-slide .hp-action-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .carousel-slide .vedtatt-label-desktop {
+    margin: 0;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.65rem;
+    line-height: 1;
+  }
+}
+
+.raad-card-primary-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.raad-card-primary-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.raad-card-actions > * {
+  position: relative;
+  z-index: 2;
+}
+
+.council-public-btn {
+  background: #ffcc00;
+  color: #111;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.council-public-btn:hover {
+  background: #e4b700;
+}
+
+.lead-text {
+  max-width: 70ch;
+  margin: 0 0 1.5rem;
+  line-height: 1.55;
+}
+
+.council-tool-launcher {
+  margin-bottom: 2rem;
+  padding: 1.75rem;
+  background: #fff;
+  border-left: 4px solid #005260;
+}
+
+.council-tool-launcher-heading h3,
+.settings-section-title {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.council-tool-launcher-heading p:last-child {
+  max-width: 68ch;
+  margin-bottom: 1.25rem;
+}
+
+.council-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.council-tool-card {
+  min-height: 150px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  justify-content: flex-end;
+  background: #ceecf4;
+  border: 2px solid transparent;
+  color: #111;
+  text-decoration: none;
+}
+
+.council-tool-card-public {
+  background: #ffefad;
+}
+
+.council-tool-card:hover,
+.council-tool-card:focus-visible {
+  border-color: #005260;
+  transform: translateY(-2px);
+}
+
+.council-tool-card strong {
+  font-size: 1.2rem;
+}
+
+.council-tool-card > span {
+  line-height: 1.4;
+}
+
+.council-form .modal-actions {
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.settings-section-title {
+  padding: 0 2rem;
+}
+
+.public-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.public-page-actions .council-public-btn,
+.public-page-actions .btn-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+}
+
+#copy-public-plan-status:empty {
+  display: none;
+}
+
+.portal-shell h1 {
+  margin: 0 0 0.5rem;
+}
+
+.portal-shell .council-tool-grid {
+  max-width: 72rem;
+  margin-top: 2rem;
+  margin-bottom: 4rem;
+}
+
+.portal-shell .council-tool-card {
+  min-height: 10rem;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.portal-shell .council-tool-card:hover,
+.portal-shell .council-tool-card:focus-visible {
+  background: #99d7e7;
+  border-color: #005260;
+}
+
+.portal-status {
+  margin: 3rem auto;
+  text-align: center;
+}
+
+#councilAccessOverlay .login-box,
+#newCouncilOverlay .login-box,
+#login-section .login-box {
+  width: min(28rem, calc(100vw - 2rem));
+  height: auto;
+  max-height: calc(100vh - 2rem);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+#councilAccessOverlay .council-form,
+#newCouncilOverlay .council-form {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+#councilAccessOverlay .new-council-input,
+#newCouncilOverlay .new-council-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 760px) {
+  .council-tool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .council-tool-card {
+    min-height: 120px;
+  }
+
+  .portal-shell .council-tool-card {
+    min-height: 9rem;
+  }
+
+  .raad-card-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 700px) {
+  body.raad-selector-page #login-button,
+  body.raad-selector-page #logout-button,
+  body.council-portal-page #portal-logout {
+    width: auto;
+    min-width: 0;
+    height: auto;
+    padding: 0.55rem 0.75rem !important;
+    white-space: nowrap;
+    font-size: 0.75rem;
+  }
+
+  body.raad-selector-page .navigation-bar .nav-label {
+    max-width: 8rem;
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 601px) {
+  .login-module {
+    box-sizing: border-box;
+    padding-inline: 1rem;
+  }
+
+  .login-module .form-row {
+    width: 100%;
+    max-width: 25rem;
+    box-sizing: border-box;
+  }
+
+  .login-module .input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
